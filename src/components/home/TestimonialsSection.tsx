@@ -1,0 +1,88 @@
+'use client';
+
+import React, { useState } from 'react';
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight, Quote, CheckCircle2 } from 'lucide-react';
+import { customerReviewsData } from '@/data/reviews';
+import { RatingStars } from '@/components/ui/RatingStars';
+
+export function TestimonialsSection() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const reviews = customerReviewsData;
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % reviews.length);
+  };
+
+  return (
+    <section className="py-16 md:py-24 bg-[#FFFDFC] select-none">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
+            Real Customer Stories
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1 mb-3">
+            Loved By You
+          </h2>
+          <div className="w-12 h-0.5 bg-[#B77A68] mx-auto mb-3" />
+          <p className="text-xs sm:text-sm text-[#777777] font-sans">
+            Hear from thousands of delighted women and families who cherish JQ Trends.
+          </p>
+        </div>
+
+        {/* Desktop 3-Card Grid & Mobile Carousel */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {reviews.slice(0, 3).map((review) => (
+            <div
+              key={review.id}
+              className="flex flex-col justify-between p-6 sm:p-8 bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow relative"
+            >
+              <Quote className="w-8 h-8 text-[#B77A68]/30 absolute top-6 right-6 pointer-events-none" />
+
+              <div>
+                <RatingStars rating={review.rating} size="sm" />
+
+                <h4 className="text-sm sm:text-base font-serif font-bold text-[#111111] mt-4 mb-2">
+                  &ldquo;{review.title}&rdquo;
+                </h4>
+
+                <p className="text-xs text-[#777777] leading-relaxed font-sans font-normal">
+                  {review.comment}
+                </p>
+              </div>
+
+              {/* Author Details */}
+              <div className="flex items-center gap-3 pt-6 mt-6 border-t border-[#E8DED8]">
+                {review.avatar && (
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#B77A68] shrink-0">
+                    <Image
+                      src={review.avatar}
+                      alt={review.authorName}
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-1">
+                    <h5 className="text-xs font-bold text-[#111111]">{review.authorName}</h5>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#B77A68]" />
+                  </div>
+                  <p className="text-[11px] text-[#777777]">
+                    Verified Buyer • {review.colorPurchased} ({review.sizePurchased})
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

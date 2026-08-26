@@ -1,0 +1,98 @@
+import { Category, Collection } from '@/types/category';
+
+export const categoriesData: Category[] = [
+  {
+    id: 'cat-women',
+    name: 'Women',
+    slug: 'women',
+    department: 'women',
+    description: 'Fashion-forward styles for every occasion, from ethnic grace to western chic.',
+    imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop',
+    featured: true,
+    subcategories: [
+      { id: 'sub-dresses', name: 'Dresses', slug: 'dresses', itemCount: 42 },
+      { id: 'sub-kurtis', name: 'Kurtis & Suits', slug: 'kurtis', itemCount: 38 },
+      { id: 'sub-coords', name: 'Co-ords & Sets', slug: 'co-ords', itemCount: 24 },
+      { id: 'sub-tops', name: 'Tops & Shirts', slug: 'tops', itemCount: 36 },
+      { id: 'sub-ethnic', name: 'Ethnic Wear', slug: 'ethnic-wear', itemCount: 50 },
+      { id: 'sub-western', name: 'Western Wear', slug: 'western-wear', itemCount: 45 },
+      { id: 'sub-bottoms', name: 'Bottoms & Trousers', slug: 'bottoms', itemCount: 28 },
+      { id: 'sub-accessories', name: 'Bags & Accessories', slug: 'accessories', itemCount: 19 },
+    ],
+  },
+  {
+    id: 'cat-kids',
+    name: 'Kids',
+    slug: 'kids',
+    department: 'kids',
+    description: 'Cute, comfortable, and stylish looks designed for playtime and celebration.',
+    imageUrl: 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?q=80&w=1000&auto=format&fit=crop',
+    featured: true,
+    subcategories: [
+      { id: 'sub-girls', name: 'Girls Collection', slug: 'girls', itemCount: 35 },
+      { id: 'sub-boys', name: 'Boys Collection', slug: 'boys', itemCount: 30 },
+      { id: 'sub-kids-dresses', name: 'Frocks & Dresses', slug: 'dresses', itemCount: 22 },
+      { id: 'sub-kids-ethnic', name: 'Kids Ethnic Wear', slug: 'ethnic-wear', itemCount: 18 },
+      { id: 'sub-kids-casual', name: 'Casual & Playwear', slug: 'casual-wear', itemCount: 28 },
+      { id: 'sub-kids-tops', name: 'Kids Tops & Tees', slug: 'tops', itemCount: 25 },
+    ],
+  },
+  {
+    id: 'cat-new-arrivals',
+    name: 'New Arrivals',
+    slug: 'new-arrivals',
+    department: 'women',
+    description: 'Fresh silhouettes straight from the studio, designed for the modern trendsetter.',
+    imageUrl: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000&auto=format&fit=crop',
+    featured: true,
+    subcategories: [
+      { id: 'sub-new-women', name: 'New In Women', slug: 'women', itemCount: 28 },
+      { id: 'sub-new-kids', name: 'New In Kids', slug: 'kids', itemCount: 16 },
+      { id: 'sub-new-summer', name: 'Spring/Summer 2026', slug: 'co-ords', itemCount: 20 },
+    ],
+  },
+  {
+    id: 'cat-sale',
+    name: 'Sale',
+    slug: 'sale',
+    department: 'women',
+    description: 'Your favorite styles at special celebratory prices. Up to 50% Off.',
+    imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1000&auto=format&fit=crop',
+    featured: true,
+    subcategories: [
+      { id: 'sub-sale-women', name: 'Women On Sale', slug: 'women', itemCount: 32 },
+      { id: 'sub-sale-kids', name: 'Kids On Sale', slug: 'kids', itemCount: 18 },
+      { id: 'sub-sale-under999', name: 'Under ₹999', slug: 'tops', itemCount: 14 },
+    ],
+  },
+];
+
+export const collectionsData: Collection[] = [
+  {
+    id: 'col-summer-soiree',
+    name: 'Summer Soirée 2026',
+    slug: 'summer-soiree',
+    subtitle: 'Breezy linens, sun-drenched florals & relaxed tailoring',
+    description: 'Effortless elegance designed for golden hours, garden brunch, and weekend escapes.',
+    bannerImage: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1600&auto=format&fit=crop',
+    badge: 'Trending Collection',
+  },
+  {
+    id: 'col-festive-radiance',
+    name: 'Festive Radiance',
+    slug: 'festive-radiance',
+    subtitle: 'Zari embroidery, rich chanderi & jewel tones',
+    description: 'Contemporary ethnic silhouettes that blend heritage craftsmanship with modern comfort.',
+    bannerImage: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=1600&auto=format&fit=crop',
+    badge: 'Ethnic Spotlight',
+  },
+  {
+    id: 'col-little-royals',
+    name: 'Little Royals',
+    slug: 'little-royals',
+    subtitle: 'Soft organic cottons & adorable occasion wear',
+    description: 'Crafted for tiny tastemakers who love to spin, run, and make memories in style.',
+    bannerImage: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?q=80&w=1600&auto=format&fit=crop',
+    badge: 'Kids Special',
+  },
+];
