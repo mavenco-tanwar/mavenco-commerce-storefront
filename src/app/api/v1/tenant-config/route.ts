@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { getTenantConfig, updateTenantConfig } from '@/lib/tenant-config';
+import { getTenantConfig, updateTenantConfig, archiveTenantSlug, checkTenantValidity } from '@/lib/tenant-config';
+import { getDatabase } from '@/lib/mongodb';
 
 function corsHeaders() {
   return {
@@ -16,13 +17,55 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'jqtrends';
-  const config = getTenantConfig(tenantSlug);
+  const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'demo';
+  const clean = tenantSlug.toLowerCase().trim();
 
+  try {
+    const db = await getDatabase();
+    if (db) {
+      const doc = await db.collection('tenants').findOne({
+        slug: clean,
+        status: { $ne: 'deleted' },
+      });
+
+      if (doc) {
+        // Strip _id before returning
+        const { _id, ...tenantData } = doc;
+        return NextResponse.json(
+          {
+            data: tenantData,
+            tenant: clean,
+            source: 'mongodb',
+            status: 'success',
+            timestamp: new Date().toISOString(),
+          },
+          { headers: corsHeaders() }
+        );
+      }
+    }
+  } catch (err) {
+    console.error('MongoDB tenant fetch error:', err);
+  }
+
+  const validity = checkTenantValidity(clean);
+  if (!validity.isValid) {
+    return NextResponse.json(
+      {
+        data: null,
+        tenant: clean,
+        status: 'inactive',
+        error: `Store "${clean}" is not found or inactive`,
+      },
+      { status: 404, headers: corsHeaders() }
+    );
+  }
+
+  const config = getTenantConfig(clean);
   return NextResponse.json(
     {
       data: config,
-      tenant: tenantSlug,
+      tenant: clean,
+      source: 'registry',
       status: 'success',
       timestamp: new Date().toISOString(),
     },
@@ -37,22 +80,46 @@ export async function PUT(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'jqtrends';
+    const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'demo';
+    const clean = tenantSlug.toLowerCase().trim();
     const body = await request.json();
 
-    const updated = updateTenantConfig(tenantSlug, body);
+    const updated = updateTenantConfig(clean, body);
 
     try {
-      revalidatePath(`/stores/${tenantSlug}`);
+      const db = await getDatabase();
+      if (db) {
+        await db.collection('tenants').updateOne(
+          { slug: clean },
+          {
+            $set: {
+              ...updated,
+              slug: clean,
+              status: body.status || 'active',
+              updatedAt: new Date().toISOString(),
+            },
+            $setOnInsert: {
+              createdAt: new Date().toISOString(),
+            },
+          },
+          { upsert: true }
+        );
+      }
+    } catch (err) {
+      console.error('MongoDB tenant write error:', err);
+    }
+
+    try {
+      revalidatePath(`/stores/${clean}`);
       revalidatePath('/');
     } catch {}
 
     return NextResponse.json(
       {
         data: updated,
-        tenant: tenantSlug,
+        tenant: clean,
         status: 'success',
-        message: `Tenant ${updated.name} registered successfully!`,
+        message: `Tenant ${updated.name} updated and persisted successfully!`,
         timestamp: new Date().toISOString(),
       },
       { headers: corsHeaders() }
@@ -73,19 +140,36 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Missing tenant slug' }, { status: 400, headers: corsHeaders() });
     }
 
-    const { archiveTenantSlug } = require('@/lib/tenant-config');
-    archiveTenantSlug(tenantSlug);
+    const clean = tenantSlug.toLowerCase().trim();
+    archiveTenantSlug(clean);
 
     try {
-      revalidatePath(`/stores/${tenantSlug}`);
+      const db = await getDatabase();
+      if (db) {
+        await db.collection('tenants').updateOne(
+          { slug: clean },
+          {
+            $set: {
+              status: 'deleted',
+              deletedAt: new Date().toISOString(),
+            },
+          }
+        );
+      }
+    } catch (err) {
+      console.error('MongoDB tenant delete error:', err);
+    }
+
+    try {
+      revalidatePath(`/stores/${clean}`);
       revalidatePath('/');
     } catch {}
 
     return NextResponse.json(
       {
-        tenant: tenantSlug,
+        tenant: clean,
         status: 'success',
-        message: `Tenant ${tenantSlug} archived successfully!`,
+        message: `Tenant ${clean} deleted/archived successfully from database!`,
         timestamp: new Date().toISOString(),
       },
       { headers: corsHeaders() }
