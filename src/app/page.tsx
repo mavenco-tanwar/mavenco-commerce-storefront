@@ -3,7 +3,7 @@ import { CmsApiService } from '@/services/api/cms';
 import { DynamicSectionRenderer } from '@/components/home/DynamicSectionRenderer';
 import { ValueProps } from '@/components/home/ValueProps';
 import { PlatformShowcaseLanding } from '@/components/home/PlatformShowcaseLanding';
-import { checkTenantValidity } from '@/lib/tenant-config';
+import { checkTenantValidityDb } from '@/lib/server/tenant-db';
 import { StoreUnavailableView } from '@/components/ui/StoreUnavailableView';
 
 export const dynamic = 'force-dynamic';
@@ -23,8 +23,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     return <PlatformShowcaseLanding />;
   }
 
-  // Verify that the requested tenant exists and is active
-  const { isValid, isSuspended } = checkTenantValidity(tenantSlug);
+  // Verify that the requested tenant exists and is active in MongoDB Atlas or registry
+  const { isValid, isSuspended } = await checkTenantValidityDb(tenantSlug);
   if (!isValid || isSuspended) {
     return <StoreUnavailableView tenantSlug={tenantSlug} isSuspended={isSuspended} />;
   }
