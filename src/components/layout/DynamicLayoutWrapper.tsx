@@ -15,24 +15,21 @@ export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }
   const searchParams = useSearchParams();
   const tenantQuery = searchParams.get('tenant');
 
-  // Check if requesting an inactive or deleted store
-  const pathMatch = pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
-  const activeSlug = tenantQuery || (pathMatch ? pathMatch[2] : null);
+  // Check if this is a store route (e.g. /stores/restore or ?tenant=restore)
+  const isStoreRoute = pathname.startsWith('/stores/') || pathname.startsWith('/tenant/') || !!tenantQuery;
 
-  const isInvalidTenant = activeSlug ? !checkTenantValidity(activeSlug).isValid : false;
-
-  // Explicit platform presentation routes or invalid tenant routes
+  // Platform marketing routes (SaaS landing, /cms, /features, /docs, /pricing)
   const isPlatformRoute =
-    (pathname === '/' && !tenantQuery) ||
-    isInvalidTenant ||
-    pathname === '/cms' ||
-    pathname.startsWith('/cms/') ||
-    pathname.startsWith('/platform') ||
-    pathname.startsWith('/features') ||
-    pathname.startsWith('/docs') ||
-    pathname.startsWith('/pricing');
+    !isStoreRoute &&
+    (pathname === '/' ||
+      pathname === '/cms' ||
+      pathname.startsWith('/cms/') ||
+      pathname.startsWith('/platform') ||
+      pathname.startsWith('/features') ||
+      pathname.startsWith('/docs') ||
+      pathname.startsWith('/pricing'));
 
-  // If on a platform presentation page or invalid store page, render the Mavenco Commerce SaaS Header and Footer
+  // If on a platform presentation page, render the Mavenco Commerce SaaS Header and Footer
   if (isPlatformRoute) {
     return (
       <div className="min-h-screen flex flex-col bg-[#0A0C10] text-slate-100 antialiased">

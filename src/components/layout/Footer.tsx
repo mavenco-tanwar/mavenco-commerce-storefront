@@ -24,7 +24,19 @@ export function Footer() {
   const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
-    setTenant(resolveTenant());
+    const t = resolveTenant();
+    setTenant(t);
+
+    if (t?.slug) {
+      fetch(`/api/v1/tenant-config?tenant=${t.slug}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((json) => {
+          if (json?.data?.name) {
+            setTenant(json.data);
+          }
+        })
+        .catch(() => {});
+    }
   }, []);
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {

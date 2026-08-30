@@ -555,5 +555,5 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
     }
   }
 
-  return getTenantConfig('jqtrends');
+  return getTenantConfig('demo');
 }

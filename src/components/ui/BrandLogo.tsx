@@ -20,7 +20,19 @@ export function BrandLogo({
   const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
 
   useEffect(() => {
-    setTenant(resolveTenant());
+    const t = resolveTenant();
+    setTenant(t);
+
+    if (t?.slug) {
+      fetch(`/api/v1/tenant-config?tenant=${t.slug}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((json) => {
+          if (json?.data?.name) {
+            setTenant(json.data);
+          }
+        })
+        .catch(() => {});
+    }
   }, []);
 
   const isLight = variant === 'light';
