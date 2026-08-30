@@ -66,11 +66,15 @@ export function Footer() {
                   ? 'Express Delivery'
                   : tenant.slug === 'auraliving'
                   ? 'Carbon-Neutral Dispatch'
-                  : 'Fast Worldwide Dispatch'}
+                  : tenant.slug === 'apexathletics'
+                  ? 'Fast Worldwide Dispatch'
+                  : 'Express Doorstep Delivery'}
               </h4>
               <p className="text-xs opacity-70 mt-0.5 font-sans">
                 {tenant.slug === 'jqtrends'
                   ? 'Free shipping on orders above ₹999'
+                  : tenant.currency === 'INR'
+                  ? 'Free delivery on orders above ₹999'
                   : 'Free express shipping on all orders > $100'}
               </p>
             </div>
@@ -129,7 +133,9 @@ export function Footer() {
                   ? 'Boutique Craftsmanship'
                   : tenant.slug === 'auraliving'
                   ? 'Small-Batch Artisanal'
-                  : 'Pro Athlete Calibrated'}
+                  : tenant.slug === 'apexathletics'
+                  ? 'Pro Athlete Calibrated'
+                  : 'Bespoke Craftsmanship'}
               </h4>
               <p className="text-xs opacity-70 mt-0.5 font-sans">Designed for modern distinction</p>
             </div>

@@ -26,6 +26,14 @@ export function BrandLogo({
   const isLight = variant === 'light';
   const textColor = isLight ? '#FFFFFF' : '#111111';
 
+  const monogram = tenant.name
+    .split(/[\s-_]+/)
+    .filter(Boolean)
+    .map((w) => w[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase() || 'TT';
+
   return (
     <Link
       href={`/stores/${tenant.slug}`}
@@ -36,11 +44,7 @@ export function BrandLogo({
         className="w-10 h-10 rounded-xl flex items-center justify-center font-serif font-black text-white text-lg shadow-sm shrink-0 transition-transform group-hover:scale-105"
         style={{ backgroundColor: tenant.theme.primaryColor }}
       >
-        {tenant.slug === 'jqtrends'
-          ? 'JQ'
-          : tenant.slug === 'auraliving'
-          ? 'AL'
-          : 'AP'}
+        {monogram}
       </div>
 
       <div className="flex flex-col">

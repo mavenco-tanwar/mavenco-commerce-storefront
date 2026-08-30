@@ -244,6 +244,70 @@ export const SEED_TENANTS: Record<string, TenantBrandConfig> = {
   },
 };
 
+export function formatStoreName(slug: string): string {
+  return slug
+    .replace(/[-_]+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig {
+  const clean = slug.toLowerCase().trim();
+  const displayName = formatStoreName(clean);
+
+  return {
+    id: `store_${clean}`,
+    name: displayName,
+    slug: clean,
+    tagline: 'Modern Elegance & Bespoke Craftsmanship',
+    description: `Welcome to ${displayName}. Explore our curated selection of bespoke tailoring, contemporary apparel, and artisanal fabrics designed for everyday distinction.`,
+    currency: 'INR',
+    currencySymbol: '₹',
+    theme: {
+      primaryColor: '#181A20',
+      secondaryColor: '#FAF8F5',
+      accentColor: '#D97706',
+      headingFont: 'Plus Jakarta Sans, sans-serif',
+      bodyFont: 'Inter, sans-serif',
+    },
+    contact: {
+      phone: '+91 98765 00000',
+      email: `care@${clean.replace(/_/g, '-')}.com`,
+      whatsapp: '919876500000',
+      address: `Atelier & Design Studio, Fashion District, New Delhi, India`,
+    },
+    announcements: {
+      leftCallout: `Welcome to ${displayName}`,
+      mainText: 'New Season Collection Live Now • Complimentary Doorstep Delivery •',
+      highlightText: 'EXPLORE CATALOG',
+      link: '/new-arrivals',
+    },
+    navLinks: [
+      { label: 'NEW IN', href: '/new-arrivals', badge: 'Fresh' },
+      { label: 'CATALOG', href: '/women' },
+      { label: 'BESPOKE TAILORING', href: '/kids' },
+      { label: 'COLLECTIONS', href: '/collections/festive' },
+      { label: 'OFFERS', href: '/sale' },
+    ],
+    footerShopLinks: [
+      { label: 'New Season Atelier', href: '/new-arrivals' },
+      { label: 'Bespoke Suits & Kurtas', href: '/women' },
+      { label: 'Curated Fabrics', href: '/kids' },
+      { label: 'Seasonal Lookbook', href: '/collections/festive' },
+      { label: 'Special Privileges', href: '/sale' },
+    ],
+    footerCareLinks: [
+      { label: `About ${displayName}`, href: '/about-us' },
+      { label: 'Shipping & Fitting Policy', href: '/shipping-policy' },
+      { label: 'Doorstep Exchanges', href: '/return-policy' },
+      { label: 'WhatsApp Concierge', href: '/contact' },
+      { label: 'Track Your Order', href: '/account' },
+    ],
+  };
+}
+
 // Mutable store in memory
 const dynamicTenantsMap = new Map<string, TenantBrandConfig>();
 
@@ -283,7 +347,7 @@ export function getTenantConfig(slug?: string): TenantBrandConfig {
     } catch {}
   }
 
-  const base = SEED_TENANTS[clean] || SEED_TENANTS.jqtrends;
+  const base = SEED_TENANTS[clean] || createDefaultTenantBrandConfig(clean);
   dynamicTenantsMap.set(clean, base);
   return base;
 }

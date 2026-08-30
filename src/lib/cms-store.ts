@@ -492,6 +492,118 @@ export const DEMO_SECTIONS: CmsHomepageSection[] = [
   },
 ];
 
+export function formatStoreDisplayName(slug: string): string {
+  return slug
+    .replace(/[-_]+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+export function createDefaultDemoSections(slug: string): CmsHomepageSection[] {
+  const storeName = formatStoreDisplayName(slug);
+
+  return [
+    {
+      id: `sec_hero_${slug}`,
+      type: 'hero',
+      title: `Crafted For Distinction`,
+      subtitle: `Welcome to ${storeName}. Discover artisanal bespoke tailoring, seasonal garments, and handcrafted elegance.`,
+      displayOrder: 1,
+      isVisible: true,
+      settings: {
+        tagline: 'New Season 2026 Atelier Collection',
+        primaryBtnText: 'Explore Catalog',
+        primaryBtnLink: '/women',
+        secondaryBtnText: 'Bespoke Consultation',
+        secondaryBtnLink: '/contact',
+        image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=1600&auto=format&fit=crop',
+        bannerImage: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=1600&auto=format&fit=crop',
+        overlayOpacity: 35,
+      },
+    },
+    {
+      id: `sec_categories_${slug}`,
+      type: 'categories',
+      title: 'Curated Departments',
+      subtitle: 'Explore our signature bespoke suits, artisanal shirts, festive kurtas, and handcrafted accessories.',
+      displayOrder: 2,
+      isVisible: true,
+      settings: {
+        categoryIds: ['cat_dresses_jq', 'cat_kurtis_jq', 'cat_coords_jq', 'cat_girls_jq'],
+      },
+    },
+    {
+      id: `sec_new_arrivals_${slug}`,
+      type: 'new_arrivals',
+      title: 'New Season Releases',
+      subtitle: 'Fresh cuts, breathable natural textiles, and hand-finished detailing.',
+      displayOrder: 3,
+      isVisible: true,
+      settings: {
+        limit: 4,
+      },
+    },
+    {
+      id: `sec_womens_editorial_${slug}`,
+      type: 'womens_editorial',
+      title: 'The Atelier Heritage',
+      subtitle: 'Every garment is meticulously cut, stitched, and styled to celebrate individuality and timeless elegance.',
+      displayOrder: 4,
+      isVisible: true,
+      settings: {
+        bannerImage: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1600&auto=format&fit=crop',
+        ctaText: 'Explore Collection',
+        ctaUrl: '/women',
+      },
+    },
+    {
+      id: `sec_promo_${slug}`,
+      type: 'promotional_banner',
+      title: 'Inaugural Season Privileges',
+      subtitle: 'Enjoy 15% off on all bespoke tailoring and ready-to-wear collections with code ATELIER15.',
+      displayOrder: 5,
+      isVisible: true,
+      settings: {
+        bannerImage: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?q=80&w=1600&auto=format&fit=crop',
+        couponCode: 'ATELIER15',
+        ctaText: 'Apply Code & Shop',
+        ctaUrl: '/sale',
+      },
+    },
+    {
+      id: `sec_trending_${slug}`,
+      type: 'trending',
+      title: 'Trending This Season',
+      subtitle: 'Our most requested silhouettes and masterfully crafted staples.',
+      displayOrder: 6,
+      isVisible: true,
+      settings: {
+        limit: 4,
+      },
+    },
+    {
+      id: `sec_testimonials_${slug}`,
+      type: 'testimonials',
+      title: 'Patron Experiences',
+      subtitle: 'Verified client impressions and bespoke reviews from our valued community.',
+      displayOrder: 7,
+      isVisible: true,
+      settings: {},
+    },
+    {
+      id: `sec_newsletter_${slug}`,
+      type: 'newsletter',
+      title: `Join The Private ${storeName} Circle`,
+      subtitle: 'Receive invitations to private lookbook launches, fabric previews, and seasonal concierge offers.',
+      displayOrder: 8,
+      isVisible: true,
+      settings: {},
+    },
+  ];
+}
+
 const TENANT_DEFAULT_MAP: Record<string, CmsHomepageSection[]> = {
   jqtrends: JQTRENDS_SECTIONS,
   auraliving: AURALIVING_SECTIONS,
@@ -539,7 +651,7 @@ export function getStoredHomepageSections(tenantSlug?: string): CmsHomepageSecti
     } catch {}
   }
 
-  const defaultForTenant = TENANT_DEFAULT_MAP[slug] || JQTRENDS_SECTIONS;
+  const defaultForTenant = TENANT_DEFAULT_MAP[slug] || createDefaultDemoSections(slug);
   memoryStoreByTenant.set(slug, defaultForTenant);
   return defaultForTenant;
 }
