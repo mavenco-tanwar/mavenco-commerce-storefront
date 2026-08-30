@@ -5,15 +5,14 @@ import Link from 'next/link';
 import {
   Sparkles,
   Store,
-  Shield,
   Layers,
-  Database,
-  Globe,
+  Palette,
   ExternalLink,
   ChevronDown,
   Menu,
   X,
   Zap,
+  Sliders,
 } from 'lucide-react';
 
 export function PlatformNavbar() {
@@ -25,32 +24,29 @@ export function PlatformNavbar() {
       slug: 'jqtrends',
       name: 'JQ Trends',
       industry: 'Luxury Women & Kids Fashion',
-      color: '#111111',
       badge: 'Haute Couture',
     },
     {
       slug: 'auraliving',
       name: 'Aura Living',
       industry: 'Nordic Minimalist Home Decor',
-      color: '#1B4332',
       badge: 'Home & Decor',
     },
     {
       slug: 'apexathletics',
       name: 'Apex Athletics',
       industry: 'High-Performance Activewear',
-      color: '#0A0A0A',
       badge: 'Activewear & Gear',
     },
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0A0C10]/90 backdrop-blur-md border-b border-slate-800 text-white select-none">
+    <header className="sticky top-0 z-50 bg-[#0A0C10]/95 backdrop-blur-md border-b border-slate-800 text-white select-none">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-rose-900/60 via-slate-900 to-emerald-950/60 border-b border-slate-800/80 px-4 py-1.5 text-center text-xs text-slate-300 flex items-center justify-center gap-2">
+      <div className="bg-gradient-to-r from-rose-950/80 via-slate-900 to-emerald-950/80 border-b border-slate-800/80 px-4 py-1.5 text-center text-xs text-slate-300 flex items-center justify-center gap-2">
         <Sparkles className="w-3.5 h-3.5 text-rose-400 shrink-0" />
         <span>
-          <strong>Mavenco Commerce SaaS Platform</strong> — Multi-Tenant Headless Architecture with Isolated MongoDB Databases
+          <strong>Mavenco Commerce Engine</strong> — Next-Generation Headless Visual CMS &amp; Multi-Tenant Platform
         </span>
       </div>
 
@@ -67,7 +63,7 @@ export function PlatformNavbar() {
                 COMMERCE
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 font-mono tracking-wide -mt-0.5">Multi-Tenant SaaS Engine</p>
+            <p className="text-[10px] text-slate-400 font-mono tracking-wide -mt-0.5">Headless SaaS Engine</p>
           </div>
         </Link>
 
@@ -80,7 +76,7 @@ export function PlatformNavbar() {
               className="flex items-center gap-1.5 py-2 px-3 rounded-lg hover:text-white hover:bg-slate-800/80 transition-colors"
             >
               <Store className="w-3.5 h-3.5 text-rose-400" />
-              <span>Explore Client Stores</span>
+              <span>Live Demo Stores</span>
               <ChevronDown className="w-3 h-3 text-slate-400" />
             </button>
 
@@ -90,14 +86,14 @@ export function PlatformNavbar() {
                 onMouseLeave={() => setIsStoreMenuOpen(false)}
               >
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Provisioned Demo Tenants
+                  Provisioned Demo Storefronts
                 </div>
                 {demoStores.map((store) => (
                   <Link
                     key={store.slug}
                     href={`/stores/${store.slug}`}
                     onClick={() => setIsStoreMenuOpen(false)}
-                    className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/80 transition-colors group"
+                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-800/80 transition-colors group"
                   >
                     <div>
                       <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors">
@@ -105,8 +101,8 @@ export function PlatformNavbar() {
                       </div>
                       <div className="text-[11px] text-slate-400">{store.industry}</div>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
-                      /stores/{store.slug}
+                    <span className="text-[10px] font-bold text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                      Explore
                     </span>
                   </Link>
                 ))}
@@ -114,50 +110,33 @@ export function PlatformNavbar() {
             )}
           </div>
 
-          <a href="#demo-stores" className="hover:text-white transition-colors">
-            Architecture
+          <Link href="/cms" className="hover:text-white transition-colors flex items-center gap-1.5">
+            <Layers className="w-3.5 h-3.5 text-amber-400" />
+            <span>Visual CMS Overview</span>
+          </Link>
+
+          <a href="/#theme-studio" className="hover:text-white transition-colors flex items-center gap-1.5">
+            <Palette className="w-3.5 h-3.5 text-rose-400" />
+            <span>Theme Tokens</span>
           </a>
 
-          <a
-            href="https://github.com/mavenco-tanwar/mavenco-commerce-storefront"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-white transition-colors flex items-center gap-1"
-          >
-            <span>Storefront Repo</span>
-            <ExternalLink className="w-3 h-3 text-slate-500" />
-          </a>
-
-          <a
-            href="https://github.com/mavenco-tanwar/mavenco-commerce-admin"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-white transition-colors flex items-center gap-1"
-          >
-            <span>Admin Repo</span>
-            <ExternalLink className="w-3 h-3 text-slate-500" />
+          <a href="/#architecture" className="hover:text-white transition-colors flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Architecture</span>
           </a>
         </nav>
 
         {/* Action CTAs */}
         <div className="hidden md:flex items-center gap-3">
           <a
-            href="https://mavenco-admin.vercel.app"
+            href="https://mavenco-admin.vercel.app/login"
             target="_blank"
             rel="noreferrer"
-            className="px-3.5 py-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition-all flex items-center gap-1.5"
+            className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg shadow-rose-950/40 transition-all flex items-center gap-1.5 hover:scale-105"
           >
-            <span>Merchant Admin</span>
-          </a>
-
-          <a
-            href="https://mavenco-admin.vercel.app/platform"
-            target="_blank"
-            rel="noreferrer"
-            className="px-4 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-lg shadow-md shadow-rose-950/40 transition-all flex items-center gap-1.5"
-          >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Superadmin</span>
+            <Sliders className="w-3.5 h-3.5" />
+            <span>Merchant Admin Demo</span>
+            <ExternalLink className="w-3 h-3 text-rose-200" />
           </a>
         </div>
 
@@ -180,7 +159,7 @@ export function PlatformNavbar() {
                 key={store.slug}
                 href={`/stores/${store.slug}`}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block p-2 rounded-lg bg-slate-900/60 border border-slate-800 text-xs text-white"
+                className="block p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-xs text-white"
               >
                 <div className="font-bold">{store.name}</div>
                 <div className="text-[11px] text-slate-400">{store.industry}</div>
@@ -189,13 +168,21 @@ export function PlatformNavbar() {
           </div>
 
           <div className="pt-2 border-t border-slate-800 flex flex-col gap-2">
+            <Link
+              href="/cms"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg"
+            >
+              Visual CMS Overview
+            </Link>
             <a
-              href="https://mavenco-admin.vercel.app/platform"
+              href="https://mavenco-admin.vercel.app/login"
               target="_blank"
               rel="noreferrer"
-              className="w-full py-2 bg-rose-600 text-center font-bold text-xs text-white rounded-lg"
+              className="w-full py-2.5 bg-rose-600 text-center font-bold text-xs text-white rounded-lg flex items-center justify-center gap-1.5"
             >
-              Open Superadmin Console
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Launch Merchant Admin Demo</span>
             </a>
           </div>
         </div>
