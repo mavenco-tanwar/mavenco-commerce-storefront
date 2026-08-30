@@ -24,25 +24,21 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'JQ TRENDS | Style That Speaks You | Women & Kids Fashion',
+  title: 'Mavenco Commerce — Multi-Tenant Ecommerce SaaS Platform',
   description:
-    'Discover effortlessly stylish, premium affordable luxury fashion for women and kids at JQ Trends. Explore floral dresses, chanderi kurti sets, linen co-ords, and kids party wear.',
+    'Enterprise-grade multi-tenant headless ecommerce SaaS platform. Provision isolated stores, custom databases, dynamic branding, and drag-and-drop visual CMS on the fly.',
   keywords: [
-    'JQ Trends',
-    'Women fashion',
-    'Kids clothing',
-    'Indian boutique',
-    'Chanderi kurtis',
-    'Linen co-ords',
-    'Floral dresses',
-    'Kids ethnic wear',
+    'Mavenco Commerce',
+    'Multi-Tenant Ecommerce',
+    'Headless SaaS Platform',
+    'Ecommerce CMS',
+    'Storefront Engine',
+    'Custom Store Provisioning',
   ],
   openGraph: {
-    title: 'JQ TRENDS | Style That Speaks You',
-    description: 'Affordable luxury fashion for modern women and adorable kids.',
-    url: 'https://jqtrends.com',
-    siteName: 'JQ Trends',
-    locale: 'en_IN',
+    title: 'Mavenco Commerce — Multi-Tenant Ecommerce SaaS Platform',
+    description: 'Launch, customize, and scale isolated ecommerce stores on the fly.',
+    siteName: 'Mavenco Commerce',
     type: 'website',
   },
 };
