@@ -80,8 +80,16 @@ export class CmsApiService {
         return res.data.sections;
       }
     } catch (err) {
-      console.warn('[CmsApiService] Failed to load homepage sections from CMS, using default layout:', err);
+      // Fallback
     }
+
+    try {
+      const { getStoredHomepageSections } = require('@/lib/cms-store');
+      const stored = getStoredHomepageSections();
+      if (stored && stored.length > 0) {
+        return stored;
+      }
+    } catch {}
 
     // Default fallback sections
     return [
