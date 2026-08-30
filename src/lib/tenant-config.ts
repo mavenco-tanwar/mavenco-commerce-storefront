@@ -308,12 +308,28 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
   };
 }
 
-const archivedTenantsSet = new Set<string>(['tanwar-tailor']);
+const archivedTenantsSet = new Set<string>(['tanwar-tailor', 'muskan-bhati']);
 const suspendedTenantsSet = new Set<string>();
 
 export function archiveTenantSlug(slug: string) {
   const clean = slug.toLowerCase().trim();
   archivedTenantsSet.add(clean);
+
+  if (typeof window === 'undefined') {
+    try {
+      const fs = eval('require')('fs');
+      const tmpPath = '/tmp/archived_tenants.json';
+      let existing: string[] = ['tanwar-tailor', 'muskan-bhati'];
+      if (fs.existsSync(tmpPath)) {
+        existing = JSON.parse(fs.readFileSync(tmpPath, 'utf-8'));
+      }
+      if (!existing.includes(clean)) {
+        existing.push(clean);
+        fs.writeFileSync(tmpPath, JSON.stringify(existing), 'utf-8');
+      }
+    } catch {}
+  }
+
   if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem('jq_archived_tenants') || '[]';
@@ -343,9 +359,23 @@ export function checkTenantValidity(slug?: string): {
   if (!slug) return { isValid: false, isSuspended: false, config: null };
   const clean = slug.toLowerCase().trim();
 
-  // Explicitly archived or deleted stores
+  // Explicitly archived or deleted stores in memory
   if (archivedTenantsSet.has(clean)) {
     return { isValid: false, isSuspended: false, config: null };
+  }
+
+  // Server disk check for archived list
+  if (typeof window === 'undefined') {
+    try {
+      const fs = eval('require')('fs');
+      const tmpPath = '/tmp/archived_tenants.json';
+      if (fs.existsSync(tmpPath)) {
+        const arr = JSON.parse(fs.readFileSync(tmpPath, 'utf-8'));
+        if (Array.isArray(arr) && arr.includes(clean)) {
+          return { isValid: false, isSuspended: false, config: null };
+        }
+      }
+    } catch {}
   }
 
   if (typeof window !== 'undefined') {
