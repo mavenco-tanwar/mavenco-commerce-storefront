@@ -940,7 +940,7 @@ export function PlatformShowcaseLanding() {
 
                 <div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl sm:text-4xl font-black text-white">₹19,999</span>
+                    <span className="text-3xl sm:text-4xl font-black text-white">₹24,999</span>
                     <span className="text-xs text-rose-400 font-bold uppercase tracking-wider">/ one-time</span>
                   </div>
                   <p className="text-xs text-slate-400 mt-1">
@@ -960,7 +960,7 @@ export function PlatformShowcaseLanding() {
                   <div className="text-[10.5px] text-slate-300 space-y-1 leading-relaxed">
                     <div className="flex items-start gap-1.5">
                       <span className="text-emerald-400 font-bold">✓</span>
-                      <span><strong>100% Credited:</strong> If you love it, the ₹2,000 deposit is fully deducted from your ₹19,999 license.</span>
+                      <span><strong>100% Credited:</strong> If you love it, the ₹2,000 deposit is fully deducted from your ₹24,999 license.</span>
                     </div>
                     <div className="flex items-start gap-1.5">
                       <span className="text-amber-400 font-bold">✓</span>
