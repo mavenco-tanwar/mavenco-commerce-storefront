@@ -26,6 +26,23 @@ import {
 export function PlatformShowcaseLanding() {
   const tenants = [
     {
+      id: 'store_demo',
+      slug: 'demo',
+      name: 'Demo Store (Generic)',
+      tagline: 'Curated Modern Lifestyle & Design Capsule',
+      industry: 'Modern Lifestyle & Pret (Generic)',
+      currency: 'USD ($)',
+      themeColors: {
+        primary: '#0F172A',
+        secondary: '#F8FAFC',
+        accent: '#6366F1',
+      },
+      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1000&auto=format&fit=crop&q=80',
+      description: 'A generic, brand-agnostic demonstration showcasing visual drag-and-drop CMS blocks, lookbook storytelling, and responsive commerce.',
+      badgeText: 'Featured Client Demo',
+      catalogSize: '36+ Modern SKUs',
+    },
+    {
       id: 'store_jq_trends',
       slug: 'jqtrends',
       name: 'JQ Trends',

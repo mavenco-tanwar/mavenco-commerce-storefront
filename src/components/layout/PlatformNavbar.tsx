@@ -21,6 +21,12 @@ export function PlatformNavbar() {
 
   const demoStores = [
     {
+      slug: 'demo',
+      name: 'Demo Store',
+      industry: 'Modern Lifestyle & Pret (Generic)',
+      badge: 'Interactive Demo',
+    },
+    {
       slug: 'jqtrends',
       name: 'JQ Trends',
       industry: 'Luxury Women & Kids Fashion',

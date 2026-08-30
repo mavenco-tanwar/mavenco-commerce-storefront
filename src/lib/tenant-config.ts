@@ -192,6 +192,56 @@ export const SEED_TENANTS: Record<string, TenantBrandConfig> = {
       { label: 'Track Shipment', href: '/account' },
     ],
   },
+  demo: {
+    id: 'store_demo',
+    name: 'Demo Store',
+    slug: 'demo',
+    tagline: 'Curated Modern Lifestyle & Apparel',
+    description:
+      'A generic demonstration storefront showcasing the power of the Mavenco Commerce SaaS Engine with real-time visual CMS, dynamic theme tokens, and edge rendering.',
+    currency: 'USD',
+    currencySymbol: '$',
+    theme: {
+      primaryColor: '#0F172A',
+      secondaryColor: '#F8FAFC',
+      accentColor: '#6366F1',
+      headingFont: 'Playfair Display, serif',
+      bodyFont: 'Plus Jakarta Sans, sans-serif',
+    },
+    contact: {
+      phone: '+1 (800) 555-DEMO',
+      email: 'demo@mavenco.com',
+      whatsapp: '18005553366',
+      address: 'Mavenco Global Commerce Lab, CA, USA',
+    },
+    announcements: {
+      leftCallout: 'Live Interactive Demo Store',
+      mainText: 'Experience Real-Time Headless Commerce •',
+      highlightText: 'EXPLORE DEMO',
+      link: '/sale',
+    },
+    navLinks: [
+      { label: 'NEW ARRIVALS', href: '/new-arrivals', badge: 'Fresh' },
+      { label: 'APPAREL', href: '/women' },
+      { label: 'LIFESTYLE', href: '/kids' },
+      { label: 'COLLECTIONS', href: '/collections/festive' },
+      { label: 'SALE', href: '/sale' },
+    ],
+    footerShopLinks: [
+      { label: 'Curated Apparel', href: '/women' },
+      { label: 'Design Objects & Living', href: '/kids' },
+      { label: 'New Season Lookbook', href: '/new-arrivals' },
+      { label: 'Limited Capsule', href: '/collections/festive' },
+      { label: 'Special Offers', href: '/sale' },
+    ],
+    footerCareLinks: [
+      { label: 'About This Demo Store', href: '/about-us' },
+      { label: 'Global Shipping Simulation', href: '/shipping-policy' },
+      { label: 'Returns & Exchanges', href: '/return-policy' },
+      { label: 'Client Support Concierge', href: '/contact' },
+      { label: 'Order Tracking', href: '/account' },
+    ],
+  },
 };
 
 // Mutable store in memory

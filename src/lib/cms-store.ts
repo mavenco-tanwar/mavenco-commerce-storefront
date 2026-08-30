@@ -393,10 +393,110 @@ export const APEXATHLETICS_SECTIONS: CmsHomepageSection[] = [
   },
 ];
 
+export const DEMO_SECTIONS: CmsHomepageSection[] = [
+  {
+    id: 'sec_hero_demo',
+    type: 'hero',
+    title: 'Curated Modern Design',
+    subtitle: 'High-precision craftsmanship, sustainable materials, and timeless aesthetic silhouettes for the discerning individual.',
+    displayOrder: 1,
+    isVisible: true,
+    settings: {
+      headline: 'Next-Gen Commerce Experience',
+      subheadline: 'Explore our curated collection of artisanal apparel, architectural living objects, and performance gear.',
+      ctaPrimaryText: 'Explore New In',
+      ctaPrimaryUrl: '/new-arrivals',
+      ctaSecondaryText: 'View Collections',
+      ctaSecondaryUrl: '/collections/festive',
+      badgeText: 'Live Demo Store • Season 2026',
+      mediaUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&auto=format&fit=crop&q=80',
+    },
+  },
+  {
+    id: 'sec_categories_demo',
+    type: 'categories',
+    title: 'Shop By Department',
+    subtitle: 'Explore our meticulously curated departments tailored for everyday luxury.',
+    displayOrder: 2,
+    isVisible: true,
+    settings: {
+      limit: 6,
+    },
+  },
+  {
+    id: 'sec_editorial_demo',
+    type: 'curated_collection',
+    title: 'The Modern Capsule Lookbook',
+    subtitle: 'A photographic journey into minimalist tailoring, organic textures, and intentional living.',
+    displayOrder: 3,
+    isVisible: true,
+    settings: {
+      bannerImage: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1600&auto=format&fit=crop',
+      ctaText: 'Discover Lookbook',
+      ctaUrl: '/new-arrivals',
+    },
+  },
+  {
+    id: 'sec_new_arrivals_demo',
+    type: 'new_arrivals',
+    title: 'Fresh Arrivals & Studio Drops',
+    subtitle: 'Explore our latest arrivals crafted in limited quantities with zero compromises.',
+    displayOrder: 4,
+    isVisible: true,
+    settings: {
+      limit: 4,
+    },
+  },
+  {
+    id: 'sec_promo_demo',
+    type: 'promotional_banner',
+    title: 'Limited Seasonal Celebration',
+    subtitle: 'Enjoy 20% off across the complete demo catalog with code DEMO20 at checkout.',
+    displayOrder: 5,
+    isVisible: true,
+    settings: {
+      bannerImage: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?q=80&w=1600&auto=format&fit=crop',
+      couponCode: 'DEMO20',
+      ctaText: 'Apply Discount & Shop',
+      ctaUrl: '/sale',
+    },
+  },
+  {
+    id: 'sec_trending_demo',
+    type: 'trending',
+    title: 'Trending Essentials',
+    subtitle: 'The season’s most celebrated pieces, curated and loved worldwide.',
+    displayOrder: 6,
+    isVisible: true,
+    settings: {
+      limit: 4,
+    },
+  },
+  {
+    id: 'sec_testimonials_demo',
+    type: 'testimonials',
+    title: 'Client Experiences',
+    subtitle: 'See what design critics, tastemakers, and happy clients say about our collection.',
+    displayOrder: 7,
+    isVisible: true,
+    settings: {},
+  },
+  {
+    id: 'sec_newsletter_demo',
+    type: 'newsletter',
+    title: 'Join The Private Circle',
+    subtitle: 'Subscribe for private preview invitations, lookbook drops, and complimentary shipping privileges.',
+    displayOrder: 8,
+    isVisible: true,
+    settings: {},
+  },
+];
+
 const TENANT_DEFAULT_MAP: Record<string, CmsHomepageSection[]> = {
   jqtrends: JQTRENDS_SECTIONS,
   auraliving: AURALIVING_SECTIONS,
   apexathletics: APEXATHLETICS_SECTIONS,
+  demo: DEMO_SECTIONS,
 };
 
 // Global in-memory cache map keyed by tenant
