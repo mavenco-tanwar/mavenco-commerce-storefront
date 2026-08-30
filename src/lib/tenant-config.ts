@@ -330,9 +330,14 @@ export function getTenantConfig(slug?: string): TenantBrandConfig {
   return base;
 }
 
-export function updateTenantConfig(slug: string, updates: Partial<TenantBrandConfig>): TenantBrandConfig {
+export function updateTenantConfig(slug: string, updates: Partial<TenantBrandConfig> & { status?: string }): TenantBrandConfig {
   const clean = slug.toLowerCase().trim();
   unarchiveTenantSlug(clean);
+  if (updates.status === 'suspended') {
+    suspendTenantSlug(clean, true);
+  } else if (updates.status === 'active') {
+    suspendTenantSlug(clean, false);
+  }
   const current = getTenantConfig(clean);
   const merged: TenantBrandConfig = {
     ...current,
