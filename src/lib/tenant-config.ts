@@ -308,7 +308,7 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
   };
 }
 
-const archivedTenantsSet = new Set<string>(['tanwar-tailor', 'muskan-bhati']);
+const archivedTenantsSet = new Set<string>(['tanwar-tailor', 'muskan-bhati', 'jqtrends']);
 const suspendedTenantsSet = new Set<string>();
 
 export function archiveTenantSlug(slug: string) {
@@ -319,7 +319,7 @@ export function archiveTenantSlug(slug: string) {
     try {
       const fs = eval('require')('fs');
       const tmpPath = '/tmp/archived_tenants.json';
-      let existing: string[] = ['tanwar-tailor', 'muskan-bhati'];
+      let existing: string[] = ['tanwar-tailor', 'muskan-bhati', 'jqtrends'];
       if (fs.existsSync(tmpPath)) {
         existing = JSON.parse(fs.readFileSync(tmpPath, 'utf-8'));
       }

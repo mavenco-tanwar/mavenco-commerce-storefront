@@ -44,7 +44,7 @@ export function StoreUnavailableView({ tenantSlug, isSuspended = false }: StoreU
             <span className="text-[10px] text-emerald-400 font-mono">Live &amp; Verified</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Link
               href="/stores/demo"
               className="p-3.5 rounded-xl bg-[#181B26] hover:bg-slate-800 border border-slate-700/80 transition-all flex items-center justify-between group"
@@ -58,24 +58,6 @@ export function StoreUnavailableView({ tenantSlug, isSuspended = false }: StoreU
                     Demo Store
                   </div>
                   <div className="text-[10px] text-slate-400">Curated Modern Lifestyle</div>
-                </div>
-              </div>
-              <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all" />
-            </Link>
-
-            <Link
-              href="/stores/jqtrends"
-              className="p-3.5 rounded-xl bg-[#181B26] hover:bg-slate-800 border border-slate-700/80 transition-all flex items-center justify-between group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-rose-600/30 text-rose-300 font-bold flex items-center justify-center text-xs">
-                  JQT
-                </div>
-                <div>
-                  <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors">
-                    JQ Trends
-                  </div>
-                  <div className="text-[10px] text-slate-400">Luxury Women &amp; Kids Festive</div>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all" />
