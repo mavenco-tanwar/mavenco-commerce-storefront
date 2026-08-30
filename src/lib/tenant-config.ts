@@ -242,6 +242,56 @@ export const SEED_TENANTS: Record<string, TenantBrandConfig> = {
       { label: 'Order Tracking', href: '/account' },
     ],
   },
+  'tanwar-tailor': {
+    id: 'store_tanwar_tailor',
+    name: 'Tanwar Tailor',
+    slug: 'tanwar-tailor',
+    tagline: 'Bespoken',
+    description:
+      'Welcome to Tanwar Tailor. A curated modern storefront showcasing seasonal apparel, lifestyle essentials, and contemporary designs.',
+    currency: 'INR',
+    currencySymbol: '₹',
+    theme: {
+      primaryColor: '#00FF48',
+      secondaryColor: '#F8FAFC',
+      accentColor: '#CC5500',
+      headingFont: 'Playfair Display, serif',
+      bodyFont: 'Plus Jakarta Sans, sans-serif',
+    },
+    contact: {
+      phone: '+91 98765 43210',
+      email: 'ammar.tanwar.dev@gmail.com',
+      whatsapp: '919876543210',
+      address: 'Tanwar Tailor Atelier, CA / Delhi',
+    },
+    announcements: {
+      leftCallout: 'Welcome to Tanwar Tailor',
+      mainText: 'New Season Atelier Drops Live Now • Complimentary Doorstep Delivery •',
+      highlightText: 'EXPLORE NEW IN',
+      link: '/new-arrivals',
+    },
+    navLinks: [
+      { label: 'NEW ARRIVALS', href: '/new-arrivals', badge: 'Fresh' },
+      { label: 'APPAREL', href: '/women' },
+      { label: 'LIFESTYLE', href: '/kids' },
+      { label: 'COLLECTIONS', href: '/collections/festive' },
+      { label: 'SALE', href: '/sale' },
+    ],
+    footerShopLinks: [
+      { label: 'Curated Apparel', href: '/women' },
+      { label: 'Design Objects & Living', href: '/kids' },
+      { label: 'New Season Lookbook', href: '/new-arrivals' },
+      { label: 'Limited Capsule', href: '/collections/festive' },
+      { label: 'Special Offers', href: '/sale' },
+    ],
+    footerCareLinks: [
+      { label: 'About Tanwar Tailor', href: '/about-us' },
+      { label: 'Shipping & Delivery Policy', href: '/shipping-policy' },
+      { label: 'Returns & Exchanges', href: '/return-policy' },
+      { label: 'Client Support Concierge', href: '/contact' },
+      { label: 'Track Your Order', href: '/account' },
+    ],
+  },
 };
 
 export function formatStoreName(slug: string): string {

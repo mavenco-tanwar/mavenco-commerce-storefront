@@ -26,6 +26,14 @@ export function BrandLogo({
   const isLight = variant === 'light';
   const textColor = isLight ? '#FFFFFF' : '#111111';
 
+  const isBrightBg =
+    tenant.theme.primaryColor.startsWith('#00FF') ||
+    tenant.theme.primaryColor.startsWith('#39FF') ||
+    tenant.theme.primaryColor.startsWith('#00F5') ||
+    tenant.theme.primaryColor.toLowerCase() === '#ffffff' ||
+    tenant.theme.primaryColor.toLowerCase() === '#ffff00';
+  const monogramTextColor = isBrightBg ? '#111827' : '#FFFFFF';
+
   const monogram = tenant.name
     .split(/[\s-_]+/)
     .filter(Boolean)
@@ -41,8 +49,11 @@ export function BrandLogo({
       aria-label={`${tenant.name} - Home`}
     >
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center font-serif font-black text-white text-lg shadow-sm shrink-0 transition-transform group-hover:scale-105"
-        style={{ backgroundColor: tenant.theme.primaryColor }}
+        className="w-10 h-10 rounded-xl flex items-center justify-center font-serif font-black text-lg shadow-sm shrink-0 transition-transform group-hover:scale-105"
+        style={{
+          backgroundColor: tenant.theme.primaryColor,
+          color: monogramTextColor,
+        }}
       >
         {monogram}
       </div>
