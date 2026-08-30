@@ -903,7 +903,7 @@ export function PlatformShowcaseLanding() {
       </section>
 
       {/* ========================================================================= */}
-      {/* SECTION 4: TRANSPARENT PRICING & CLOUD INFRASTRUCTURE (ONE-TIME + AMC) */}
+      {/* SECTION 4: TRANSPARENT PRICING & CLOUD INFRASTRUCTURE (ONE-TIME + FLEXIBLE SERVER) */}
       {/* ========================================================================= */}
       <section id="pricing" className="py-24 bg-[#0A0C10] border-t border-slate-800 relative overflow-hidden">
         <div className="absolute top-0 right-1/3 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -917,10 +917,10 @@ export function PlatformShowcaseLanding() {
               <span>Predictable Cloud Economics</span>
             </div>
             <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-              One-Time Platform License + Annual Maintenance
+              One-Time Platform License • Flexible Cloud Infrastructure
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              We deploy your fully custom Headless Storefront and Merchant Admin Panel with an isolated MongoDB database partition. Ongoing cloud computing, database backups, media CDN, and transaction mail are covered under predictable Annual Maintenance (AMC). Custom domain renewal excluded and billed separately.
+              We deploy your custom Headless Storefront and Merchant Admin Panel with an isolated MongoDB database partition. Server computing, database backups, media CDN, and transaction mail run on flexible, pay-as-you-go server maintenance without locked annual contracts. Custom domain renewal excluded and billed separately.
             </p>
           </div>
 
@@ -945,18 +945,14 @@ export function PlatformShowcaseLanding() {
                   </p>
                 </div>
 
-                {/* AMC Card */}
+                {/* Cloud & Server Card */}
                 <div className="p-3.5 bg-[#0A0C10] rounded-2xl border border-slate-800 space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between font-bold text-amber-400">
-                    <span>Annual Maintenance (AMC):</span>
-                    <span>₹24,000 / yr</span>
+                  <div className="flex items-center justify-between font-bold text-emerald-400">
+                    <span>Cloud Server &amp; Database:</span>
+                    <span>₹2,000 / mo</span>
                   </div>
-                  <div className="text-[11px] text-slate-400 flex justify-between">
-                    <span>Monthly Equivalent:</span>
-                    <span className="text-slate-300 font-mono">₹2,000 / mo</span>
-                  </div>
-                  <div className="text-[10px] text-slate-500 pt-0.5">
-                    Covers MongoDB cluster, Next.js Edge hosting &amp; email delivery.
+                  <div className="text-[10px] text-slate-400 leading-normal">
+                    Flexible recharge (pay monthly or 2-month blocks). Covers MongoDB cluster, Next.js Edge compute &amp; email delivery.
                   </div>
                 </div>
 
@@ -1018,18 +1014,14 @@ export function PlatformShowcaseLanding() {
                   </p>
                 </div>
 
-                {/* AMC Card */}
+                {/* Cloud & Server Card */}
                 <div className="p-3.5 bg-[#0A0C10] rounded-2xl border border-rose-500/30 space-y-1.5 text-xs">
                   <div className="flex items-center justify-between font-bold text-amber-400">
-                    <span>Annual Maintenance (AMC):</span>
-                    <span>₹48,000 / yr</span>
+                    <span>Cloud Server &amp; Database:</span>
+                    <span>₹4,000 / mo</span>
                   </div>
-                  <div className="text-[11px] text-slate-400 flex justify-between">
-                    <span>Monthly Equivalent:</span>
-                    <span className="text-slate-200 font-mono">₹4,000 / mo</span>
-                  </div>
-                  <div className="text-[10px] text-slate-500 pt-0.5">
-                    Covers dedicated DB indexing, Serverless Next.js Edge, CDN, &amp; transactional mail.
+                  <div className="text-[10px] text-slate-400 leading-normal">
+                    Flexible recharge (pay monthly or multi-month). Covers dedicated DB indexing, Serverless Next.js Edge, CDN, &amp; transactional mail.
                   </div>
                 </div>
 
@@ -1095,18 +1087,14 @@ export function PlatformShowcaseLanding() {
                   </p>
                 </div>
 
-                {/* AMC Card */}
+                {/* Cloud & Server Card */}
                 <div className="p-3.5 bg-[#0A0C10] rounded-2xl border border-slate-800 space-y-1.5 text-xs">
                   <div className="flex items-center justify-between font-bold text-amber-400">
-                    <span>Annual Maintenance (AMC):</span>
-                    <span>₹96,000 / yr</span>
+                    <span>Dedicated Cloud Cluster:</span>
+                    <span>₹8,000 / mo</span>
                   </div>
-                  <div className="text-[11px] text-slate-400 flex justify-between">
-                    <span>Monthly Equivalent:</span>
-                    <span className="text-slate-300 font-mono">₹8,000 / mo</span>
-                  </div>
-                  <div className="text-[10px] text-slate-500 pt-0.5">
-                    Covers dedicated multi-region cluster, 24/7 VIP SLA &amp; custom DevOps.
+                  <div className="text-[10px] text-slate-400 leading-normal">
+                    Dedicated multi-region database cluster, 24/7 VIP SLA &amp; custom DevOps support.
                   </div>
                 </div>
 
@@ -1171,7 +1159,7 @@ export function PlatformShowcaseLanding() {
               <div className="p-4 bg-[#0A0C10] rounded-2xl border border-emerald-500/20 space-y-2">
                 <div className="font-bold text-emerald-400 uppercase text-[11px] tracking-wider flex items-center gap-1.5">
                   <Check className="w-4 h-4" />
-                  <span>Included In Annual Maintenance (AMC)</span>
+                  <span>Included In Cloud Infrastructure &amp; Maintenance</span>
                 </div>
                 <ul className="space-y-1.5 text-slate-300 leading-relaxed">
                   <li>• <strong>MongoDB Atlas Cluster:</strong> Continuous database replication, high availability, daily snapshots.</li>
