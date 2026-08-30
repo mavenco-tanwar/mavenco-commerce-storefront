@@ -1,6 +1,6 @@
 {
-  "name": "jq-trends",
-  "version": "0.1.0",
+  "name": "mavenco-commerce-storefront",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
