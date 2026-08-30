@@ -3,6 +3,9 @@ import { CmsApiService } from '@/services/api/cms';
 import { DynamicSectionRenderer } from '@/components/home/DynamicSectionRenderer';
 import { ValueProps } from '@/components/home/ValueProps';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface HomePageProps {
   searchParams?: Promise<{ preview?: string }>;
 }
