@@ -40,7 +40,7 @@ export default function CheckoutPage() {
   });
 
   // Address State
-  const defaultAddr = user?.savedAddresses?.find((a) => a.isDefault) || user?.savedAddresses?.[0];
+  const defaultAddr = user?.savedAddresses?.find((a: any) => a.isDefault) || user?.savedAddresses?.[0];
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     fullName: defaultAddr?.fullName || user?.name || 'Aanya Kapoor',
     email: contactData.email,

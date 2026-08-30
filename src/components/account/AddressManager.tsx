@@ -85,7 +85,7 @@ export function AddressManager() {
 
       {/* Address Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {savedAddresses.map((addr) => (
+        {savedAddresses.map((addr: any) => (
           <div
             key={addr.id}
             className={`p-6 bg-[#FFFDFC] border transition-all relative ${

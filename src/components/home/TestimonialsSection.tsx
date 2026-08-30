@@ -2,21 +2,41 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Quote, CheckCircle2 } from 'lucide-react';
+import { Quote, CheckCircle2 } from 'lucide-react';
 import { customerReviewsData } from '@/data/reviews';
 import { RatingStars } from '@/components/ui/RatingStars';
 
-export function TestimonialsSection() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const reviews = customerReviewsData;
+interface TestimonialItem {
+  id?: string | number;
+  authorName: string;
+  rating: number;
+  title: string;
+  comment: string;
+  avatar?: string;
+  colorPurchased?: string;
+  sizePurchased?: string;
+}
 
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
-  };
+interface TestimonialsSectionProps {
+  customTitle?: string;
+  customSubtitle?: string;
+  customBadge?: string;
+  customReviews?: TestimonialItem[];
+}
 
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % reviews.length);
-  };
+export function TestimonialsSection({
+  customTitle,
+  customSubtitle,
+  customBadge,
+  customReviews,
+}: TestimonialsSectionProps = {}) {
+  const title = customTitle || 'Loved By You';
+  const subtitle =
+    customSubtitle ||
+    'Hear from thousands of delighted women and families who cherish JQ Trends.';
+  const badge = customBadge || 'Real Customer Stories';
+  const reviews =
+    customReviews && customReviews.length > 0 ? customReviews : customerReviewsData;
 
   return (
     <section className="py-16 md:py-24 bg-[#FFFDFC] select-none">
@@ -24,31 +44,31 @@ export function TestimonialsSection() {
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
-            Real Customer Stories
+            {badge}
           </span>
           <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1 mb-3">
-            Loved By You
+            {title}
           </h2>
           <div className="w-12 h-0.5 bg-[#B77A68] mx-auto mb-3" />
           <p className="text-xs sm:text-sm text-[#777777] font-sans">
-            Hear from thousands of delighted women and families who cherish JQ Trends.
+            {subtitle}
           </p>
         </div>
 
-        {/* Desktop 3-Card Grid & Mobile Carousel */}
+        {/* 3-Card Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {reviews.slice(0, 3).map((review) => (
+          {reviews.slice(0, 3).map((review, idx) => (
             <div
-              key={review.id}
+              key={review.id || idx}
               className="flex flex-col justify-between p-6 sm:p-8 bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow relative"
             >
               <Quote className="w-8 h-8 text-[#B77A68]/30 absolute top-6 right-6 pointer-events-none" />
 
               <div>
-                <RatingStars rating={review.rating} size="sm" />
+                <RatingStars rating={review.rating || 5} size="sm" />
 
                 <h4 className="text-sm sm:text-base font-serif font-bold text-[#111111] mt-4 mb-2">
-                  &ldquo;{review.title}&rdquo;
+                  &ldquo;{review.title || 'Exceptional Quality'}&rdquo;
                 </h4>
 
                 <p className="text-xs text-[#777777] leading-relaxed font-sans font-normal">
@@ -75,7 +95,7 @@ export function TestimonialsSection() {
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#B77A68]" />
                   </div>
                   <p className="text-[11px] text-[#777777]">
-                    Verified Buyer • {review.colorPurchased} ({review.sizePurchased})
+                    Verified Buyer {review.colorPurchased ? `• ${review.colorPurchased}` : ''} {review.sizePurchased ? `(${review.sizePurchased})` : ''}
                   </p>
                 </div>
               </div>

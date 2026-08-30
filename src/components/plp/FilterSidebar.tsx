@@ -39,7 +39,7 @@ export function FilterSidebar({
   const toggleCategory = (catSlug: string) => {
     const exists = filters.categories.includes(catSlug);
     const updated = exists
-      ? filters.categories.filter((c) => c !== catSlug)
+      ? filters.categories.filter((c: string) => c !== catSlug)
       : [...filters.categories, catSlug];
     onFilterChange({ ...filters, categories: updated });
   };
@@ -47,7 +47,7 @@ export function FilterSidebar({
   const toggleSize = (size: string) => {
     const exists = filters.sizes.includes(size);
     const updated = exists
-      ? filters.sizes.filter((s) => s !== size)
+      ? filters.sizes.filter((s: string) => s !== size)
       : [...filters.sizes, size];
     onFilterChange({ ...filters, sizes: updated });
   };
@@ -55,7 +55,7 @@ export function FilterSidebar({
   const toggleColor = (colorName: string) => {
     const exists = filters.colors.includes(colorName);
     const updated = exists
-      ? filters.colors.filter((c) => c !== colorName)
+      ? filters.colors.filter((c: string) => c !== colorName)
       : [...filters.colors, colorName];
     onFilterChange({ ...filters, colors: updated });
   };

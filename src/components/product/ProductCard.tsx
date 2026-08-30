@@ -61,7 +61,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
     >
       {/* Top Media Container */}
       <div className="relative w-full aspect-3/4 overflow-hidden bg-[#FAF6F2]">
-        <Link href={`/products/${product.slug}`} className="block w-full h-full">
+        <Link href={`/products/${product.slug}`} className="relative block w-full h-full">
           <Image
             src={isHovered ? secondaryImage : primaryImage}
             alt={product.name}
@@ -78,7 +78,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
               {product.badge}
             </Badge>
           )}
-          {product.discountPercent > 0 && !product.badge && (
+          {Boolean(product.discountPercent && product.discountPercent > 0) && !product.badge && (
             <Badge variant="sale" size="sm">
               {product.discountPercent}% OFF
             </Badge>

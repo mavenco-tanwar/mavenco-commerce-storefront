@@ -34,7 +34,7 @@ function AccountDashboardContent() {
   useEffect(() => {
     async function loadOrders() {
       try {
-        const res = await OrderService.getUserOrders();
+        const res = await OrderService.getUserOrders(user?.email);
         setOrders(res.data);
       } catch (err) {
         console.error('Failed to load user orders', err);
@@ -43,7 +43,7 @@ function AccountDashboardContent() {
       }
     }
     loadOrders();
-  }, []);
+  }, [user?.email]);
 
   return (
     <div className="bg-[#FFFDFC] py-8 sm:py-12 select-none">

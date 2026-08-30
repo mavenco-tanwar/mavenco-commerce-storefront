@@ -37,7 +37,17 @@ export function OrderCard({ order }: { order: Order }) {
         </div>
 
         <div className="flex items-center gap-3 self-end sm:self-auto">
-          <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 bg-[#111111] text-[#FFFDFC]">
+          <span
+            className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 ${
+              order.status === 'cancelled'
+                ? 'bg-[#C98282] text-white'
+                : order.status === 'delivered'
+                ? 'bg-[#2D6A4F] text-white'
+                : order.status === 'shipped'
+                ? 'bg-[#B77A68] text-white'
+                : 'bg-[#111111] text-[#FFFDFC]'
+            }`}
+          >
             {order.status}
           </span>
           <span className="text-sm sm:text-base font-bold text-[#111111]">

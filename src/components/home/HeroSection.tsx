@@ -6,7 +6,42 @@ import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
-export function HeroSection() {
+interface HeroSectionProps {
+  customTitle?: string;
+  customSubtitle?: string;
+  customSettings?: {
+    tagline?: string;
+    primaryBtnText?: string;
+    primaryBtnLink?: string;
+    secondaryBtnText?: string;
+    secondaryBtnLink?: string;
+    desktopImage?: string;
+    tabletImage?: string;
+    mobileImage?: string;
+    overlayOpacity?: number;
+    textAlignment?: 'left' | 'center' | 'right';
+  };
+}
+
+export function HeroSection({
+  customTitle,
+  customSubtitle,
+  customSettings,
+}: HeroSectionProps = {}) {
+  const title = customTitle || 'Style That Speaks You';
+  const subtitle =
+    customSubtitle ||
+    'Discover effortlessly stylish, runway-inspired fashion crafted for modern women and adorable kids. Breathable fabrics, pure luxury silhouettes, affordable prices.';
+  const tagline = customSettings?.tagline || 'Spring / Summer 2026 Studio Collection';
+  const primaryBtnText = customSettings?.primaryBtnText || 'Shop Women';
+  const primaryBtnLink = customSettings?.primaryBtnLink || '/women';
+  const secondaryBtnText = customSettings?.secondaryBtnText || 'Shop Kids';
+  const secondaryBtnLink = customSettings?.secondaryBtnLink || '/kids';
+  const desktopImage =
+    customSettings?.desktopImage ||
+    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000&auto=format&fit=crop';
+  const overlayOpacity = customSettings?.overlayOpacity || 45;
+
   return (
     <section className="relative overflow-hidden bg-[#F8F1EA] border-b border-[#E8DED8] select-none">
       {/* Background Decorative Gradient Aura */}
@@ -21,97 +56,104 @@ export function HeroSection() {
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FFFDFC] border border-[#E8DED8] shadow-xs">
               <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" />
               <span className="text-[11px] uppercase font-bold tracking-widest text-[#111111]">
-                Spring / Summer 2026 Studio Collection
+                {tagline}
               </span>
             </div>
 
             {/* Headline */}
             <div className="space-y-2">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#111111] leading-[1.12] tracking-tight">
-                Style That Speaks <span className="italic font-normal text-[#B77A68]">You</span>
+                {title.includes('You') ? (
+                  <>
+                    {title.replace(/You/g, '')}
+                    <span className="italic font-normal text-[#B77A68]">You</span>
+                  </>
+                ) : (
+                  title
+                )}
               </h1>
               <p className="text-sm sm:text-base text-[#777777] max-w-xl mx-auto lg:mx-0 font-sans leading-relaxed">
-                Discover effortlessly stylish, runway-inspired fashion crafted for modern women and adorable kids. Breathable fabrics, pure luxury silhouettes, affordable prices.
+                {subtitle}
               </p>
             </div>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
-              <Link href="/women" className="w-full sm:w-auto">
+              <Link href={primaryBtnLink} className="w-full sm:w-auto">
                 <Button
                   variant="primary"
                   size="lg"
                   className="w-full sm:w-auto min-w-[170px] group"
                 >
-                  <span>Shop Women</span>
+                  <span>{primaryBtnText}</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
 
-              <Link href="/kids" className="w-full sm:w-auto">
+              <Link href={secondaryBtnLink} className="w-full sm:w-auto">
                 <Button
                   variant="secondary"
                   size="lg"
                   className="w-full sm:w-auto min-w-[170px]"
                 >
-                  Shop Kids
+                  {secondaryBtnText}
                 </Button>
               </Link>
             </div>
 
-            {/* Trust metrics */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-[#E8DED8]/80 max-w-md mx-auto lg:mx-0 text-left">
-              <div>
-                <span className="block text-xl font-serif font-bold text-[#111111]">500+</span>
-                <span className="text-[11px] text-[#777777]">Curated Styles</span>
+            {/* Trust Badges Bar */}
+            <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-[#777777] border-t border-[#E8DED8]/80">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#B77A68]" />
+                <span>Express Doorstep Shipping</span>
               </div>
-              <div>
-                <span className="block text-xl font-serif font-bold text-[#111111]">4.9★</span>
-                <span className="text-[11px] text-[#777777]">Customer Rating</span>
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#B77A68]" />
+                <span>100% Breathable Fabrics</span>
               </div>
-              <div>
-                <span className="block text-xl font-serif font-bold text-[#111111]">₹999</span>
-                <span className="text-[11px] text-[#777777]">Free Shipping Min</span>
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#B77A68]" />
+                <span>7-Day Easy Exchange</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Editorial Double Image Showcase (5 cols) */}
+          {/* Right Column: Hero High-Fashion Visuals (5 cols) */}
           <div className="lg:col-span-5 relative flex items-center justify-center">
-            {/* Primary Main Image Card */}
-            <div className="relative w-full max-w-md aspect-3/4 bg-[#FFFDFC] border-8 border-[#FFFDFC] shadow-2xl overflow-hidden luxury-card-shadow">
+            <div className="relative w-full max-w-[420px] aspect-3/4 luxury-card-shadow bg-[#FAF6F2] overflow-hidden border-2 border-[#FFFDFC]">
               <Image
-                src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000&auto=format&fit=crop"
-                alt="JQ Trends Spring Fashion Look"
+                src={desktopImage}
+                alt={title}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 500px"
-                className="object-cover"
+                className="object-cover object-top hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 bg-[#FFFDFC]/90 backdrop-blur-xs p-3 border border-[#E8DED8] text-left">
-                <span className="text-[10px] uppercase font-bold text-[#B77A68] tracking-widest block">
-                  Studio Spotlight
-                </span>
-                <p className="text-xs font-serif font-bold text-[#111111]">
-                  Tiered Flora Georgette Midi &amp; Linen Sets
-                </p>
-              </div>
-            </div>
 
-            {/* Overlapping Kids Floating Badge Card */}
-            <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-8 w-36 sm:w-44 aspect-square bg-[#FFFDFC] border-4 border-[#FFFDFC] shadow-xl overflow-hidden hidden sm:block">
-              <Image
-                src="https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?q=80&w=400&auto=format&fit=crop"
-                alt="Kids Little Blossom"
-                fill
-                sizes="180px"
-                className="object-cover"
+              {/* Subtle Bottom Vignette */}
+              <div
+                className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+                style={{ opacity: overlayOpacity / 100 }}
               />
-              <div className="absolute bottom-0 inset-x-0 bg-[#111111]/85 text-white p-1 text-center">
-                <span className="text-[9px] uppercase font-bold tracking-widest">
-                  Kids Special
-                </span>
+
+              {/* Floating Highlight Card */}
+              <div className="absolute bottom-4 left-4 right-4 bg-[#FFFDFC]/95 backdrop-blur-md p-4 border border-[#E8DED8] shadow-lg flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-[#B77A68]">
+                    New Season Drop
+                  </span>
+                  <h4 className="text-xs font-serif font-bold text-[#111111]">
+                    Linen Co-ords &amp; Chanderi Silks
+                  </h4>
+                  <p className="text-[11px] text-[#777777]">Starting from ₹899</p>
+                </div>
+
+                <Link
+                  href="/women"
+                  className="px-3 py-1.5 bg-[#111111] text-[#FFFDFC] text-[11px] font-bold uppercase tracking-wider hover:bg-[#B77A68] transition-colors shrink-0"
+                >
+                  View
+                </Link>
               </div>
             </div>
           </div>

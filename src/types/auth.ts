@@ -8,7 +8,27 @@ export interface UserProfile {
   avatarUrl?: string;
   defaultAddressId?: string;
   savedAddresses: (ShippingAddress & { id: string })[];
-  createdAt: string;
+  createdAt?: string;
+}
+
+export type User = UserProfile;
+export type Address = ShippingAddress & { id: string };
+
+export interface LoginCredentials {
+  email: string;
+  password?: string;
+}
+
+export interface RegisterData {
+  name: string;
+  email: string;
+  phone: string;
+  password?: string;
+}
+
+export interface AuthResponse {
+  user: UserProfile;
+  token: string;
 }
 
 export interface AuthState {

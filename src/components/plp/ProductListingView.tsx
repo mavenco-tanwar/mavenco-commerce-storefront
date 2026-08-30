@@ -62,7 +62,7 @@ export function ProductListingView({
 
   useEffect(() => {
     if (urlCategory) {
-      setFilters((prev) => ({ ...prev, categories: [urlCategory] }));
+      setFilters((prev: FilterState) => ({ ...prev, categories: [urlCategory] }));
     }
   }, [urlCategory]);
 

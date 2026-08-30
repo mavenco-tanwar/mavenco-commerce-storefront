@@ -52,3 +52,14 @@ export interface Order {
   total: number;
   estimatedDeliveryDate: string;
 }
+
+export interface CreateOrderParams {
+  items: CartItem[];
+  shippingAddress: ShippingAddress;
+  paymentMethod: PaymentMethod;
+  upiApp?: string;
+  subtotal: number;
+  discount: number;
+  shippingFee: number;
+  total: number;
+}

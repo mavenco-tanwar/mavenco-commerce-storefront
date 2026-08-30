@@ -18,21 +18,21 @@ export function ActiveFilterTags({
   const removeCategory = (catSlug: string) => {
     onFilterChange({
       ...filters,
-      categories: filters.categories.filter((c) => c !== catSlug),
+      categories: filters.categories.filter((c: string) => c !== catSlug),
     });
   };
 
   const removeSize = (size: string) => {
     onFilterChange({
       ...filters,
-      sizes: filters.sizes.filter((s) => s !== size),
+      sizes: filters.sizes.filter((s: string) => s !== size),
     });
   };
 
   const removeColor = (colorName: string) => {
     onFilterChange({
       ...filters,
-      colors: filters.colors.filter((c) => c !== colorName),
+      colors: filters.colors.filter((c: string) => c !== colorName),
     });
   };
 
@@ -57,7 +57,7 @@ export function ActiveFilterTags({
         Active Filters:
       </span>
 
-      {filters.categories.map((cat) => (
+      {filters.categories.map((cat: string) => (
         <span
           key={cat}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#F8F1EA] border border-[#E8DED8] text-xs font-semibold text-[#111111]"
@@ -73,7 +73,7 @@ export function ActiveFilterTags({
         </span>
       ))}
 
-      {filters.sizes.map((size) => (
+      {filters.sizes.map((size: string) => (
         <span
           key={size}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#F8F1EA] border border-[#E8DED8] text-xs font-semibold text-[#111111]"
@@ -89,7 +89,7 @@ export function ActiveFilterTags({
         </span>
       ))}
 
-      {filters.colors.map((color) => (
+      {filters.colors.map((color: string) => (
         <span
           key={color}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#F8F1EA] border border-[#E8DED8] text-xs font-semibold text-[#111111]"
@@ -121,12 +121,11 @@ export function ActiveFilterTags({
       )}
 
       {filters.onSaleOnly && (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#F7EBEA] border border-[#C98282]/40 text-xs font-bold text-[#C98282]">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#F8F1EA] border border-[#E8DED8] text-xs font-semibold text-[#111111]">
           <span>On Sale</span>
           <button
-            onClick={() => onFilterChange({ ...filters, onSaleOnly: false })}
-            className="hover:text-[#111111]"
-            aria-label="Remove sale only filter"
+            onClick={() => onFilterChange({ ...filters, onSaleOnly: false, isSale: false })}
+            className="hover:text-[#C98282]"
           >
             <X className="w-3 h-3" />
           </button>
@@ -134,12 +133,11 @@ export function ActiveFilterTags({
       )}
 
       {filters.isNewOnly && (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FAF6F2] border border-[#B77A68]/40 text-xs font-bold text-[#111111]">
-          <span>New Arrivals</span>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#F8F1EA] border border-[#E8DED8] text-xs font-semibold text-[#111111]">
+          <span>New In</span>
           <button
-            onClick={() => onFilterChange({ ...filters, isNewOnly: false })}
+            onClick={() => onFilterChange({ ...filters, isNewOnly: false, isNewArrival: false })}
             className="hover:text-[#C98282]"
-            aria-label="Remove new arrivals filter"
           >
             <X className="w-3 h-3" />
           </button>
@@ -148,7 +146,7 @@ export function ActiveFilterTags({
 
       <button
         onClick={onReset}
-        className="text-xs text-[#C98282] hover:underline font-bold ml-1"
+        className="text-[11px] font-bold uppercase tracking-wider text-[#B77A68] hover:text-[#111111] underline underline-offset-2 ml-1"
       >
         Clear All
       </button>

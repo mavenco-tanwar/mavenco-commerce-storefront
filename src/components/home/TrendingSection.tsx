@@ -8,10 +8,30 @@ import { ProductService } from '@/services/products';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { Button } from '@/components/ui/Button';
 
-export function TrendingSection() {
+interface TrendingSectionProps {
+  customTitle?: string;
+  customSubtitle?: string;
+  customBadge?: string;
+  customLimit?: number;
+  customCtaText?: string;
+  customCtaUrl?: string;
+}
+
+export function TrendingSection({
+  customTitle,
+  customSubtitle,
+  customBadge,
+  customLimit = 8,
+  customCtaText = 'Explore All Trending',
+  customCtaUrl = '/women',
+}: TrendingSectionProps = {}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'women' | 'kids'>('all');
   const [isLoading, setIsLoading] = useState(true);
+
+  const title = customTitle || 'Trending Now';
+  const subtitle = customSubtitle || 'Styles everyone is talking about this season.';
+  const badge = customBadge || 'Most Coveted Silhouettes';
 
   useEffect(() => {
     async function loadTrending() {
@@ -40,13 +60,13 @@ export function TrendingSection() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
-              Most Coveted Silhouettes
+              {badge}
             </span>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1">
-              Trending Now
+              {title}
             </h2>
             <p className="text-xs sm:text-sm text-[#777777] mt-1 font-sans">
-              Styles everyone is talking about this season.
+              {subtitle}
             </p>
           </div>
 
@@ -87,21 +107,21 @@ export function TrendingSection() {
 
         {/* 4-column Product Grid */}
         <ProductGrid
-          products={displayedProducts.slice(0, 8)}
+          products={displayedProducts.slice(0, customLimit)}
           isLoading={isLoading}
-          skeletonCount={8}
+          skeletonCount={customLimit}
           columns={4}
         />
 
         {/* View All CTA */}
         <div className="mt-12 text-center">
-          <Link href="/women">
+          <Link href={customCtaUrl}>
             <Button
               variant="outline"
               size="lg"
               className="min-w-[200px] group"
             >
-              <span>Explore All Trending</span>
+              <span>{customCtaText}</span>
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>

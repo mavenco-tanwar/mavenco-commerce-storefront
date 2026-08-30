@@ -11,7 +11,8 @@ export type CategorySlug =
   | 'accessories'
   | 'girls' 
   | 'boys' 
-  | 'casual-wear';
+  | 'casual-wear'
+  | string;
 
 export interface ProductColor {
   name: string;
@@ -20,7 +21,7 @@ export interface ProductColor {
 }
 
 export interface ProductSize {
-  size: string; // 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | '2-3Y' | '3-4Y' | '5-6Y' | '7-8Y' | '9-10Y' | '11-12Y'
+  size: string;
   inStock: boolean;
   stockCount: number;
 }
@@ -40,8 +41,8 @@ export interface Product {
   category: CategorySlug;
   categoryName: string;
   price: number;
-  compareAtPrice: number;
-  discountPercent: number;
+  compareAtPrice?: number;
+  discountPercent?: number;
   shortDescription: string;
   description: string;
   features: string[];
@@ -56,28 +57,54 @@ export interface Product {
   isNewArrival: boolean;
   isBestSeller: boolean;
   isSale: boolean;
-  badge?: 'Trending' | 'Best Seller' | 'New' | 'Sale' | 'Studio Exclusive';
+  badge?: string;
   tags: string[];
   fit?: string;
   modelInfo?: string;
 }
 
+export type SortOption = 'recommended' | 'featured' | 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'rating-desc' | 'popular';
+
 export interface FilterState {
-  departments: Department[];
+  departments?: Department[];
   categories: string[];
-  priceRange: [number, number];
   sizes: string[];
   colors: string[];
-  minRating: number | null;
-  onlyInStock: boolean;
-  onSaleOnly: boolean;
-  isNewOnly: boolean;
+  priceRange: [number, number];
+  minRating?: number | null;
+  onlyInStock?: boolean;
+  isSale?: boolean;
+  onSaleOnly?: boolean;
+  isNewArrival?: boolean;
+  isNewOnly?: boolean;
+  isBestSeller?: boolean;
 }
 
-export type SortOption = 
-  | 'recommended' 
-  | 'newest' 
-  | 'price-asc' 
-  | 'price-desc' 
-  | 'rating-desc' 
-  | 'popular';
+export interface ProductQueryParams {
+  department?: Department;
+  category?: string;
+  collection?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sizes?: string[];
+  colors?: string[];
+  tags?: string[];
+  isFeatured?: boolean;
+  isNewArrival?: boolean;
+  isBestSeller?: boolean;
+  isSale?: boolean;
+  search?: string;
+  sort?: SortOption;
+  page?: number;
+  limit?: number;
+}
+
+export interface ProductListResponse {
+  data: {
+    products: Product[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}

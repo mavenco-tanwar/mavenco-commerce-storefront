@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Phone,
@@ -16,10 +16,45 @@ import {
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { Button } from '@/components/ui/Button';
 import { InstagramIcon, FacebookIcon, WhatsAppIcon } from '@/components/ui/SocialIcons';
+import { CmsApiService, CmsMenuItem } from '@/services/api/cms';
 
 export function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+
+  const [shopLinks, setShopLinks] = useState<CmsMenuItem[]>([
+    { id: 'f_1', label: "Women's Fashion", url: '/women', isVisible: true },
+    { id: 'f_2', label: 'Kids Collection', url: '/kids', isVisible: true },
+    { id: 'f_3', label: 'New In Studio', url: '/new-arrivals', isVisible: true },
+    { id: 'f_4', label: 'Floral Dresses', url: '/women?category=dresses', isVisible: true },
+    { id: 'f_5', label: 'Chanderi Kurti Sets', url: '/women?category=kurtis', isVisible: true },
+    { id: 'f_6', label: 'Linen Co-ords', url: '/women?category=co-ords', isVisible: true },
+    { id: 'f_7', label: 'Special Sale (Up to 50% Off)', url: '/sale', isVisible: true },
+  ]);
+
+  const [careLinks, setCareLinks] = useState<CmsMenuItem[]>([
+    { id: 'c_1', label: 'About JQ Trends', url: '/about-us', isVisible: true },
+    { id: 'c_2', label: 'Shipping & Delivery', url: '/shipping-policy', isVisible: true },
+    { id: 'c_3', label: 'Returns & Exchanges', url: '/return-policy', isVisible: true },
+    { id: 'c_4', label: 'Contact & Concierge', url: '/contact', isVisible: true },
+    { id: 'c_5', label: 'Track Your Order', url: '/account', isVisible: true },
+    { id: 'c_6', label: 'Privacy Notice', url: '/privacy-policy', isVisible: true },
+    { id: 'c_7', label: 'Terms of Service', url: '/terms-and-conditions', isVisible: true },
+  ]);
+
+  useEffect(() => {
+    CmsApiService.getMenu('footer-menu-shop').then((items) => {
+      if (items && items.length > 0) {
+        setShopLinks(items);
+      }
+    });
+
+    CmsApiService.getMenu('footer-menu-care').then((items) => {
+      if (items && items.length > 0) {
+        setCareLinks(items);
+      }
+    });
+  }, []);
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,24 +117,24 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Middle: Brand Story, Links & Newsletter */}
+        {/* Middle: Brand Story, Dynamic Menus & Newsletter */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 py-14 border-b border-[#2A2523]">
           {/* Brand Info (2 cols on lg) */}
           <div className="lg:col-span-2 space-y-4">
             <BrandLogo variant="light" size="md" />
 
             <p className="text-xs text-[#777777] max-w-sm leading-relaxed font-sans">
-              JQ Trends is an Indian fashion house dedicated to affordable luxury for modern women and adorable kids. From regal festive Chanderi sets to effortless linen co-ords and pure cotton kids wear, every piece is designed with love and elegance.
+              JQ Trends is an Indian luxury boutique dedicated to affordable fashion for modern women and adorable kids. From regal festive Chanderi sets to effortless linen co-ords and pure cotton kids wear, every piece is designed with love and elegance.
             </p>
 
             <div className="space-y-2 pt-2 text-xs text-[#999999]">
               <p className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-[#B77A68] shrink-0 mt-0.5" />
-                <span>Indiranagar, Bengaluru, KA - 560038, India</span>
+                <span>100 Feet Road, Indiranagar, Bengaluru, KA - 560038</span>
               </p>
               <p className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-[#B77A68] shrink-0" />
-                <span>+91 98765 43210 (Mon-Sat, 10am-7pm)</span>
+                <span>+91 98765 43210 (Mon-Sat, 10am-7pm IST)</span>
               </p>
               <p className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-[#B77A68] shrink-0" />
@@ -139,90 +174,53 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Col 1: Shop */}
+          {/* Col 1: Dynamic Shop Links */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-[#FFFDFC] mb-4">
               Shop Collections
             </h4>
             <ul className="space-y-2.5 text-xs text-[#777777]">
-              <li>
-                <Link href="/women" className="hover:text-[#B77A68] transition-colors">
-                  Women&apos;s Fashion
-                </Link>
-              </li>
-              <li>
-                <Link href="/kids" className="hover:text-[#B77A68] transition-colors">
-                  Kids Collection
-                </Link>
-              </li>
-              <li>
-                <Link href="/new-arrivals" className="hover:text-[#B77A68] transition-colors">
-                  New In Studio
-                </Link>
-              </li>
-              <li>
-                <Link href="/women?category=dresses" className="hover:text-[#B77A68] transition-colors">
-                  Floral Dresses
-                </Link>
-              </li>
-              <li>
-                <Link href="/women?category=kurtis" className="hover:text-[#B77A68] transition-colors">
-                  Chanderi Kurti Sets
-                </Link>
-              </li>
-              <li>
-                <Link href="/women?category=co-ords" className="hover:text-[#B77A68] transition-colors">
-                  Linen Co-ords
-                </Link>
-              </li>
-              <li>
-                <Link href="/sale" className="text-[#C98282] hover:text-white font-semibold transition-colors">
-                  Special Sale (Up to 50% Off)
-                </Link>
-              </li>
+              {shopLinks.map((link) => (
+                <li key={link.id}>
+                  <Link
+                    href={link.url || '/'}
+                    className={`transition-colors ${
+                      link.url?.includes('/sale')
+                        ? 'text-[#C98282] hover:text-white font-semibold'
+                        : 'hover:text-[#B77A68]'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Col 2: Customer Care */}
+          {/* Col 2: Dynamic Customer Care & Policies */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-[#FFFDFC] mb-4">
-              Customer Care
+              About &amp; Policies
             </h4>
             <ul className="space-y-2.5 text-xs text-[#777777]">
-              <li>
-                <Link href="/account" className="hover:text-[#B77A68] transition-colors">
-                  Track Your Order
-                </Link>
-              </li>
-              <li>
-                <Link href="/account?tab=addresses" className="hover:text-[#B77A68] transition-colors">
-                  Shipping &amp; Delivery
-                </Link>
-              </li>
-              <li>
-                <span className="hover:text-[#B77A68] transition-colors cursor-pointer">
-                  Returns &amp; Exchanges Policy
-                </span>
-              </li>
-              <li>
-                <span className="hover:text-[#B77A68] transition-colors cursor-pointer">
-                  Size Guide &amp; Measurements
-                </span>
-              </li>
-              <li>
-                <span className="hover:text-[#B77A68] transition-colors cursor-pointer">
-                  Frequently Asked Questions
-                </span>
-              </li>
-              <li>
-                <span className="hover:text-[#B77A68] transition-colors cursor-pointer">
-                  Contact Customer Support
-                </span>
-              </li>
+              {careLinks.map((link) => (
+                <li key={link.id}>
+                  <Link
+                    href={link.url || '/'}
+                    className={`transition-colors ${
+                      link.url === '/about-us'
+                        ? 'text-[#E8B8B5] hover:text-white font-semibold'
+                        : 'hover:text-[#B77A68]'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Col 3: Newsletter Box */}
+          {/* Col 3: VIP Newsletter */}
           <div>
             <h4 className="text-xs font-bold uppercase tracking-widest text-[#FFFDFC] mb-4">
               Stay In Style
@@ -260,10 +258,16 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom: Payment Gateways, Security & Copyright */}
+        {/* Bottom: Legal Links & Copyright */}
         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#777777]">
-          <div>
-            <p>© 2026 JQ TRENDS. Style that speaks you. All rights reserved.</p>
+          <div className="flex flex-wrap items-center gap-4 text-[11px]">
+            <span>© 2026 JQ TRENDS. All rights reserved.</span>
+            <span className="text-[#3D3430]">•</span>
+            {careLinks.slice(0, 5).map((link) => (
+              <Link key={link.id} href={link.url || '/'} className="hover:text-white transition-colors">
+                {link.label}
+              </Link>
+            ))}
           </div>
 
           {/* Payment Method Badges */}

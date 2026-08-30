@@ -1,64 +1,66 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { UserProfile } from '@/types/auth';
-import { ShippingAddress } from '@/types/order';
+import { User, Address } from '@/types/auth';
 import { AuthService } from '@/services/auth';
+import { CustomerApiService } from '@/services/api/customers';
 import { useToast } from './ToastContext';
 
 interface AuthContextType {
-  user: UserProfile | null;
+  user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password?: string) => Promise<boolean>;
-  register: (name: string, email: string, phone: string) => Promise<boolean>;
+  register: (name: string, email: string, phone: string, password?: string) => Promise<boolean>;
   logout: () => void;
-  addAddress: (address: Omit<ShippingAddress, 'isDefault'> & { isDefault?: boolean }) => void;
-  deleteAddress: (addressId: string) => void;
-  setDefaultAddress: (addressId: string) => void;
+  addAddress: (address: Omit<Address, 'id'>) => Promise<void>;
+  deleteAddress: (addressId: string) => Promise<void>;
+  setDefaultAddress: (addressId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_STORAGE_KEY = 'jq_trends_auth_user_v1';
+const AUTH_STORAGE_KEY = 'jq_trends_auth_user_v2';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { showToast } = useToast();
 
   useEffect(() => {
-    try {
-      const savedUser = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
-      } else {
-        // Initialize with demo user for smooth ecommerce testing
-        AuthService.getCurrentUser().then((res) => {
-          if (res.data) {
-            setUser(res.data);
-            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(res.data));
-          }
-        });
+    async function initAuth() {
+      try {
+        const savedUser = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+        }
+
+        // Validate session with CMS backend
+        const me = await AuthService.getCurrentUser();
+        if (me) {
+          setUser(me);
+          localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(me));
+        }
+      } catch (e) {
+        console.error('Failed to initialize customer auth:', e);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (e) {
-      console.error('Failed to initialize auth', e);
-    } finally {
-      setIsLoading(false);
     }
+    initAuth();
   }, []);
 
   const login = useCallback(
     async (email: string, password?: string) => {
       setIsLoading(true);
       try {
-        const res = await AuthService.login(email, password);
-        setUser(res.data.user);
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(res.data.user));
-        showToast('Welcome Back!', `Logged in as ${res.data.user.name}`, 'success');
+        const res = await AuthService.login({ email, password: password || 'demo123' });
+        setUser(res.user);
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(res.user));
+        showToast('Welcome Back!', `Signed in as ${res.user.name}`, 'success');
         return true;
-      } catch {
-        showToast('Login Failed', 'Please check your credentials', 'error');
+      } catch (err: any) {
+        showToast('Login Failed', err.message || 'Please check your credentials', 'error');
         return false;
       } finally {
         setIsLoading(false);
@@ -68,16 +70,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const register = useCallback(
-    async (name: string, email: string, phone: string) => {
+    async (name: string, email: string, phone: string, password?: string) => {
       setIsLoading(true);
       try {
-        const res = await AuthService.register({ name, email, phone });
-        setUser(res.data.user);
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(res.data.user));
+        const res = await AuthService.register({ name, email, phone, password: password || 'welcome123' });
+        setUser(res.user);
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(res.user));
         showToast('Account Created!', `Welcome to JQ Trends, ${name}`, 'success');
         return true;
-      } catch {
-        showToast('Registration Error', 'Unable to create account', 'error');
+      } catch (err: any) {
+        showToast('Registration Error', err.message || 'Unable to create account', 'error');
         return false;
       } finally {
         setIsLoading(false);
@@ -86,62 +88,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [showToast]
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await AuthService.logout();
     setUser(null);
     localStorage.removeItem(AUTH_STORAGE_KEY);
     showToast('Logged Out', 'You have been safely signed out', 'info');
   }, [showToast]);
 
   const addAddress = useCallback(
-    (address: Omit<ShippingAddress, 'isDefault'> & { isDefault?: boolean }) => {
+    async (address: Omit<Address, 'id'>) => {
       if (!user) return;
-      const newAddressId = 'addr-' + Date.now();
-      const updatedSavedAddresses = [
-        ...user.savedAddresses.map((a) => (address.isDefault ? { ...a, isDefault: false } : a)),
-        { ...address, id: newAddressId, isDefault: !!address.isDefault },
-      ];
-      const updatedUser: UserProfile = {
-        ...user,
-        savedAddresses: updatedSavedAddresses,
-        defaultAddressId: address.isDefault ? newAddressId : user.defaultAddressId || newAddressId,
-      };
-      setUser(updatedUser);
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedUser));
-      showToast('Address Saved', 'New delivery address added', 'success');
+      try {
+        const updated = await CustomerApiService.addAddress(user, address);
+        setUser(updated);
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+        showToast('Address Saved', 'New delivery address added', 'success');
+      } catch (e: any) {
+        showToast('Failed to Save Address', e.message || 'Please try again', 'error');
+      }
     },
     [user, showToast]
   );
 
   const deleteAddress = useCallback(
-    (addressId: string) => {
+    async (addressId: string) => {
       if (!user) return;
-      const updatedSavedAddresses = user.savedAddresses.filter((a) => a.id !== addressId);
-      const updatedUser: UserProfile = {
-        ...user,
-        savedAddresses: updatedSavedAddresses,
-      };
-      setUser(updatedUser);
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedUser));
-      showToast('Address Deleted', undefined, 'info');
+      try {
+        const updated = await CustomerApiService.deleteAddress(user, addressId);
+        setUser(updated);
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+        showToast('Address Removed', 'Delivery address deleted', 'info');
+      } catch (e: any) {
+        showToast('Failed to Delete Address', e.message || 'Please try again', 'error');
+      }
     },
     [user, showToast]
   );
 
   const setDefaultAddress = useCallback(
-    (addressId: string) => {
+    async (addressId: string) => {
       if (!user) return;
-      const updatedSavedAddresses = user.savedAddresses.map((a) => ({
-        ...a,
-        isDefault: a.id === addressId,
-      }));
-      const updatedUser: UserProfile = {
-        ...user,
-        savedAddresses: updatedSavedAddresses,
-        defaultAddressId: addressId,
-      };
-      setUser(updatedUser);
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updatedUser));
-      showToast('Default Address Updated', undefined, 'success');
+      try {
+        const updated = await CustomerApiService.setDefaultAddress(user, addressId);
+        setUser(updated);
+        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(updated));
+        showToast('Default Address Set', 'Default shipping address updated', 'success');
+      } catch (e: any) {
+        showToast('Failed to Update', e.message || 'Please try again', 'error');
+      }
     },
     [user, showToast]
   );

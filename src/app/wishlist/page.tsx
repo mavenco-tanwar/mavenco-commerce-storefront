@@ -66,7 +66,7 @@ export default function WishlistPage() {
               >
                 {/* Thumbnail */}
                 <div className="relative aspect-3/4 bg-[#FAF6F2] overflow-hidden">
-                  <Link href={`/products/${product.slug}`} className="block w-full h-full">
+                  <Link href={`/products/${product.slug}`} className="relative block w-full h-full">
                     {product.images[0] && (
                       <Image
                         src={product.images[0].url}

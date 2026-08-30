@@ -7,14 +7,34 @@ import { Product } from '@/types/product';
 import { ProductService } from '@/services/products';
 import { ProductGrid } from '@/components/product/ProductGrid';
 
-export function BestSellersSection() {
+interface BestSellersSectionProps {
+  customTitle?: string;
+  customSubtitle?: string;
+  customBadge?: string;
+  customLimit?: number;
+  customCtaText?: string;
+  customCtaUrl?: string;
+}
+
+export function BestSellersSection({
+  customTitle,
+  customSubtitle,
+  customBadge,
+  customLimit = 4,
+  customCtaText = 'View All Best Sellers',
+  customCtaUrl = '/women?sort=popular',
+}: BestSellersSectionProps = {}) {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const title = customTitle || 'Our Best Sellers';
+  const subtitle = customSubtitle || 'The iconic styles our community can\'t get enough of.';
+  const badge = customBadge || 'Customer Favorites • High Demand';
 
   useEffect(() => {
     async function loadBestSellers() {
       try {
-        const res = await ProductService.getBestSellers(4);
+        const res = await ProductService.getBestSellers(customLimit);
         setBestSellers(res.data);
       } catch (err) {
         console.error('Failed to load best sellers', err);
@@ -23,7 +43,7 @@ export function BestSellersSection() {
       }
     }
     loadBestSellers();
-  }, []);
+  }, [customLimit]);
 
   return (
     <section className="py-16 md:py-24 bg-[#FAF6F2] border-b border-[#E8DED8] select-none">
@@ -32,21 +52,21 @@ export function BestSellersSection() {
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs uppercase font-bold tracking-widest text-[#C98282] mb-1">
               <Flame className="w-3.5 h-3.5" />
-              <span>Customer Favorites • High Demand</span>
+              <span>{badge}</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111]">
-              Our Best Sellers
+              {title}
             </h2>
             <p className="text-sm text-[#777777] font-sans mt-1">
-              The iconic styles our community can&apos;t get enough of.
+              {subtitle}
             </p>
           </div>
 
           <Link
-            href="/women?sort=popular"
+            href={customCtaUrl}
             className="text-xs uppercase font-bold tracking-widest text-[#111111] hover:text-[#B77A68] flex items-center gap-1.5 transition-colors group"
           >
-            <span>View All Best Sellers</span>
+            <span>{customCtaText}</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
@@ -54,7 +74,7 @@ export function BestSellersSection() {
         <ProductGrid
           products={bestSellers}
           isLoading={isLoading}
-          skeletonCount={4}
+          skeletonCount={customLimit}
           columns={4}
         />
       </div>
