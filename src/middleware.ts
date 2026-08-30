@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const tenantParam = url.searchParams.get('tenant');
 
-  let tenantSlug = 'jqtrends';
+  let tenantSlug = '';
 
   // 1. Path-based tenant resolution: /stores/[slug] or /tenant/[slug]
   const pathMatch = url.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)(.*)/);
@@ -18,6 +18,7 @@ export function middleware(request: NextRequest) {
     
     const response = NextResponse.rewrite(url);
     response.headers.set('x-tenant-slug', tenantSlug);
+    response.cookies.set('jq_active_tenant', tenantSlug, { path: '/' });
     return response;
   }
 
@@ -32,24 +33,22 @@ export function middleware(request: NextRequest) {
     tenantSlug = 'apexathletics';
   } else if (hostname.includes('jqtrends') || hostname.startsWith('jqtrends.')) {
     tenantSlug = 'jqtrends';
+  } else {
+    // Default platform domain (e.g. mavenco-storefront.vercel.app)
+    tenantSlug = '';
   }
 
-  // Pass tenant context via custom header and cookie
   const response = NextResponse.next();
   response.headers.set('x-tenant-slug', tenantSlug);
-  response.cookies.set('jq_active_tenant', tenantSlug, { path: '/' });
+  if (tenantSlug) {
+    response.cookies.set('jq_active_tenant', tenantSlug, { path: '/' });
+  }
 
   return response;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt
-     */
     '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
   ],
 };
