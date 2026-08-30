@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description: catRes.data.description || `Shop ${catRes.data.name} fashion at JQ Trends.`,
       };
     }
-  } catch {}
+  } catch { }
 
   // 2. Check CMS Page
   try {
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description: page.seo?.description || `Explore ${page.title} at JQ Trends luxury boutique fashion.`,
       };
     }
-  } catch {}
+  } catch { }
 
   return {
     title: 'Explore Boutique Fashion | JQ Trends',
@@ -140,7 +140,7 @@ export default async function DynamicSlugPage({ params }: PageProps) {
               className="object-cover opacity-40 mix-blend-luminosity"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-transparent" />
-            <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 z-10 space-y-4">
+            <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10 space-y-4">
               {heroBlock.data?.badge && (
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFFDFC]/15 border border-white/20 backdrop-blur-sm">
                   <Sparkles className="w-3 h-3 text-[#E8B8B5]" />
