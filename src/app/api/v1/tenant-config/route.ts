@@ -31,6 +31,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  return POST(request);
+}
+
+export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'jqtrends';
@@ -48,14 +52,47 @@ export async function PUT(request: NextRequest) {
         data: updated,
         tenant: tenantSlug,
         status: 'success',
-        message: `Tenant configuration for ${updated.name} updated successfully!`,
+        message: `Tenant ${updated.name} registered successfully!`,
         timestamp: new Date().toISOString(),
       },
       { headers: corsHeaders() }
     );
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Failed to update tenant configuration' },
+      { error: error.message || 'Failed to register tenant' },
+      { status: 400, headers: corsHeaders() }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug');
+    if (!tenantSlug) {
+      return NextResponse.json({ error: 'Missing tenant slug' }, { status: 400, headers: corsHeaders() });
+    }
+
+    const { archiveTenantSlug } = require('@/lib/tenant-config');
+    archiveTenantSlug(tenantSlug);
+
+    try {
+      revalidatePath(`/stores/${tenantSlug}`);
+      revalidatePath('/');
+    } catch {}
+
+    return NextResponse.json(
+      {
+        tenant: tenantSlug,
+        status: 'success',
+        message: `Tenant ${tenantSlug} archived successfully!`,
+        timestamp: new Date().toISOString(),
+      },
+      { headers: corsHeaders() }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || 'Failed to delete tenant' },
       { status: 400, headers: corsHeaders() }
     );
   }

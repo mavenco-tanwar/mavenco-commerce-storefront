@@ -308,6 +308,33 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
   };
 }
 
+const archivedTenantsSet = new Set<string>(['tanwar-tailor']);
+const suspendedTenantsSet = new Set<string>();
+
+export function archiveTenantSlug(slug: string) {
+  const clean = slug.toLowerCase().trim();
+  archivedTenantsSet.add(clean);
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('jq_archived_tenants') || '[]';
+      const arr = JSON.parse(stored);
+      if (!arr.includes(clean)) {
+        arr.push(clean);
+        localStorage.setItem('jq_archived_tenants', JSON.stringify(arr));
+      }
+    } catch {}
+  }
+}
+
+export function suspendTenantSlug(slug: string, suspend = true) {
+  const clean = slug.toLowerCase().trim();
+  if (suspend) {
+    suspendedTenantsSet.add(clean);
+  } else {
+    suspendedTenantsSet.delete(clean);
+  }
+}
+
 export function checkTenantValidity(slug?: string): {
   isValid: boolean;
   isSuspended: boolean;
@@ -316,52 +343,32 @@ export function checkTenantValidity(slug?: string): {
   if (!slug) return { isValid: false, isSuspended: false, config: null };
   const clean = slug.toLowerCase().trim();
 
-  // 1. Seed tenants are always valid
-  if (SEED_TENANTS[clean]) {
-    return { isValid: true, isSuspended: false, config: SEED_TENANTS[clean] };
+  // Explicitly archived or deleted stores
+  if (archivedTenantsSet.has(clean)) {
+    return { isValid: false, isSuspended: false, config: null };
   }
 
-  // 2. Browser active platform stores check
   if (typeof window !== 'undefined') {
     try {
-      const stored = localStorage.getItem('jq_saas_platform_tenants_v1');
+      const stored = localStorage.getItem('jq_archived_tenants');
       if (stored) {
-        const list = JSON.parse(stored);
-        if (Array.isArray(list)) {
-          const found = list.find((t: any) => t.slug?.toLowerCase() === clean);
-          if (found) {
-            if (found.status === 'suspended') {
-              return { isValid: true, isSuspended: true, config: createDefaultTenantBrandConfig(clean) };
-            }
-            if (found.status === 'archived') {
-              return { isValid: false, isSuspended: false, config: null };
-            }
-            return { isValid: true, isSuspended: false, config: createDefaultTenantBrandConfig(clean) };
-          } else {
-            // Not in active store registry -> store was deleted!
-            return { isValid: false, isSuspended: false, config: null };
-          }
+        const arr = JSON.parse(stored);
+        if (Array.isArray(arr) && arr.includes(clean)) {
+          return { isValid: false, isSuspended: false, config: null };
         }
       }
     } catch {}
   }
 
-  // 3. Server disk check for stored custom config
-  if (typeof window === 'undefined') {
-    try {
-      const fs = eval('require')('fs');
-      const tmpPath = `/tmp/store_${clean}_tenant_config.json`;
-      if (fs.existsSync(tmpPath)) {
-        const raw = fs.readFileSync(tmpPath, 'utf-8');
-        const parsed = JSON.parse(raw);
-        if (parsed?.name && parsed?.status !== 'archived') {
-          return { isValid: true, isSuspended: parsed?.status === 'suspended', config: parsed };
-        }
-      }
-    } catch {}
-  }
+  // Explicitly suspended stores
+  const isSuspended = suspendedTenantsSet.has(clean);
 
-  return { isValid: false, isSuspended: false, config: null };
+  // Return valid with config
+  return {
+    isValid: true,
+    isSuspended,
+    config: getTenantConfig(clean),
+  };
 }
 
 // Mutable store in memory
