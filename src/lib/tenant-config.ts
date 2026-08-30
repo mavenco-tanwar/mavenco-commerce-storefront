@@ -308,18 +308,43 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
   };
 }
 
-const archivedTenantsSet = new Set<string>(['tanwar-tailor', 'muskan-bhati', 'jqtrends']);
+const archivedTenantsSet = new Set<string>();
 const suspendedTenantsSet = new Set<string>();
 
-export function archiveTenantSlug(slug: string) {
+export function unarchiveTenantSlug(slug: string) {
   const clean = slug.toLowerCase().trim();
-  archivedTenantsSet.add(clean);
+  archivedTenantsSet.delete(clean);
+
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('jq_archived_tenants') || '[]';
+      const arr = JSON.parse(stored).filter((s: string) => s !== clean);
+      localStorage.setItem('jq_archived_tenants', JSON.stringify(arr));
+    } catch {}
+  }
 
   if (typeof window === 'undefined') {
     try {
       const fs = eval('require')('fs');
       const tmpPath = '/tmp/archived_tenants.json';
-      let existing: string[] = ['tanwar-tailor', 'muskan-bhati', 'jqtrends'];
+      if (fs.existsSync(tmpPath)) {
+        const arr = JSON.parse(fs.readFileSync(tmpPath, 'utf-8')).filter((s: string) => s !== clean);
+        fs.writeFileSync(tmpPath, JSON.stringify(arr), 'utf-8');
+      }
+    } catch {}
+  }
+}
+
+export function archiveTenantSlug(slug: string) {
+  const clean = slug.toLowerCase().trim();
+  archivedTenantsSet.add(clean);
+  dynamicTenantsMap.delete(clean);
+
+  if (typeof window === 'undefined') {
+    try {
+      const fs = eval('require')('fs');
+      const tmpPath = '/tmp/archived_tenants.json';
+      let existing: string[] = [];
       if (fs.existsSync(tmpPath)) {
         existing = JSON.parse(fs.readFileSync(tmpPath, 'utf-8'));
       }
@@ -405,7 +430,7 @@ export function checkTenantValidity(slug?: string): {
 const dynamicTenantsMap = new Map<string, TenantBrandConfig>();
 
 export function getTenantConfig(slug?: string): TenantBrandConfig {
-  const clean = (slug || 'jqtrends').toLowerCase().trim();
+  const clean = (slug || 'demo').toLowerCase().trim();
   if (dynamicTenantsMap.has(clean)) {
     return dynamicTenantsMap.get(clean)!;
   }
@@ -447,6 +472,7 @@ export function getTenantConfig(slug?: string): TenantBrandConfig {
 
 export function updateTenantConfig(slug: string, updates: Partial<TenantBrandConfig>): TenantBrandConfig {
   const clean = slug.toLowerCase().trim();
+  unarchiveTenantSlug(clean);
   const current = getTenantConfig(clean);
   const merged: TenantBrandConfig = {
     ...current,
