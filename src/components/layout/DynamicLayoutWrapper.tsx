@@ -10,14 +10,22 @@ import { PlatformFooter } from './PlatformFooter';
 import { ToastContainer } from './ToastContainer';
 
 export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
   const tenantQuery = searchParams.get('tenant');
 
-  // Check if user is on the main SaaS platform presentation (root URL without tenant query or path)
-  const isPlatformShowcase = pathname === '/' && !tenantQuery;
+  // Explicit platform presentation routes
+  const isPlatformRoute =
+    (pathname === '/' && !tenantQuery) ||
+    pathname === '/cms' ||
+    pathname.startsWith('/cms/') ||
+    pathname.startsWith('/platform') ||
+    pathname.startsWith('/features') ||
+    pathname.startsWith('/docs') ||
+    pathname.startsWith('/pricing');
 
-  if (isPlatformShowcase) {
+  // If on a platform presentation page, render the Mavenco Commerce SaaS Header and Footer
+  if (isPlatformRoute) {
     return (
       <div className="min-h-screen flex flex-col bg-[#0A0C10] text-slate-100 antialiased">
         <PlatformNavbar />
