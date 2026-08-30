@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CmsHomepageSection } from '@/services/api/cms';
 import { HeroSection } from './HeroSection';
 import { CategoryShowcase } from './CategoryShowcase';
@@ -16,14 +16,49 @@ import { PromotionalBanner } from './PromotionalBanner';
 import { ValueProps } from './ValueProps';
 
 interface DynamicSectionRendererProps {
-  sections: CmsHomepageSection[];
+  sections?: CmsHomepageSection[];
+  initialSections?: CmsHomepageSection[];
 }
 
-export function DynamicSectionRenderer({ sections }: DynamicSectionRendererProps) {
+export function DynamicSectionRenderer({ sections, initialSections }: DynamicSectionRendererProps) {
+  const [liveSections, setLiveSections] = useState<CmsHomepageSection[]>(
+    sections || initialSections || []
+  );
+
+  useEffect(() => {
+    if (sections && sections.length > 0) {
+      setLiveSections(sections);
+    }
+  }, [sections]);
+
+  // Client-side real-time sync with /api/v1/content/homepage
+  useEffect(() => {
+    let isMounted = true;
+    const fetchLatest = async () => {
+      try {
+        const res = await fetch('/api/v1/content/homepage', { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          const apiSections = json?.data?.sections;
+          if (isMounted && Array.isArray(apiSections) && apiSections.length > 0) {
+            setLiveSections(apiSections);
+          }
+        }
+      } catch (e) {
+        // Fallback to initial
+      }
+    };
+
+    fetchLatest();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const now = new Date();
 
   // Filter visible and scheduled sections, sorted by displayOrder
-  const activeSections = sections
+  const activeSections = liveSections
     .filter((sec) => {
       if (sec.isVisible === false) return false;
 
@@ -102,26 +137,19 @@ export function DynamicSectionRenderer({ sections }: DynamicSectionRendererProps
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customImage={sData.image || sData.desktopImage}
-                customCtaText={sData.ctaText || sData.primaryCtaText || 'Explore Complete Collection'}
-                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || '/women'}
-                customCategories={sData.categories || sData.categoryTabs}
+                customImage={sData.bannerImage || sData.image}
+                customCtaText={sData.ctaText || sData.primaryCtaText}
+                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl}
               />
             );
 
           case 'new-arrivals':
-          case 'product-carousel':
             return (
               <NewArrivalsStudio
                 key={section.id}
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customBannerTitle={sData.bannerTitle || sData.featureHeading}
-                customBannerSubtitle={sData.bannerSubtitle || sData.featureDescription}
-                customBannerImage={sData.bannerImage || sData.desktopImage || sData.image}
-                customCtaText={sData.ctaText || sData.primaryCtaText || 'Explore New Arrivals'}
-                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || '/new-arrivals'}
                 customLimit={sData.limit || 4}
               />
             );
@@ -133,9 +161,8 @@ export function DynamicSectionRenderer({ sections }: DynamicSectionRendererProps
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customCtaText={sData.ctaText || sData.primaryCtaText || 'Explore All Kids Styles'}
-                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || '/kids'}
-                customCategories={sData.categories || sData.categoryTabs}
+                customCtaText={sData.ctaText || sData.primaryCtaText}
+                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl}
               />
             );
 
@@ -147,12 +174,9 @@ export function DynamicSectionRenderer({ sections }: DynamicSectionRendererProps
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customLimit={sData.limit || 4}
-                customCtaText={sData.ctaText || sData.primaryCtaText || 'View All Best Sellers'}
-                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || '/women?sort=popular'}
               />
             );
 
-          case 'reviews':
           case 'testimonials':
             return (
               <TestimonialsSection
@@ -160,7 +184,7 @@ export function DynamicSectionRenderer({ sections }: DynamicSectionRendererProps
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customReviews={sData.reviews || sData.testimonials}
+                customReviews={sData.testimonials || sData.items}
               />
             );
 
@@ -171,9 +195,7 @@ export function DynamicSectionRenderer({ sections }: DynamicSectionRendererProps
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customHandle={sData.handle}
-                customHashtag={sData.hashtag}
-                customPosts={sData.posts || sData.items}
+                customHandle={sData.handle || sData.accountHandle}
               />
             );
 
@@ -184,36 +206,24 @@ export function DynamicSectionRenderer({ sections }: DynamicSectionRendererProps
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customCouponPromo={sData.code || sData.couponPromo || sData.couponCode}
-                customButtonText={sData.buttonText || sData.ctaText || 'Subscribe'}
+                customCouponPromo={sData.discountText}
               />
             );
 
-          case 'promo-banner':
+          case 'promotional-banner':
+          case 'promotional_banner':
             return (
               <PromotionalBanner
                 key={section.id}
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customImage={sData.image || sData.desktopImage}
-                customPrimaryCtaText={sData.primaryCtaText || sData.ctaText || 'Shop Collection'}
-                customPrimaryCtaUrl={sData.primaryCtaUrl || sData.ctaUrl || '/women'}
-                customSecondaryCtaText={sData.secondaryCtaText || 'View Offers'}
-                customSecondaryCtaUrl={sData.secondaryCtaUrl || '/sale'}
-              />
-            );
-
-          case 'value-props':
-            return (
-              <ValueProps
-                key={section.id}
-                customItems={sData.items || sData.promises}
+                customPrimaryCtaText={sData.ctaText || sData.primaryCtaText}
+                customPrimaryCtaUrl={sData.ctaUrl || sData.primaryCtaUrl}
               />
             );
 
           default:
-            console.warn(`[DynamicSectionRenderer] Unknown section type: ${section.type}`);
             return null;
         }
       })}
