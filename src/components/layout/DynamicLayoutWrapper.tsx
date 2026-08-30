@@ -8,15 +8,23 @@ import { Footer } from './Footer';
 import { PlatformNavbar } from './PlatformNavbar';
 import { PlatformFooter } from './PlatformFooter';
 import { ToastContainer } from './ToastContainer';
+import { checkTenantValidity } from '@/lib/tenant-config';
 
 export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
   const tenantQuery = searchParams.get('tenant');
 
-  // Explicit platform presentation routes
+  // Check if requesting an inactive or deleted store
+  const pathMatch = pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+  const activeSlug = tenantQuery || (pathMatch ? pathMatch[2] : null);
+
+  const isInvalidTenant = activeSlug ? !checkTenantValidity(activeSlug).isValid : false;
+
+  // Explicit platform presentation routes or invalid tenant routes
   const isPlatformRoute =
     (pathname === '/' && !tenantQuery) ||
+    isInvalidTenant ||
     pathname === '/cms' ||
     pathname.startsWith('/cms/') ||
     pathname.startsWith('/platform') ||
@@ -24,7 +32,7 @@ export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }
     pathname.startsWith('/docs') ||
     pathname.startsWith('/pricing');
 
-  // If on a platform presentation page, render the Mavenco Commerce SaaS Header and Footer
+  // If on a platform presentation page or invalid store page, render the Mavenco Commerce SaaS Header and Footer
   if (isPlatformRoute) {
     return (
       <div className="min-h-screen flex flex-col bg-[#0A0C10] text-slate-100 antialiased">

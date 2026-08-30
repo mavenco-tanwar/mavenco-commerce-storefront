@@ -308,6 +308,62 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
   };
 }
 
+export function checkTenantValidity(slug?: string): {
+  isValid: boolean;
+  isSuspended: boolean;
+  config: TenantBrandConfig | null;
+} {
+  if (!slug) return { isValid: false, isSuspended: false, config: null };
+  const clean = slug.toLowerCase().trim();
+
+  // 1. Seed tenants are always valid
+  if (SEED_TENANTS[clean]) {
+    return { isValid: true, isSuspended: false, config: SEED_TENANTS[clean] };
+  }
+
+  // 2. Browser active platform stores check
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('jq_saas_platform_tenants_v1');
+      if (stored) {
+        const list = JSON.parse(stored);
+        if (Array.isArray(list)) {
+          const found = list.find((t: any) => t.slug?.toLowerCase() === clean);
+          if (found) {
+            if (found.status === 'suspended') {
+              return { isValid: true, isSuspended: true, config: createDefaultTenantBrandConfig(clean) };
+            }
+            if (found.status === 'archived') {
+              return { isValid: false, isSuspended: false, config: null };
+            }
+            return { isValid: true, isSuspended: false, config: createDefaultTenantBrandConfig(clean) };
+          } else {
+            // Not in active store registry -> store was deleted!
+            return { isValid: false, isSuspended: false, config: null };
+          }
+        }
+      }
+    } catch {}
+  }
+
+  // 3. Server disk check for stored custom config
+  if (typeof window === 'undefined') {
+    try {
+      const fs = eval('require')('fs');
+      const tmpPath = `/tmp/store_${clean}_tenant_config.json`;
+      if (fs.existsSync(tmpPath)) {
+        const raw = fs.readFileSync(tmpPath, 'utf-8');
+        const parsed = JSON.parse(raw);
+        if (parsed?.name && parsed?.status !== 'archived') {
+          return { isValid: true, isSuspended: parsed?.status === 'suspended', config: parsed };
+        }
+      }
+    } catch {}
+  }
+
+  return { isValid: false, isSuspended: false, config: null };
+}
+
 // Mutable store in memory
 const dynamicTenantsMap = new Map<string, TenantBrandConfig>();
 
