@@ -17,6 +17,48 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  // If requesting list of all active tenants for Showcase & Navbar
+  if (searchParams.get('list') === 'all') {
+    try {
+      const db = await getDatabase();
+      if (db) {
+        const docs = await db
+          .collection('tenants')
+          .find({ status: { $ne: 'deleted' } })
+          .sort({ createdAt: -1 })
+          .toArray();
+
+        if (docs.length > 0) {
+          const cleanDocs = docs.map(({ _id, ...rest }) => rest);
+          return NextResponse.json(
+            {
+              data: cleanDocs,
+              count: cleanDocs.length,
+              status: 'success',
+              source: 'mongodb',
+              timestamp: new Date().toISOString(),
+            },
+            { headers: corsHeaders() }
+          );
+        }
+      }
+    } catch (err) {
+      console.error('MongoDB tenant list error:', err);
+    }
+
+    return NextResponse.json(
+      {
+        data: [],
+        count: 0,
+        status: 'success',
+        source: 'empty',
+        timestamp: new Date().toISOString(),
+      },
+      { headers: corsHeaders() }
+    );
+  }
+
   const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'demo';
   const clean = tenantSlug.toLowerCase().trim();
 

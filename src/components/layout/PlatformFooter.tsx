@@ -33,9 +33,9 @@ export function PlatformFooter() {
             </div>
             <ul className="space-y-2 text-xs">
               <li>
-                <Link href="/stores/jqtrends" className="hover:text-rose-400 transition-colors flex items-center justify-between">
-                  <span>JQ Trends (Luxury Fashion)</span>
-                  <span className="text-[10px] text-slate-500 font-mono">/stores/jqtrends</span>
+                <Link href="/stores/demo" className="hover:text-rose-400 transition-colors flex items-center justify-between">
+                  <span>Demo Store (Modern Lifestyle)</span>
+                  <span className="text-[10px] text-slate-500 font-mono">/stores/demo</span>
                 </Link>
               </li>
               <li>

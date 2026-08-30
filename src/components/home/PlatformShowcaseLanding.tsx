@@ -145,7 +145,7 @@ export function PlatformShowcaseLanding() {
     },
   ];
 
-  const tenants = [
+  const [tenants, setTenants] = useState([
     {
       id: 'store_demo',
       slug: 'demo',
@@ -162,23 +162,6 @@ export function PlatformShowcaseLanding() {
       description: 'A brand-agnostic demonstration showcasing visual drag-and-drop CMS blocks, lookbook storytelling, and responsive commerce.',
       badgeText: 'Featured Client Demo',
       catalogSize: '36+ Modern SKUs',
-    },
-    {
-      id: 'store_jq_trends',
-      slug: 'jqtrends',
-      name: 'JQ Trends',
-      tagline: 'Affordable Luxury Women & Kids Fashion',
-      industry: 'Haute Couture & Festive Pret',
-      currency: 'INR (₹)',
-      themeColors: {
-        primary: '#111111',
-        secondary: '#FFFDFC',
-        accent: '#B77A68',
-      },
-      image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1000&auto=format&fit=crop&q=80',
-      description: 'Artisanal Indian pret, pure chanderi silks, luxury festive sets, and bespoke runway silhouettes.',
-      badgeText: 'Fashion & Luxury',
-      catalogSize: '24+ Curated SKUs',
     },
     {
       id: 'store_aura_living',
@@ -214,7 +197,40 @@ export function PlatformShowcaseLanding() {
       badgeText: 'Activewear & Gear',
       catalogSize: '32+ Athletic SKUs',
     },
-  ];
+  ]);
+
+  React.useEffect(() => {
+    fetch('/api/v1/tenant-config?list=all')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (Array.isArray(json?.data) && json.data.length > 0) {
+          const mapped = json.data.map((t: any) => ({
+            id: t.id || `store_${t.slug}`,
+            slug: t.slug,
+            name: t.name,
+            tagline: t.tagline || 'Modern Commerce Storefront',
+            industry: t.tagline || 'Modern Commerce',
+            currency: `${t.currency || 'USD'} (${t.currencySymbol || '$'})`,
+            themeColors: {
+              primary: t.theme?.primaryColor || '#0F172A',
+              secondary: t.theme?.secondaryColor || '#F8FAFC',
+              accent: t.theme?.accentColor || '#6366F1',
+            },
+            image:
+              t.slug === 'auraliving'
+                ? 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1000&auto=format&fit=crop&q=80'
+                : t.slug === 'apexathletics'
+                ? 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1000&auto=format&fit=crop&q=80'
+                : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1000&auto=format&fit=crop&q=80',
+            description: t.description || `Explore ${t.name} with real-time headless visual CMS and dynamic design tokens.`,
+            badgeText: t.slug === 'demo' ? 'Featured Client Demo' : 'Live Storefront',
+            catalogSize: '12+ Modern SKUs',
+          }));
+          setTenants(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="flex flex-col bg-[#0A0C10] text-slate-100 min-h-screen select-none">

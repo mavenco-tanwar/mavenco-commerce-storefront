@@ -19,18 +19,12 @@ export function PlatformNavbar() {
   const [isStoreMenuOpen, setIsStoreMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const demoStores = [
+  const [demoStores, setDemoStores] = useState([
     {
       slug: 'demo',
       name: 'Demo Store',
       industry: 'Modern Lifestyle & Pret (Generic)',
       badge: 'Interactive Demo',
-    },
-    {
-      slug: 'jqtrends',
-      name: 'JQ Trends',
-      industry: 'Luxury Women & Kids Fashion',
-      badge: 'Haute Couture',
     },
     {
       slug: 'auraliving',
@@ -44,7 +38,24 @@ export function PlatformNavbar() {
       industry: 'High-Performance Activewear',
       badge: 'Activewear & Gear',
     },
-  ];
+  ]);
+
+  React.useEffect(() => {
+    fetch('/api/v1/tenant-config?list=all')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (Array.isArray(json?.data) && json.data.length > 0) {
+          const mapped = json.data.map((t: any) => ({
+            slug: t.slug,
+            name: t.name,
+            industry: t.tagline || 'Modern Commerce Store',
+            badge: t.slug === 'demo' ? 'Interactive Demo' : 'Live Storefront',
+          }));
+          setDemoStores(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 bg-[#0A0C10]/95 backdrop-blur-md border-b border-slate-800 text-white select-none">
