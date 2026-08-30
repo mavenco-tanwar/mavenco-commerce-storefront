@@ -42,56 +42,6 @@ export interface TenantBrandConfig {
 }
 
 export const SEED_TENANTS: Record<string, TenantBrandConfig> = {
-  jqtrends: {
-    id: 'store_jq_trends',
-    name: 'JQ Trends',
-    slug: 'jqtrends',
-    tagline: 'Style that speaks you',
-    description:
-      'Artisanal women and kids festive wear crafted from pure chanderi and mulmul silk. Effortless luxury designed for timeless celebrations.',
-    currency: 'INR',
-    currencySymbol: '₹',
-    theme: {
-      primaryColor: '#111111',
-      secondaryColor: '#FFFDFC',
-      accentColor: '#B77A68',
-      headingFont: 'Playfair Display, serif',
-      bodyFont: 'Plus Jakarta Sans, sans-serif',
-    },
-    contact: {
-      phone: '+91 98765 43210',
-      email: 'care@jqtrends.com',
-      whatsapp: '919876543210',
-      address: 'Boutique Atelier, Designer District, Mumbai, India',
-    },
-    announcements: {
-      leftCallout: 'Affordable Luxury Fashion',
-      mainText: 'New Season Atelier Drops Live Now •',
-      highlightText: 'EXPLORE FRESH ARRIVALS',
-      link: '/new-arrivals',
-    },
-    navLinks: [
-      { label: 'WOMEN', href: '/women' },
-      { label: 'KIDS', href: '/kids' },
-      { label: 'NEW IN', href: '/new-arrivals', badge: 'Fresh' },
-      { label: 'COLLECTIONS', href: '/collections/festive' },
-      { label: 'SALE', href: '/sale' },
-    ],
-    footerShopLinks: [
-      { label: "Women's Haute Couture", href: '/women' },
-      { label: 'Little Royals Festive Line', href: '/kids' },
-      { label: 'Chanderi Kurti Sets', href: '/women?category=kurtis' },
-      { label: 'Linen Co-ords', href: '/women?category=co-ords' },
-      { label: 'Festive Atelier Sale (20% Off)', href: '/sale' },
-    ],
-    footerCareLinks: [
-      { label: 'About JQ Trends', href: '/about-us' },
-      { label: 'Shipping & Delivery Policy', href: '/shipping-policy' },
-      { label: 'Returns & Doorstep Exchanges', href: '/return-policy' },
-      { label: 'Concierge & WhatsApp Help', href: '/contact' },
-      { label: 'Track Your Order', href: '/account' },
-    ],
-  },
   auraliving: {
     id: 'store_aura_living',
     name: 'Aura Living',
@@ -240,56 +190,6 @@ export const SEED_TENANTS: Record<string, TenantBrandConfig> = {
       { label: 'Returns & Exchanges', href: '/return-policy' },
       { label: 'Client Support Concierge', href: '/contact' },
       { label: 'Order Tracking', href: '/account' },
-    ],
-  },
-  'tanwar-tailor': {
-    id: 'store_tanwar_tailor',
-    name: 'Tanwar Tailor',
-    slug: 'tanwar-tailor',
-    tagline: 'Bespoken',
-    description:
-      'Welcome to Tanwar Tailor. A curated modern storefront showcasing seasonal apparel, lifestyle essentials, and contemporary designs.',
-    currency: 'INR',
-    currencySymbol: '₹',
-    theme: {
-      primaryColor: '#00FF48',
-      secondaryColor: '#F8FAFC',
-      accentColor: '#CC5500',
-      headingFont: 'Playfair Display, serif',
-      bodyFont: 'Plus Jakarta Sans, sans-serif',
-    },
-    contact: {
-      phone: '+91 98765 43210',
-      email: 'ammar.tanwar.dev@gmail.com',
-      whatsapp: '919876543210',
-      address: 'Tanwar Tailor Atelier, CA / Delhi',
-    },
-    announcements: {
-      leftCallout: 'Welcome to Tanwar Tailor',
-      mainText: 'New Season Atelier Drops Live Now • Complimentary Doorstep Delivery •',
-      highlightText: 'EXPLORE NEW IN',
-      link: '/new-arrivals',
-    },
-    navLinks: [
-      { label: 'NEW ARRIVALS', href: '/new-arrivals', badge: 'Fresh' },
-      { label: 'APPAREL', href: '/women' },
-      { label: 'LIFESTYLE', href: '/kids' },
-      { label: 'COLLECTIONS', href: '/collections/festive' },
-      { label: 'SALE', href: '/sale' },
-    ],
-    footerShopLinks: [
-      { label: 'Curated Apparel', href: '/women' },
-      { label: 'Design Objects & Living', href: '/kids' },
-      { label: 'New Season Lookbook', href: '/new-arrivals' },
-      { label: 'Limited Capsule', href: '/collections/festive' },
-      { label: 'Special Offers', href: '/sale' },
-    ],
-    footerCareLinks: [
-      { label: 'About Tanwar Tailor', href: '/about-us' },
-      { label: 'Shipping & Delivery Policy', href: '/shipping-policy' },
-      { label: 'Returns & Exchanges', href: '/return-policy' },
-      { label: 'Client Support Concierge', href: '/contact' },
-      { label: 'Track Your Order', href: '/account' },
     ],
   },
 };
@@ -465,14 +365,71 @@ export function checkTenantValidity(slug?: string): {
     } catch {}
   }
 
-  // Explicitly suspended stores
-  const isSuspended = suspendedTenantsSet.has(clean);
+  // Verified platform seed tenant
+  if (SEED_TENANTS[clean]) {
+    const isSuspended = suspendedTenantsSet.has(clean);
+    return {
+      isValid: true,
+      isSuspended,
+      config: SEED_TENANTS[clean],
+    };
+  }
 
-  // Return valid with config
+  // Dynamic memory registered tenant
+  if (dynamicTenantsMap.has(clean)) {
+    const isSuspended = suspendedTenantsSet.has(clean);
+    return {
+      isValid: true,
+      isSuspended,
+      config: dynamicTenantsMap.get(clean)!,
+    };
+  }
+
+  // Browser storage check
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(`tenant_config_${clean}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.name) {
+          dynamicTenantsMap.set(clean, parsed);
+          const isSuspended = suspendedTenantsSet.has(clean);
+          return {
+            isValid: true,
+            isSuspended,
+            config: parsed,
+          };
+        }
+      }
+    } catch {}
+  }
+
+  // Server disk check
+  if (typeof window === 'undefined') {
+    try {
+      const fs = eval('require')('fs');
+      const tmpPath = `/tmp/store_${clean}_tenant_config.json`;
+      if (fs.existsSync(tmpPath)) {
+        const raw = fs.readFileSync(tmpPath, 'utf-8');
+        const parsed = JSON.parse(raw);
+        if (parsed?.name) {
+          dynamicTenantsMap.set(clean, parsed);
+          const isSuspended = suspendedTenantsSet.has(clean);
+          return {
+            isValid: true,
+            isSuspended,
+            config: parsed,
+          };
+        }
+      }
+    } catch {}
+  }
+
+  // Store is not registered, or has been deleted -> 404 Inactive
   return {
-    isValid: true,
-    isSuspended,
-    config: getTenantConfig(clean),
+    isValid: false,
+    isSuspended: false,
+    config: null,
   };
 }
 
