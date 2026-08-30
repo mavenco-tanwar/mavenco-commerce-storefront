@@ -36,6 +36,7 @@ import {
 export function PlatformShowcaseLanding() {
   // State for Section 1: Visual CMS Studio Interactive Preview
   const [selectedCmsBlock, setSelectedCmsBlock] = useState<number>(0);
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
   // State for Section 2: Theme Token Studio Playground
   const [activeFont, setActiveFont] = useState<'Playfair Display, serif' | 'Cinzel, serif' | 'Montserrat, sans-serif' | 'Plus Jakarta Sans, sans-serif'>('Playfair Display, serif');
@@ -498,27 +499,78 @@ export function PlatformShowcaseLanding() {
             <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6 bg-[#111420]">
               {/* Browser Window Chrome */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
                     </div>
-                    <span className="text-[11px] font-mono text-slate-400 bg-[#0A0C10] px-3 py-1 rounded-md border border-slate-800">
-                      https://storefront.edge/preview?block={cmsBlocksData[selectedCmsBlock].id}
+                    <span className="text-[11px] font-mono text-slate-400 bg-[#0A0C10] px-3 py-1 rounded-md border border-slate-800 truncate max-w-[200px] sm:max-w-xs">
+                      https://storefront.edge/preview?block={cmsBlocksData[selectedCmsBlock].id}&amp;view={previewDevice}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1 bg-[#0A0C10] p-1 rounded-lg border border-slate-800 text-slate-400">
-                    <Monitor className="w-3.5 h-3.5 text-amber-400" />
-                    <Tablet className="w-3.5 h-3.5 hover:text-white transition-colors" />
-                    <Smartphone className="w-3.5 h-3.5 hover:text-white transition-colors" />
+                  <div className="flex items-center gap-1 bg-[#0A0C10] p-1 rounded-xl border border-slate-800 text-slate-400">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDevice('desktop')}
+                      className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                        previewDevice === 'desktop'
+                          ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
+                          : 'hover:text-white hover:bg-slate-800'
+                      }`}
+                      title="Desktop View (Full Screen)"
+                    >
+                      <Monitor className="w-3.5 h-3.5" />
+                      <span className="text-[10px] hidden sm:inline">Desktop</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDevice('tablet')}
+                      className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                        previewDevice === 'tablet'
+                          ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
+                          : 'hover:text-white hover:bg-slate-800'
+                      }`}
+                      title="Tablet View (iPad 768px)"
+                    >
+                      <Tablet className="w-3.5 h-3.5" />
+                      <span className="text-[10px] hidden sm:inline">Tablet</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDevice('mobile')}
+                      className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                        previewDevice === 'mobile'
+                          ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
+                          : 'hover:text-white hover:bg-slate-800'
+                      }`}
+                      title="Mobile View (iPhone 375px)"
+                    >
+                      <Smartphone className="w-3.5 h-3.5" />
+                      <span className="text-[10px] hidden sm:inline">Mobile</span>
+                    </button>
                   </div>
                 </div>
 
-                {/* Rendered Live Component Card Preview */}
-                <div className="relative rounded-2xl overflow-hidden border border-slate-700 bg-slate-950 shadow-2xl min-h-[300px] flex flex-col justify-end p-6 group">
+                {/* Rendered Live Component Card Preview (with Smooth Device Resize) */}
+                <div
+                  className={`relative overflow-hidden transition-all duration-500 ease-in-out bg-slate-950 shadow-2xl flex flex-col justify-end group ${
+                    previewDevice === 'desktop'
+                      ? 'w-full min-h-[320px] p-6 rounded-2xl border border-slate-700'
+                      : previewDevice === 'tablet'
+                      ? 'max-w-[480px] mx-auto min-h-[380px] p-5 rounded-3xl border-2 border-slate-600 shadow-amber-950/20 ring-1 ring-slate-700'
+                      : 'max-w-[320px] mx-auto min-h-[440px] p-4 rounded-[32px] border-4 border-slate-700 shadow-2xl ring-2 ring-slate-800'
+                  }`}
+                >
+                  {/* Mobile Dynamic Island / Notch */}
+                  {previewDevice === 'mobile' && (
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-3 bg-slate-900 rounded-full border border-slate-700/80 z-20 flex items-center justify-center pointer-events-none">
+                      <span className="w-2 h-2 rounded-full bg-slate-800" />
+                    </div>
+                  )}
+
                   <Image
                     src={cmsBlocksData[selectedCmsBlock].previewImage}
                     alt={cmsBlocksData[selectedCmsBlock].title}
@@ -533,20 +585,36 @@ export function PlatformShowcaseLanding() {
                       <span>{cmsBlocksData[selectedCmsBlock].badge}</span>
                     </div>
 
-                    <h3 className="text-2xl font-extrabold text-white leading-tight">
+                    <h3
+                      className={`font-extrabold text-white leading-tight transition-all ${
+                        previewDevice === 'mobile'
+                          ? 'text-lg'
+                          : previewDevice === 'tablet'
+                          ? 'text-xl'
+                          : 'text-2xl'
+                      }`}
+                    >
                       {cmsBlocksData[selectedCmsBlock].previewHeading}
                     </h3>
 
-                    <p className="text-xs text-slate-300 max-w-md font-sans">
+                    <p
+                      className={`text-slate-300 font-sans transition-all ${
+                        previewDevice === 'mobile' ? 'text-[11px] line-clamp-2' : 'text-xs max-w-md'
+                      }`}
+                    >
                       {cmsBlocksData[selectedCmsBlock].previewSub}
                     </p>
 
-                    <div className="pt-2 flex items-center gap-3">
-                      <button className="px-4 py-2 bg-amber-500 text-slate-950 font-bold text-xs rounded-lg shadow-lg flex items-center gap-1.5">
+                    <div
+                      className={`pt-2 flex ${
+                        previewDevice === 'mobile' ? 'flex-col' : 'items-center'
+                      } gap-2.5`}
+                    >
+                      <button className="w-full sm:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg shadow-lg flex items-center justify-center gap-1.5 transition-all">
                         <span>Interactive CTA</span>
                         <ArrowRight className="w-3 h-3" />
                       </button>
-                      <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-lg border border-white/20 backdrop-blur-md">
+                      <button className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-lg border border-white/20 backdrop-blur-md transition-all">
                         Secondary Action
                       </button>
                     </div>
