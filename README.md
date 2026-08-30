@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mavenco Commerce — Multi-Tenant Storefront Engine
 
-## Getting Started
+**Mavenco Commerce Storefront** is a high-performance, headless, multi-tenant ecommerce storefront designed to dynamically render thousands of merchant stores with custom branding, themes, typography, product catalogs, visual CMS pages, and carts on the fly.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Key Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Multi-Tenant Architecture**: Automatically resolves active tenant via custom domain (`brand.com`), subdomain (`brand.ourplatform.com`), or path routing (`/stores/[slug]`).
+- **Dynamic Theme Injector**: On-the-fly injection of brand palettes, Google Fonts, border radii, and luxury design tokens.
+- **Visual Headless CMS**: Dynamic section rendering for Hero Banners, Lookbooks, Product Carousels, Video, Testimonials, Instagram Feed, and Newsletters.
+- **Full Commerce Engine**:
+  - Filterable Product Listing Pages (PLP) with facets
+  - Product Details Page (PDP) with multi-variant selectors (Size/Color)
+  - Multi-Currency Cart & Checkout
+  - Customer Account Portal with 5-stage order tracking and GSTIN tax invoices.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Multi-Tenant URL Routing
 
-## Learn More
+| Store | Customer Storefront URL | Theme Style |
+| :--- | :--- | :--- |
+| **JQ Trends** | `/stores/jqtrends` or `jqtrends.com` | Black, Cream, Blush Rose Gold (Fashion) |
+| **Aura Living** | `/stores/auraliving` or `auraliving.com` | Forest Green, Sage, Sand (Home Decor) |
+| **Apex Athletics** | `/stores/apexathletics` or `apexathletics.com` | Carbon Black, Electric Cyan (Activewear) |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 💻 Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Framework**: Next.js 16 (App Router with Turbopack)
+- **Styling**: Tailwind CSS & Vanilla CSS Design Tokens
+- **Icons**: Lucide React
+- **Deployment**: Vercel Serverless Edge
