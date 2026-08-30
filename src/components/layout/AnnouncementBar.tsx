@@ -2,98 +2,74 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Phone, Sparkles } from 'lucide-react';
-import { useStore } from '@/context/StoreContext';
+import { ChevronLeft, ChevronRight, Phone, Sparkles, Globe } from 'lucide-react';
+import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
 
 export function AnnouncementBar() {
-  const { storeConfig } = useStore();
-  const announcements = storeConfig.announcements || [];
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
 
   useEffect(() => {
-    if (announcements.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % announcements.length);
-    }, 4500);
-    return () => clearInterval(interval);
-  }, [announcements.length]);
+    setTenant(resolveTenant());
+  }, []);
 
-  if (announcements.length === 0) return null;
-
-  const current = announcements[currentIndex];
+  const ann = tenant.announcements;
 
   return (
-    <div className="bg-[#111111] text-[#FFFDFC] text-xs py-2 px-4 border-b border-[#2A2523] select-none relative z-40">
+    <div
+      className="text-xs py-2 px-4 border-b select-none relative z-40"
+      style={{
+        backgroundColor: tenant.theme.primaryColor,
+        color: tenant.theme.secondaryColor,
+        borderColor: `${tenant.theme.accentColor}33`,
+      }}
+    >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Left Side: Support Callout (Desktop) */}
-        <div className="hidden lg:flex items-center gap-4 text-[#D89F9C] text-[11px]">
+        <div className="hidden lg:flex items-center gap-4 text-[11px]" style={{ color: tenant.theme.accentColor }}>
           <span className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
-            <Sparkles className="w-3 h-3 text-[#B77A68]" />
-            Affordable Luxury Fashion
+            <Sparkles className="w-3 h-3" />
+            {ann.leftCallout}
           </span>
-          <span className="text-[#3D3430]">•</span>
+          <span className="opacity-40">•</span>
           <a
-            href={`https://wa.me/${storeConfig.policies.whatsappNumber.replace(/[^0-9]/g, '')}`}
+            href={`https://wa.me/${tenant.contact.whatsapp.replace(/[^0-9]/g, '')}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 hover:text-white transition-colors"
           >
-            <Phone className="w-3 h-3 text-[#B77A68]" />
-            Order on WhatsApp
+            <Phone className="w-3 h-3" />
+            WhatsApp Concierge
           </a>
         </div>
 
-        {/* Center: Rotating Announcement */}
+        {/* Center: Announcement */}
         <div className="flex-1 flex items-center justify-center gap-2 text-center">
-          <button
-            onClick={() =>
-              setCurrentIndex((prev) => (prev - 1 + announcements.length) % announcements.length)
-            }
-            className="hidden sm:inline-flex text-[#777777] hover:text-[#FFFDFC] transition-colors p-0.5"
-            aria-label="Previous announcement"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-
-          <div className="font-medium tracking-wide text-xs transition-all duration-300">
-            {current.link ? (
-              <Link
-                href={current.link}
-                className="hover:underline inline-flex items-center gap-1.5"
-              >
-                <span>{current.text}</span>
-                {current.highlightText && (
-                  <span className="font-bold text-[#E8B8B5] tracking-wider uppercase underline underline-offset-2">
-                    {current.highlightText}
-                  </span>
-                )}
-              </Link>
-            ) : (
-              <span>
-                {current.text}{' '}
-                {current.highlightText && (
-                  <strong className="text-[#E8B8B5]">{current.highlightText}</strong>
-                )}
-              </span>
-            )}
+          <div className="font-medium tracking-wide text-xs">
+            <Link
+              href={ann.link || '/sale'}
+              className="hover:underline inline-flex items-center gap-1.5"
+            >
+              <span>{ann.mainText}</span>
+              {ann.highlightText && (
+                <span
+                  className="font-bold tracking-wider uppercase underline underline-offset-2"
+                  style={{ color: tenant.theme.accentColor }}
+                >
+                  {ann.highlightText}
+                </span>
+              )}
+            </Link>
           </div>
-
-          <button
-            onClick={() => setCurrentIndex((prev) => (prev + 1) % announcements.length)}
-            className="hidden sm:inline-flex text-[#777777] hover:text-[#FFFDFC] transition-colors p-0.5"
-            aria-label="Next announcement"
-          >
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
         </div>
 
-        {/* Right Side: Currency & Perks (Desktop) */}
-        <div className="hidden lg:flex items-center gap-3 text-[11px] text-[#777777]">
-          <span>INR (₹)</span>
-          <span>•</span>
-          <Link href="/account" className="hover:text-white transition-colors">
-            Track Order
-          </Link>
+        {/* Right Side: Currency & Store Tag */}
+        <div className="hidden md:flex items-center gap-3 text-[11px] font-mono opacity-80">
+          <span className="flex items-center gap-1">
+            <Globe className="w-3 h-3" />
+            {tenant.currency} ({tenant.currencySymbol})
+          </span>
+          <span className="opacity-40">•</span>
+          <span className="uppercase tracking-widest">{tenant.name}</span>
         </div>
       </div>
     </div>

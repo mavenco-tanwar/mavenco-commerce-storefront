@@ -9,7 +9,10 @@ import { CmsApiService, CmsMenuItem } from '@/services/api/cms';
 import { Category, Collection } from '@/types/category';
 import { categoriesData, collectionsData } from '@/data/categories';
 
+import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
+
 export function Navigation() {
+  const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>(categoriesData);
   const [collections, setCollections] = useState<Collection[]>(collectionsData);
@@ -22,24 +25,49 @@ export function Navigation() {
   ]);
 
   useEffect(() => {
+    setTenant(resolveTenant());
     CmsApiService.getMenu('header-menu').then((items) => {
       if (items && items.length > 0) {
         setMenuItems(items);
       }
     });
-
     CategoryService.getCategories().then((res) => {
       if (res.data && res.data.length > 0) {
         setCategories(res.data);
       }
     });
-
     CategoryService.getCollections().then((res) => {
       if (res.data && res.data.length > 0) {
         setCollections(res.data);
       }
     });
   }, []);
+
+  // For tenant stores like Aura Living or Apex Athletics, render their clean distinct menu links
+  if (tenant.slug !== 'jqtrends') {
+    return (
+      <nav className="hidden md:flex items-center justify-center gap-7 lg:gap-10 text-xs uppercase tracking-widest font-semibold select-none">
+        {tenant.navLinks.map((link) => (
+          <Link
+            key={link.label}
+            href={link.href}
+            className="hover:opacity-75 transition-opacity flex items-center gap-1.5"
+            style={{ color: tenant.theme.primaryColor }}
+          >
+            <span>{link.label}</span>
+            {link.badge && (
+              <span
+                className="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider text-white"
+                style={{ backgroundColor: tenant.theme.accentColor }}
+              >
+                {link.badge}
+              </span>
+            )}
+          </Link>
+        ))}
+      </nav>
+    );
+  }
 
   const womenCat = categories.find((c) => c.slug === 'women') || categoriesData[0];
   const kidsCat = categories.find((c) => c.slug === 'kids') || categoriesData[1];

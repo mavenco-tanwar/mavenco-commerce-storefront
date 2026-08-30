@@ -28,7 +28,7 @@ export function BrandLogo({
 
   return (
     <Link
-      href="/"
+      href={`/stores/${tenant.slug}`}
       className={`inline-flex items-center gap-3 group transition-opacity hover:opacity-90 ${className}`}
       aria-label={`${tenant.name} - Home`}
     >
@@ -55,11 +55,7 @@ export function BrandLogo({
             className="text-[9px] uppercase tracking-widest font-semibold mt-1"
             style={{ color: tenant.theme.accentColor }}
           >
-            {tenant.slug === 'jqtrends'
-              ? 'Style that speaks you'
-              : tenant.slug === 'auraliving'
-              ? 'Nordic Living & Decor'
-              : 'Performance Gear'}
+            {tenant.tagline}
           </span>
         )}
       </div>
