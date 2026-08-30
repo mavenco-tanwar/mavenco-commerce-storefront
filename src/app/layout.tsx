@@ -6,10 +6,6 @@ import { StoreProvider } from '@/context/StoreContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import { CartProvider } from '@/context/CartContext';
-import { AnnouncementBar } from '@/components/layout/AnnouncementBar';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { ToastContainer } from '@/components/layout/ToastContainer';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -43,6 +39,9 @@ export const metadata: Metadata = {
   },
 };
 
+import { Suspense } from 'react';
+import { DynamicLayoutWrapper } from '@/components/layout/DynamicLayoutWrapper';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -50,17 +49,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${playfair.variable} ${jakarta.variable}`}>
-      <body className="min-h-screen flex flex-col bg-[#FFFDFC] text-[#111111] antialiased">
+      <body className="min-h-screen flex flex-col bg-[#0A0C10] text-[#111111] antialiased">
         <ToastProvider>
           <StoreProvider>
             <AuthProvider>
               <WishlistProvider>
                 <CartProvider>
-                  <AnnouncementBar />
-                  <Header />
-                  <main className="flex-1">{children}</main>
-                  <Footer />
-                  <ToastContainer />
+                  <Suspense fallback={<div className="min-h-screen bg-[#0A0C10]" />}>
+                    <DynamicLayoutWrapper>{children}</DynamicLayoutWrapper>
+                  </Suspense>
                 </CartProvider>
               </WishlistProvider>
             </AuthProvider>
