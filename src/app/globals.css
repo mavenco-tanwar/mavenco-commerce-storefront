@@ -63,23 +63,29 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom smooth scrollbar */
+/* Modern Sleek Minimalist Scrollbar (Adaptive & Translucent) */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(150, 150, 150, 0.3) transparent;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F8F1EA;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #B77A68;
+  background: rgba(150, 150, 150, 0.3);
   border-radius: 9999px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9A6050;
+  background: rgba(150, 150, 150, 0.55);
 }
 
 /* Luxury card hover glow & subtle transitions */
