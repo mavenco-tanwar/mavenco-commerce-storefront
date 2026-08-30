@@ -44,31 +44,59 @@ export function PlatformShowcaseLanding() {
   const themePalettes = {
     rose: {
       name: 'Haute Pret (Blush & Gold)',
-      primary: '#111111',
+      primary: '#1A1412',
       accent: '#B77A68',
       background: '#FFFDFC',
+      cardBg: '#FFFFFF',
+      textColor: '#1A1412',
+      subTextColor: '#6B5E59',
       tagline: 'Artisanal Festive Silhouettes',
+      announcementBg: '#1A1412',
+      announcementText: '#FFFDFC',
+      buttonText: '#FFFFFF',
+      isDark: false,
     },
     nordic: {
       name: 'Nordic Sanctuary (Forest & Sand)',
       primary: '#1B4332',
-      accent: '#74C69D',
-      background: '#FAF3E0',
+      accent: '#2D6A4F',
+      background: '#FAF6EE',
+      cardBg: '#FFFFFF',
+      textColor: '#1B4332',
+      subTextColor: '#405B4E',
       tagline: 'Mindful Interior Living',
+      announcementBg: '#1B4332',
+      announcementText: '#FAF6EE',
+      buttonText: '#FFFFFF',
+      isDark: false,
     },
     athletic: {
       name: 'Apex Athletic (Carbon & Cyan)',
-      primary: '#0A0A0A',
+      primary: '#0F172A',
       accent: '#00F5D4',
-      background: '#161822',
+      background: '#090D16',
+      cardBg: '#111827',
+      textColor: '#F8FAFC',
+      subTextColor: '#94A3B8',
       tagline: 'Championship Engineered Gear',
+      announcementBg: '#00F5D4',
+      announcementText: '#090D16',
+      buttonText: '#090D16',
+      isDark: true,
     },
     indigo: {
       name: 'Modern Atelier (Slate & Indigo)',
       primary: '#0F172A',
       accent: '#6366F1',
       background: '#F8FAFC',
+      cardBg: '#FFFFFF',
+      textColor: '#0F172A',
+      subTextColor: '#64748B',
       tagline: 'Curated Design Capsule',
+      announcementBg: '#0F172A',
+      announcementText: '#F8FAFC',
+      buttonText: '#FFFFFF',
+      isDark: false,
     },
   };
 
@@ -663,16 +691,26 @@ export function PlatformShowcaseLanding() {
                 className="p-6 sm:p-8 rounded-2xl border shadow-inner transition-all duration-300 space-y-6"
                 style={{
                   backgroundColor: activePalette.background,
-                  color: activePalette.primary,
                   borderColor: `${activePalette.accent}4D`,
                 }}
               >
                 {/* Simulated Announcement Bar */}
                 <div
-                  className="p-2.5 rounded-lg text-center text-xs font-bold text-white tracking-wide shadow-sm"
-                  style={{ backgroundColor: activePalette.primary }}
+                  className="p-2.5 rounded-lg text-center text-xs font-bold tracking-wide shadow-sm"
+                  style={{
+                    backgroundColor: activePalette.announcementBg,
+                    color: activePalette.announcementText,
+                  }}
                 >
-                  ⚡ Spring Private Preview • 20% OFF with Code <span style={{ color: activePalette.accent }}>TOKEN20</span>
+                  ⚡ Spring Private Preview • 20% OFF with Code{' '}
+                  <span
+                    className="underline font-black"
+                    style={{
+                      color: activePalette.isDark ? '#090D16' : activePalette.accent,
+                    }}
+                  >
+                    TOKEN20
+                  </span>
                 </div>
 
                 {/* Simulated Hero Card */}
@@ -681,7 +719,7 @@ export function PlatformShowcaseLanding() {
                     className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-md"
                     style={{
                       color: activePalette.accent,
-                      backgroundColor: `${activePalette.accent}1A`,
+                      backgroundColor: `${activePalette.accent}20`,
                     }}
                   >
                     {activePalette.tagline}
@@ -689,20 +727,26 @@ export function PlatformShowcaseLanding() {
 
                   <h3
                     className="text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight transition-all"
-                    style={{ fontFamily: activeFont, color: activePalette.primary }}
+                    style={{ fontFamily: activeFont, color: activePalette.textColor }}
                   >
                     Effortless Luxury &amp; Timeless Distinction
                   </h3>
 
-                  <p className="text-xs opacity-75 max-w-sm mx-auto font-sans leading-relaxed">
+                  <p
+                    className="text-xs max-w-sm mx-auto font-sans leading-relaxed transition-all"
+                    style={{ color: activePalette.subTextColor }}
+                  >
                     Rendered with zero rebuild delays. Brand customizers can alter every design token across merchant instances in real time.
                   </p>
 
                   <div className="pt-2">
                     <button
                       type="button"
-                      className={`px-6 py-3 font-bold text-xs text-white shadow-xl transition-all hover:scale-105 ${activeRadius}`}
-                      style={{ backgroundColor: activePalette.accent }}
+                      className={`px-6 py-3 font-bold text-xs shadow-xl transition-all hover:scale-105 ${activeRadius}`}
+                      style={{
+                        backgroundColor: activePalette.accent,
+                        color: activePalette.buttonText,
+                      }}
                     >
                       Explore Curated Drop →
                     </button>
