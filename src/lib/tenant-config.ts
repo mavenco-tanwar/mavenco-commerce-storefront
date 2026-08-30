@@ -194,10 +194,93 @@ export const SEED_TENANTS: Record<string, TenantBrandConfig> = {
   },
 };
 
+// Mutable store in memory
+const dynamicTenantsMap = new Map<string, TenantBrandConfig>();
+
+export function getTenantConfig(slug?: string): TenantBrandConfig {
+  const clean = (slug || 'jqtrends').toLowerCase().trim();
+  if (dynamicTenantsMap.has(clean)) {
+    return dynamicTenantsMap.get(clean)!;
+  }
+
+  // Server disk check
+  if (typeof window === 'undefined') {
+    try {
+      const fs = eval('require')('fs');
+      const tmpPath = `/tmp/store_${clean}_tenant_config.json`;
+      if (fs.existsSync(tmpPath)) {
+        const raw = fs.readFileSync(tmpPath, 'utf-8');
+        const parsed = JSON.parse(raw);
+        if (parsed?.name) {
+          dynamicTenantsMap.set(clean, parsed);
+          return parsed;
+        }
+      }
+    } catch {}
+  }
+
+  // Browser storage check
+  if (typeof window !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(`tenant_config_${clean}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.name) {
+          dynamicTenantsMap.set(clean, parsed);
+          return parsed;
+        }
+      }
+    } catch {}
+  }
+
+  const base = SEED_TENANTS[clean] || SEED_TENANTS.jqtrends;
+  dynamicTenantsMap.set(clean, base);
+  return base;
+}
+
+export function updateTenantConfig(slug: string, updates: Partial<TenantBrandConfig>): TenantBrandConfig {
+  const clean = slug.toLowerCase().trim();
+  const current = getTenantConfig(clean);
+  const merged: TenantBrandConfig = {
+    ...current,
+    ...updates,
+    theme: {
+      ...current.theme,
+      ...(updates.theme || {}),
+    },
+    contact: {
+      ...current.contact,
+      ...(updates.contact || {}),
+    },
+    announcements: {
+      ...current.announcements,
+      ...(updates.announcements || {}),
+    },
+  };
+
+  dynamicTenantsMap.set(clean, merged);
+
+  if (typeof window === 'undefined') {
+    try {
+      const fs = eval('require')('fs');
+      const tmpPath = `/tmp/store_${clean}_tenant_config.json`;
+      fs.writeFileSync(tmpPath, JSON.stringify(merged, null, 2), 'utf-8');
+    } catch {}
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(`tenant_config_${clean}`, JSON.stringify(merged));
+    } catch {}
+  }
+
+  return merged;
+}
+
 export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
   if (tenantParam) {
     const clean = tenantParam.toLowerCase().trim();
-    if (SEED_TENANTS[clean]) return SEED_TENANTS[clean];
+    return getTenantConfig(clean);
   }
 
   // Browser check for URL path, query param, or hostname
@@ -206,31 +289,31 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
     const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
     if (pathMatch) {
       const slug = pathMatch[2].toLowerCase();
-      if (SEED_TENANTS[slug]) return SEED_TENANTS[slug];
+      return getTenantConfig(slug);
     }
 
     // 2. Check query param ?tenant=slug
     const urlParams = new URLSearchParams(window.location.search);
     const qTenant = urlParams.get('tenant');
-    if (qTenant && SEED_TENANTS[qTenant.toLowerCase()]) {
-      return SEED_TENANTS[qTenant.toLowerCase()];
+    if (qTenant) {
+      return getTenantConfig(qTenant);
     }
 
     // 3. Check domain / subdomain
     const host = window.location.hostname.toLowerCase();
-    if (host.includes('auraliving') || host.startsWith('auraliving.')) return SEED_TENANTS.auraliving;
-    if (host.includes('apexathletics') || host.startsWith('apexathletics.')) return SEED_TENANTS.apexathletics;
-    if (host.includes('jqtrends') || host.startsWith('jqtrends.')) return SEED_TENANTS.jqtrends;
+    if (host.includes('auraliving') || host.startsWith('auraliving.')) return getTenantConfig('auraliving');
+    if (host.includes('apexathletics') || host.startsWith('apexathletics.')) return getTenantConfig('apexathletics');
+    if (host.includes('jqtrends') || host.startsWith('jqtrends.')) return getTenantConfig('jqtrends');
 
     // 4. Check cookie
     const cookies = document.cookie.split(';');
     for (const cookie of cookies) {
       const [name, val] = cookie.trim().split('=');
-      if (name === 'jq_active_tenant' && val && SEED_TENANTS[val.toLowerCase()]) {
-        return SEED_TENANTS[val.toLowerCase()];
+      if (name === 'jq_active_tenant' && val) {
+        return getTenantConfig(val);
       }
     }
   }
 
-  return SEED_TENANTS.jqtrends;
+  return getTenantConfig('jqtrends');
 }
