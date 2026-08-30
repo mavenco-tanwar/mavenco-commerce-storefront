@@ -41,7 +41,11 @@ export interface TenantBrandConfig {
   }[];
 }
 
-export const SEED_TENANTS: Record<string, TenantBrandConfig> = {};
+export const SEED_TENANTS: Record<string, TenantBrandConfig> = {
+  demo: createDefaultTenantBrandConfig('demo'),
+  auraliving: createDefaultTenantBrandConfig('auraliving'),
+  apexathletics: createDefaultTenantBrandConfig('apexathletics'),
+};
 
 export function formatStoreName(slug: string): string {
   return slug
