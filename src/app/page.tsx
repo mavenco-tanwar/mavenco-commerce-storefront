@@ -22,12 +22,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   }
 
   // Otherwise, load and render that specific tenant's store
-  const sections = await CmsApiService.getHomepageSections(isPreview);
+  const sections = await CmsApiService.getHomepageSections(isPreview, tenantSlug);
 
   return (
     <div className="flex flex-col">
       {/* Dynamic CMS Sections Renderer */}
-      <DynamicSectionRenderer sections={sections} />
+      <DynamicSectionRenderer sections={sections} tenantSlug={tenantSlug} />
 
       {/* Brand Value Propositions */}
       <ValueProps />

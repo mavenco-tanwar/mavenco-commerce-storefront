@@ -15,13 +15,16 @@ export async function OPTIONS() {
 }
 
 export async function GET(request: NextRequest) {
-  const sections = getStoredHomepageSections();
+  const { searchParams } = new URL(request.url);
+  const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'jqtrends';
+  const sections = getStoredHomepageSections(tenantSlug);
 
   return NextResponse.json(
     {
       data: {
-        id: 'hp_live',
-        storeId: 'store_jq_trends',
+        id: `hp_live_${tenantSlug}`,
+        storeId: `store_${tenantSlug}`,
+        tenant: tenantSlug,
         version: 1,
         status: 'published',
         sections: sections,
@@ -34,23 +37,26 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'jqtrends';
     const body = await request.json();
     const newSections = body.sections || body;
 
     if (Array.isArray(newSections) && newSections.length > 0) {
-      saveStoredHomepageSections(newSections);
+      saveStoredHomepageSections(newSections, tenantSlug);
       try {
         revalidatePath('/');
       } catch {}
     }
 
-    const updatedSections = getStoredHomepageSections();
+    const updatedSections = getStoredHomepageSections(tenantSlug);
 
     return NextResponse.json(
       {
         data: {
-          id: 'hp_live',
-          storeId: 'store_jq_trends',
+          id: `hp_live_${tenantSlug}`,
+          storeId: `store_${tenantSlug}`,
+          tenant: tenantSlug,
           version: Date.now(),
           status: 'published',
           sections: updatedSections,

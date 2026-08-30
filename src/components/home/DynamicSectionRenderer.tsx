@@ -18,9 +18,10 @@ import { ValueProps } from './ValueProps';
 interface DynamicSectionRendererProps {
   sections?: CmsHomepageSection[];
   initialSections?: CmsHomepageSection[];
+  tenantSlug?: string;
 }
 
-export function DynamicSectionRenderer({ sections, initialSections }: DynamicSectionRendererProps) {
+export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }: DynamicSectionRendererProps) {
   const [liveSections, setLiveSections] = useState<CmsHomepageSection[]>(
     sections || initialSections || []
   );
@@ -34,9 +35,16 @@ export function DynamicSectionRenderer({ sections, initialSections }: DynamicSec
   // Client-side real-time sync with /api/v1/content/homepage
   useEffect(() => {
     let isMounted = true;
+    const currentSlug =
+      tenantSlug ||
+      (typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('tenant') || ''
+        : '') ||
+      'jqtrends';
+
     const fetchLatest = async () => {
       try {
-        const res = await fetch('/api/v1/content/homepage', { cache: 'no-store' });
+        const res = await fetch(`/api/v1/content/homepage?tenant=${currentSlug}`, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
           const apiSections = json?.data?.sections;
@@ -53,7 +61,7 @@ export function DynamicSectionRenderer({ sections, initialSections }: DynamicSec
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [tenantSlug]);
 
   const now = new Date();
 

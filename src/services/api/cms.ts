@@ -71,9 +71,13 @@ export class CmsApiService {
   /**
    * Retrieves active or preview homepage sections from the CMS.
    */
-  public static async getHomepageSections(isPreview: boolean = false): Promise<CmsHomepageSection[]> {
+  public static async getHomepageSections(
+    isPreview: boolean = false,
+    tenantSlug?: string
+  ): Promise<CmsHomepageSection[]> {
+    const slug = tenantSlug || 'jqtrends';
     try {
-      const endpoint = `/api/v1/content/homepage${isPreview ? '?preview=draft' : ''}`;
+      const endpoint = `/api/v1/content/homepage?tenant=${slug}${isPreview ? '&preview=draft' : ''}`;
       const res = await apiClient.get<CmsHomepageResponse>(endpoint);
 
       if (res.data?.sections && Array.isArray(res.data.sections)) {
@@ -85,7 +89,7 @@ export class CmsApiService {
 
     try {
       const { getStoredHomepageSections } = require('@/lib/cms-store');
-      const stored = getStoredHomepageSections();
+      const stored = getStoredHomepageSections(slug);
       if (stored && stored.length > 0) {
         return stored;
       }
