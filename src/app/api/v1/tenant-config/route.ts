@@ -66,7 +66,11 @@ export async function GET(request: NextRequest) {
     const db = await getDatabase();
     if (db) {
       const doc = await db.collection('tenants').findOne({
-        slug: clean,
+        $or: [
+          { slug: clean },
+          { primaryDomain: clean },
+          { 'domains.domain': clean },
+        ],
         status: { $ne: 'deleted' },
       });
 

@@ -13,7 +13,13 @@ export async function checkTenantValidityDb(slug?: string): Promise<{
   try {
     const db = await getDatabase();
     if (db) {
-      const doc = await db.collection('tenants').findOne({ slug: clean });
+      const doc = await db.collection('tenants').findOne({
+        $or: [
+          { slug: clean },
+          { primaryDomain: clean },
+          { 'domains.domain': clean },
+        ],
+      });
       if (doc) {
         if (doc.status === 'deleted') {
           return { isValid: false, isSuspended: false, config: null };
