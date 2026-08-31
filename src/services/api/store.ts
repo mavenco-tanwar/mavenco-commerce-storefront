@@ -36,10 +36,10 @@ export class StoreApiService {
         policies: {
           freeShippingThreshold: settings.freeShippingThreshold || 999,
           returnWindowDays: 7,
-          supportEmail: settings.contactEmail || 'care@jqtrends.com',
-          supportPhone: settings.contactPhone || '+91 98765 43210',
-          whatsappNumber: '+91 98765 43210',
-          businessAddress: settings.address || 'Indiranagar, Bengaluru, Karnataka - 560038, India',
+          supportEmail: settings.contactEmail || 'ammar.tanwar.dev@gmail.com',
+          supportPhone: settings.contactPhone || '+91 82390 19096',
+          whatsappNumber: '+91 82390 19096',
+          businessAddress: settings.address || 'Mavenco Global Commerce Studio, CA / Delhi',
         },
         announcements: [
           { id: 'ann-1', text: '✨ Free Express Doorstep Shipping on all orders above ₹999', highlightText: 'FREE SHIPPING' },
@@ -47,9 +47,9 @@ export class StoreApiService {
           { id: 'ann-3', text: '🎁 Use code WELCOME200 for ₹200 OFF on your first purchase', highlightText: 'WELCOME200' },
         ],
         socialLinks: [
-          { platform: 'instagram', url: 'https://instagram.com/jqtrends', label: 'Instagram' },
-          { platform: 'facebook', url: 'https://facebook.com/jqtrends', label: 'Facebook' },
-          { platform: 'whatsapp', url: 'https://wa.me/919876543210', label: 'WhatsApp' },
+          { platform: 'instagram', url: 'https://instagram.com/mavenco', label: 'Instagram' },
+          { platform: 'facebook', url: 'https://facebook.com/mavenco', label: 'Facebook' },
+          { platform: 'whatsapp', url: 'https://wa.me/918239019096', label: 'WhatsApp' },
         ],
         theme: {
           primaryColor: tenant.theme?.tokens?.colors?.primary || '#111111',

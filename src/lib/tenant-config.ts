@@ -76,9 +76,9 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
       bodyFont: 'Plus Jakarta Sans, sans-serif',
     },
     contact: {
-      phone: '+91 98765 43210',
-      email: `care@${clean.replace(/_/g, '-')}.com`,
-      whatsapp: '919876543210',
+      phone: '+91 82390 19096',
+      email: 'ammar.tanwar.dev@gmail.com',
+      whatsapp: '918239019096',
       address: 'Mavenco Global Commerce Studio, CA / Delhi',
     },
     announcements: {

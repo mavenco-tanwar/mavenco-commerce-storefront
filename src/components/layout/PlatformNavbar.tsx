@@ -74,15 +74,33 @@ export function PlatformNavbar() {
       .catch(() => {});
   }, []);
 
-  const handleDemoSubmit = (e: React.FormEvent) => {
+  const handleDemoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate direct dispatch
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/v1/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName,
+          email: contactEmail,
+          phone: contactPhone,
+          brandName,
+          interestedPlan,
+          source: 'Platform Navbar Demo Modal',
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        console.warn('Inquiry notice:', data?.error);
+      }
+    } catch (err) {
+      console.warn('Inquiry dispatch err:', err);
+    } finally {
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 600);
+    }
   };
 
   const resetDemoForm = () => {
@@ -268,7 +286,7 @@ export function PlatformNavbar() {
             {/* Quick Instant Channels */}
             <div className="grid grid-cols-2 gap-2.5">
               <a
-                href="https://wa.me/919876543210?text=Hi%20Mavenco%20Team%2C%20I%20would%20like%20to%20request%20a%20live%20demo%20of%20the%20Mavenco%20Merchant%20Admin%20Panel."
+                href="https://wa.me/918239019096?text=Hi%20Mavenco%20Team%2C%20I%20would%20like%20to%20request%20a%20live%20demo%20of%20the%20Mavenco%20Merchant%20Admin%20Panel."
                 target="_blank"
                 rel="noreferrer"
                 className="p-3 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-left flex items-center gap-2.5 transition-all group"
@@ -277,8 +295,8 @@ export function PlatformNavbar() {
                   <MessageSquare className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-emerald-300 group-hover:text-emerald-200">WhatsApp Chat</div>
-                  <div className="text-[10px] text-slate-400">Instant Response</div>
+                  <div className="text-xs font-bold text-emerald-300 group-hover:text-emerald-200">WhatsApp Query</div>
+                  <div className="text-[10px] text-slate-400 font-mono">+91 82390 19096</div>
                 </div>
               </a>
 
@@ -346,7 +364,7 @@ export function PlatformNavbar() {
                     <label className="text-xs text-slate-300 font-medium">WhatsApp / Phone Number</label>
                     <input
                       type="tel"
-                      placeholder="+91 98765 43210"
+                      placeholder="+91 82390 19096"
                       value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
                       className="w-full mt-1 p-2 bg-[#0C0E17] border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-600 focus:border-rose-500 focus:outline-none"
@@ -381,7 +399,7 @@ export function PlatformNavbar() {
                     className="px-6 py-2.5 bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-950/50 transition-all flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {isSubmitting ? (
-                      <span>Submitting...</span>
+                      <span>Sending Email to ammar.tanwar.dev...</span>
                     ) : (
                       <>
                         <span>Submit Demo Request</span>
@@ -399,19 +417,19 @@ export function PlatformNavbar() {
                 <div className="space-y-1">
                   <h4 className="text-base font-bold text-white">Demo Request Received!</h4>
                   <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                    Thank you {fullName}! Our solutions team will contact you at <strong>{contactEmail}</strong> within 2 hours with temporary demo credentials.
+                    Thank you {fullName}! Your request has been dispatched directly to <strong>ammar.tanwar.dev@gmail.com</strong>. Our solutions team will contact you within 2 hours.
                   </p>
                 </div>
 
                 <div className="pt-3 flex justify-center gap-3">
                   <a
-                    href="https://wa.me/919876543210?text=Hi%20Mavenco%2C%20I%20just%20submitted%20a%20demo%20request%20for%20my%20brand."
+                    href={`https://wa.me/918239019096?text=Hi%20Ammar%2C%20I%20just%20submitted%20a%20demo%20request%20for%20${encodeURIComponent(brandName || 'my brand')}.`}
                     target="_blank"
                     rel="noreferrer"
                     className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow"
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
-                    <span>Chat on WhatsApp Now</span>
+                    <span>WhatsApp +91 82390 19096</span>
                   </a>
                   <button
                     onClick={resetDemoForm}
