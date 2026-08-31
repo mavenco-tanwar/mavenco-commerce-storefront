@@ -42,6 +42,7 @@ import { ArchitectureConfigurator } from './ArchitectureConfigurator';
 import { CustomerUgcGallery } from './CustomerUgcGallery';
 import { StoreSpeedTester } from './StoreSpeedTester';
 import { CurrencyCheckoutSimulator } from './CurrencyCheckoutSimulator';
+import { ShoppableReelsSection } from './ShoppableReelsSection';
 import { FlashSaleConcurrencySimulator } from './FlashSaleConcurrencySimulator';
 import { WhatsAppCommerceSimulator } from './WhatsAppCommerceSimulator';
 import { PlatformRoadmap } from './PlatformRoadmap';
@@ -503,6 +504,9 @@ export function PlatformShowcaseLanding() {
 
           {/* Global Multi-Currency & WhatsApp Checkout Simulator */}
           <CurrencyCheckoutSimulator />
+
+          {/* Shoppable 9:16 Lookbook Video Reels */}
+          <ShoppableReelsSection />
 
           {/* Real-Time Live Speed & TTFB Benchmark Tester */}
           <StoreSpeedTester />

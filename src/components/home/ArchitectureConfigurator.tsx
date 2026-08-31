@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sparkles, Layers, ShieldCheck, Database, Zap, DollarSign, Globe, Check, ArrowRight, Server, MessageSquare } from 'lucide-react';
+import { Sparkles, Layers, ShieldCheck, Database, Zap, DollarSign, Globe, Check, ArrowRight, Server, MessageSquare, Download } from 'lucide-react';
 
 export function ArchitectureConfigurator() {
   const [step, setStep] = useState<number>(1);
@@ -35,6 +35,121 @@ export function ArchitectureConfigurator() {
     const cleanPhone = '918239019096';
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(summary)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleDownloadRfpPdf = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Mavenco Commerce - Enterprise Architecture Specification - ${brandName}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 32px; color: #111; max-width: 700px; margin: 0 auto; line-height: 1.5; }
+            .header { border-bottom: 2px solid #0F172A; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
+            .badge { background: #E0E7FF; color: #3730A3; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; font-family: monospace; }
+            .section { margin-bottom: 24px; }
+            .section-title { font-size: 13px; font-weight: bold; text-transform: uppercase; color: #64748B; letter-spacing: 1px; border-bottom: 1px solid #E2E8F0; padding-bottom: 6px; margin-bottom: 12px; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px; }
+            .card { background: #F8FAFC; border: 1px solid #E2E8F0; padding: 12px; border-radius: 8px; }
+            .card-title { font-size: 10px; text-transform: uppercase; color: #64748B; font-weight: bold; }
+            .card-val { font-size: 13px; font-weight: bold; color: #0F172A; margin-top: 2px; }
+            .footer { margin-top: 32px; padding-top: 16px; border-top: 1px dashed #CBD5E1; font-size: 11px; color: #64748B; text-align: center; }
+            @media print { button { display: none; } body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1 style="margin: 0; font-size: 24px; color: #0F172A;">MAVENCO COMMERCE</h1>
+              <div style="font-size: 12px; color: #64748B;">Enterprise Headless Multi-Tenant Technical Architecture Specification</div>
+            </div>
+            <div style="text-align: right;">
+              <span class="badge">SPEC #MVC-RFP-${Date.now().toString().slice(-6)}</span>
+              <div style="font-size: 11px; color: #64748B; margin-top: 4px;">Generated: ${new Date().toLocaleDateString('en-IN')}</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">1. Client Brand &amp; Domain Ingress</div>
+            <div class="grid">
+              <div class="card">
+                <div class="card-title">Brand / Organization</div>
+                <div class="card-val">${brandName}</div>
+              </div>
+              <div class="card">
+                <div class="card-title">Industry Taxonomy</div>
+                <div class="card-val">${industryNames[industry]}</div>
+              </div>
+              <div class="card">
+                <div class="card-title">Domain Strategy</div>
+                <div class="card-val">${domainNames[domainType]}</div>
+              </div>
+              <div class="card">
+                <div class="card-title">SSL / TLS Termination</div>
+                <div class="card-val">Wildcard TLS 1.3 Anycast Ingress</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">2. Edge Compute &amp; Database Topology</div>
+            <div class="grid">
+              <div class="card">
+                <div class="card-title">Compute Layer</div>
+                <div class="card-val">Next.js 16 Edge Runtime (Sub-40ms TTFB)</div>
+              </div>
+              <div class="card">
+                <div class="card-title">Database Partition</div>
+                <div class="card-val">MongoDB Atlas Isolated Tenant Cluster</div>
+              </div>
+              <div class="card">
+                <div class="card-title">CDN &amp; Media Ingress</div>
+                <div class="card-val">Cloudinary AVIF / WebP Auto-Compression</div>
+              </div>
+              <div class="card">
+                <div class="card-title">High Availability SLA</div>
+                <div class="card-val">99.99% Uptime with Zero Cold Starts</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">3. Checkout, Payments &amp; Automation</div>
+            <div class="grid">
+              <div class="card">
+                <div class="card-title">Payment Gateways</div>
+                <div class="card-val">${gatewayNames[gateway]}</div>
+              </div>
+              <div class="card">
+                <div class="card-title">Platform GMV Commission</div>
+                <div class="card-val" style="color: #059669;">0% Platform Fee (Keep 100% Margin)</div>
+              </div>
+              <div class="card">
+                <div class="card-title">WhatsApp Commerce</div>
+                <div class="card-val">Official Meta Cloud API (Cart Recovery + OTP)</div>
+              </div>
+              <div class="card">
+                <div class="card-title">Logistics Sync</div>
+                <div class="card-val">Automated Courier Dispatch &amp; Tracking API</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            Prepared by Mavenco Commerce Global Platform Operations • support@mavenco.com • +91 82390 19096
+          </div>
+
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `;
+    printWindow.document.write(html);
+    printWindow.document.close();
   };
 
   return (
@@ -102,10 +217,10 @@ export function ArchitectureConfigurator() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               {[
-                { id: 'apparel', title: 'Haute Luxury & Ethnic Pret', icon: '👗', desc: 'Silk saris, lehengas, evening blazers & festive wear' },
-                { id: 'home', title: 'Nordic Home Living & Decor', icon: '🌿', desc: 'Ceramic tableware, terrazzo lamps & organic textiles' },
-                { id: 'activewear', title: 'Performance Activewear', icon: '⚡', desc: 'Seamless leggings, tech hoodies & training runners' },
-                { id: 'custom', title: 'Custom Multi-Category D2C', icon: '💎', desc: 'Jewelry, cosmetics, gourmet foods or multi-brand lookbooks' },
+                { id: 'apparel', title: 'Haute Luxury & Ethnic Pret', desc: 'Banarasi sarees, bridal gowns, curated lookbooks', icon: '👗' },
+                { id: 'home', title: 'Nordic Home Living & Decor', desc: 'Handmade ceramics, ambient lamps, Belgian linens', icon: '🛋️' },
+                { id: 'activewear', title: 'High-Performance Activewear', desc: 'Compression wear, marathon running shoes, gear', icon: '⚡' },
+                { id: 'custom', title: 'Bespoke D2C Enterprise', desc: 'Custom database schema, B2B wholesale pricing tiers', icon: '🏢' },
               ].map((ind) => (
                 <button
                   key={ind.id}
@@ -113,7 +228,7 @@ export function ArchitectureConfigurator() {
                   onClick={() => setIndustry(ind.id as any)}
                   className={`p-4 rounded-2xl border text-left transition-all ${
                     industry === ind.id
-                      ? 'bg-rose-500/15 border-rose-500 text-white shadow-lg'
+                      ? 'bg-rose-500/15 border-rose-500 text-white shadow-lg shadow-rose-950/30'
                       : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:border-slate-700'
                   }`}
                 >
@@ -130,55 +245,45 @@ export function ArchitectureConfigurator() {
         {step === 2 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="space-y-1 text-center">
-              <h4 className="text-base font-bold text-white">Step 2: Choose Your Domain &amp; Ingress Strategy</h4>
-              <p className="text-xs text-slate-400">All options include automated Let’s Encrypt Wildcard TLS 1.3 certificates.</p>
+              <h4 className="text-base font-bold text-white">Step 2: Choose Custom Domain Routing Strategy</h4>
+              <p className="text-xs text-slate-400">All configurations include automated Let's Encrypt Wildcard SSL certificates.</p>
             </div>
 
             <div className="grid grid-cols-1 gap-3">
               {[
                 {
                   id: 'dual',
-                  title: 'Dual Custom White-Label Domains (Recommended)',
-                  desc: `Public Store: ${brandName.toLowerCase().replace(/\s+/g, '')}.com • Merchant Admin: admin.${brandName.toLowerCase().replace(/\s+/g, '')}.com`,
-                  badge: 'Enterprise White-Label',
+                  title: 'Dual Custom Apex Domains (Recommended)',
+                  desc: `Public Store: ${brandName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'brand'}.com • Admin Workspace: admin.${brandName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'brand'}.com`,
                   icon: <Globe className="w-5 h-5 text-emerald-400" />,
                 },
                 {
                   id: 'subdomain',
-                  title: 'Mavenco Fast Subdomain Ingress',
-                  desc: `Instant zero-config setup on ${brandName.toLowerCase().replace(/\s+/g, '')}.mavenco.store with global edge caching.`,
-                  badge: 'Instant Setup',
+                  title: 'Mavenco Managed Subdomain (Instant Zero-DNS Setup)',
+                  desc: `Instant provisioned URL: ${brandName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'brand'}.mavenco.store with pre-warmed edge CDN.`,
                   icon: <Server className="w-5 h-5 text-sky-400" />,
                 },
                 {
                   id: 'custom_ingress',
-                  title: 'Custom Enterprise Cloudflare / Anycast Ingress',
-                  desc: 'Bring your existing enterprise DNS / Cloudflare zone with custom WAF rules.',
-                  badge: 'High Security',
+                  title: 'Custom Enterprise Cloudflare / AWS CloudFront Ingress',
+                  desc: 'Proxy traffic through your existing corporate WAF, Cloudflare Enterprise, or AWS Route53.',
                   icon: <ShieldCheck className="w-5 h-5 text-purple-400" />,
                 },
-              ].map((d) => (
+              ].map((dom) => (
                 <button
-                  key={d.id}
+                  key={dom.id}
                   type="button"
-                  onClick={() => setDomainType(d.id as any)}
+                  onClick={() => setDomainType(dom.id as any)}
                   className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3.5 ${
-                    domainType === d.id
+                    domainType === dom.id
                       ? 'bg-rose-500/15 border-rose-500 text-white shadow-lg'
                       : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:border-slate-700'
                   }`}
                 >
-                  <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 shrink-0">
-                    {d.icon}
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-white">{d.title}</span>
-                      <span className="px-2 py-0.5 rounded-full bg-slate-800 text-[9px] font-mono text-slate-300">
-                        {d.badge}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-400">{d.desc}</p>
+                  <div className="p-2 bg-slate-900 rounded-xl border border-slate-800 shrink-0">{dom.icon}</div>
+                  <div>
+                    <div className="text-xs font-bold text-white">{dom.title}</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">{dom.desc}</div>
                   </div>
                 </button>
               ))}
@@ -190,16 +295,16 @@ export function ArchitectureConfigurator() {
         {step === 3 && (
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="space-y-1 text-center">
-              <h4 className="text-base font-bold text-white">Step 3: Select Payment Gateway &amp; Payout Routing</h4>
-              <p className="text-xs text-slate-400">100% direct merchant settlements with 0% platform transaction fees.</p>
+              <h4 className="text-base font-bold text-white">Step 3: Choose Primary Payment &amp; Checkout Engine</h4>
+              <p className="text-xs text-slate-400">0% platform commission on all orders. Keep 100% of your gross margins.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { id: 'razorpay', title: 'Razorpay Direct Gateway', desc: 'Direct UPI, NetBanking, Credit/Debit cards & EMI with 0% platform fee', icon: '⚡' },
-                { id: 'stripe', title: 'Stripe Global Checkout', desc: 'Accept international cards in USD, EUR, GBP, AED with automated fraud radar', icon: '🌐' },
-                { id: 'cashfree', title: 'Cashfree Fast Checkout', desc: 'Optimized for high-throughput Indian UPI with instant customer refunds', icon: '💰' },
-                { id: 'cod', title: 'Automated COD with OTP', desc: 'Verify cash-on-delivery orders via SMS/WhatsApp OTP to reduce RTO returns', icon: '📦' },
+                { id: 'razorpay', title: 'Razorpay Direct UPI & Cards', desc: 'Instant UPI, Cards, NetBanking with sub-2s checkout', icon: '⚡' },
+                { id: 'stripe', title: 'Stripe Global Multi-Currency', desc: 'Accept USD, EUR, GBP, AED with Apple Pay & Google Pay', icon: '💳' },
+                { id: 'cashfree', title: 'Cashfree Fast Checkout', desc: 'Instant merchant settlements & automated refund ledger', icon: '🏦' },
+                { id: 'cod', title: 'Cash on Delivery with OTP', desc: 'WhatsApp 1-tap OTP verification to reduce RTO fraud by 35%', icon: '📦' },
               ].map((gw) => (
                 <button
                   key={gw.id}
@@ -254,14 +359,22 @@ export function ArchitectureConfigurator() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleDownloadRfpPdf}
+                className="py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs rounded-xl border border-slate-700 shadow-md flex items-center justify-center gap-2 transition-all"
+              >
+                <span>📄 Download Technical RFP Spec (PDF)</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handleSendBlueprintWhatsApp}
-                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-105"
+                className="py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-105"
               >
                 <MessageSquare className="w-4 h-4" />
-                <span>Deploy Architecture via WhatsApp (+91 82390 19096)</span>
+                <span>Deploy via WhatsApp (+91 82390 19096)</span>
               </button>
             </div>
           </div>
