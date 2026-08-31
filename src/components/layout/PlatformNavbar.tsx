@@ -12,12 +12,29 @@ import {
   Menu,
   X,
   Zap,
-  Sliders,
+  MessageSquare,
+  Mail,
+  Phone,
+  CheckCircle2,
+  Send,
+  Building2,
+  ArrowRight,
+  ShieldCheck,
 } from 'lucide-react';
 
 export function PlatformNavbar() {
   const [isStoreMenuOpen, setIsStoreMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+
+  // Demo Request Form State
+  const [fullName, setFullName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [brandName, setBrandName] = useState('');
+  const [interestedPlan, setInterestedPlan] = useState('Professional Scale (₹49,999)');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const [demoStores, setDemoStores] = useState([
     {
@@ -57,153 +74,357 @@ export function PlatformNavbar() {
       .catch(() => {});
   }, []);
 
+  const handleDemoSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Simulate direct dispatch
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+    }, 600);
+  };
+
+  const resetDemoForm = () => {
+    setIsDemoModalOpen(false);
+    setIsSubmitted(false);
+    setFullName('');
+    setContactEmail('');
+    setContactPhone('');
+    setBrandName('');
+  };
+
   return (
-    <header className="sticky top-0 z-50 bg-[#0A0C10]/95 backdrop-blur-md border-b border-slate-800 text-white select-none">
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-rose-950/80 via-slate-900 to-emerald-950/80 border-b border-slate-800/80 px-4 py-1.5 text-center text-xs text-slate-300 flex items-center justify-center gap-2">
-        <Sparkles className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-        <span>
-          <strong>Mavenco Commerce Engine</strong> — Next-Generation Headless Visual CMS &amp; Multi-Tenant Platform
-        </span>
-      </div>
+    <>
+      <header className="sticky top-0 z-50 bg-[#0A0C10]/95 backdrop-blur-md border-b border-slate-800 text-white select-none">
+        {/* Top Banner */}
+        <div className="bg-gradient-to-r from-rose-950/80 via-slate-900 to-emerald-950/80 border-b border-slate-800/80 px-4 py-1.5 text-center text-xs text-slate-300 flex items-center justify-center gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+          <span>
+            <strong>Mavenco Commerce Engine</strong> — Next-Generation Headless Visual CMS &amp; Multi-Tenant Platform
+          </span>
+        </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-600 via-rose-500 to-amber-500 flex items-center justify-center text-white font-extrabold text-lg shadow-lg shadow-rose-900/40 group-hover:scale-105 transition-transform">
-            M
-          </div>
-          <div>
-            <div className="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
-              <span>MAVENCO</span>
-              <span className="text-rose-400 font-medium text-xs px-1.5 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 uppercase tracking-wider">
-                COMMERCE
-              </span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          {/* Brand Logo */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-600 via-rose-500 to-amber-500 flex items-center justify-center text-white font-extrabold text-lg shadow-lg shadow-rose-900/40 group-hover:scale-105 transition-transform">
+              M
             </div>
-            <p className="text-[10px] text-slate-400 font-mono tracking-wide -mt-0.5">Headless SaaS Engine</p>
-          </div>
-        </Link>
+            <div>
+              <div className="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
+                <span>MAVENCO</span>
+                <span className="text-rose-400 font-medium text-xs px-1.5 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 uppercase tracking-wider">
+                  COMMERCE
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-400 font-mono tracking-wide -mt-0.5">Headless SaaS Engine</p>
+            </div>
+          </Link>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
-          {/* Storefronts Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setIsStoreMenuOpen(!isStoreMenuOpen)}
-              className="flex items-center gap-1.5 py-2 px-3 rounded-lg hover:text-white hover:bg-slate-800/80 transition-colors"
-            >
-              <Store className="w-3.5 h-3.5 text-rose-400" />
-              <span>Live Demo Stores</span>
-              <ChevronDown className="w-3 h-3 text-slate-400" />
-            </button>
-
-            {isStoreMenuOpen && (
-              <div
-                className="absolute left-0 mt-2 w-72 bg-[#12151F] border border-slate-700/80 rounded-xl shadow-2xl p-2 space-y-1 z-50 animate-in fade-in zoom-in-95 duration-150"
-                onMouseLeave={() => setIsStoreMenuOpen(false)}
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
+            {/* Storefronts Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsStoreMenuOpen(!isStoreMenuOpen)}
+                className="flex items-center gap-1.5 py-2 px-3 rounded-lg hover:text-white hover:bg-slate-800/80 transition-colors"
               >
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Provisioned Demo Storefronts
-                </div>
-                {demoStores.map((store) => (
-                  <Link
-                    key={store.slug}
-                    href={`/stores/${store.slug}`}
-                    onClick={() => setIsStoreMenuOpen(false)}
-                    className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-800/80 transition-colors group"
-                  >
-                    <div>
-                      <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors">
-                        {store.name}
+                <Store className="w-3.5 h-3.5 text-rose-400" />
+                <span>Live Demo Stores</span>
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+
+              {isStoreMenuOpen && (
+                <div
+                  className="absolute left-0 mt-2 w-72 bg-[#12151F] border border-slate-700/80 rounded-xl shadow-2xl p-2 space-y-1 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  onMouseLeave={() => setIsStoreMenuOpen(false)}
+                >
+                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Provisioned Demo Storefronts
+                  </div>
+                  {demoStores.map((store) => (
+                    <Link
+                      key={store.slug}
+                      href={`/stores/${store.slug}`}
+                      onClick={() => setIsStoreMenuOpen(false)}
+                      className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-800/80 transition-colors group"
+                    >
+                      <div>
+                        <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors">
+                          {store.name}
+                        </div>
+                        <div className="text-[11px] text-slate-400">{store.industry}</div>
                       </div>
-                      <div className="text-[11px] text-slate-400">{store.industry}</div>
-                    </div>
-                    <span className="text-[10px] font-bold text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
-                      Explore
-                    </span>
-                  </Link>
-                ))}
+                      <span className="text-[10px] font-bold text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                        Explore
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link href="/cms" className="hover:text-white transition-colors flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-amber-400" />
+              <span>Visual CMS Overview</span>
+            </Link>
+
+            <a href="/#theme-studio" className="hover:text-white transition-colors flex items-center gap-1.5">
+              <Palette className="w-3.5 h-3.5 text-rose-400" />
+              <span>Theme Tokens</span>
+            </a>
+
+            <a href="/#architecture" className="hover:text-white transition-colors flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Architecture</span>
+            </a>
+          </nav>
+
+          {/* Action CTAs */}
+          <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={() => setIsDemoModalOpen(true)}
+              className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 rounded-xl shadow-lg shadow-rose-950/40 transition-all flex items-center gap-1.5 hover:scale-105"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Contact Us for Demo</span>
+            </button>
+          </div>
+
+          {/* Mobile menu trigger */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 text-slate-400 hover:text-white"
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+
+        {/* Mobile Drawer */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-[#0F111A] border-b border-slate-800 p-4 space-y-3">
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Live Client Stores</div>
+            <div className="space-y-1">
+              {demoStores.map((store) => (
+                <Link
+                  key={store.slug}
+                  href={`/stores/${store.slug}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-xs text-white"
+                >
+                  <div className="font-bold">{store.name}</div>
+                  <div className="text-[11px] text-slate-400">{store.industry}</div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="pt-2 border-t border-slate-800 flex flex-col gap-2">
+              <Link
+                href="/cms"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg"
+              >
+                Visual CMS Overview
+              </Link>
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsDemoModalOpen(true);
+                }}
+                className="w-full py-2.5 bg-gradient-to-r from-rose-600 to-amber-500 text-center font-bold text-xs text-white rounded-lg flex items-center justify-center gap-1.5"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Contact Us for Demo</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </header>
+
+      {/* ========================================================================= */}
+      {/* CONTACT US FOR ADMIN DEMO MODAL */}
+      {/* ========================================================================= */}
+      {isDemoModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#141724] border border-slate-700 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl space-y-5 p-6 sm:p-8 relative">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-rose-400" />
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-white">Contact Us for Admin Panel Demo</h3>
+                  <p className="text-xs text-slate-400">Get a guided live walkthrough or custom evaluation sandbox</p>
+                </div>
+              </div>
+              <button
+                onClick={resetDemoForm}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quick Instant Channels */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <a
+                href="https://wa.me/919876543210?text=Hi%20Mavenco%20Team%2C%20I%20would%20like%20to%20request%20a%20live%20demo%20of%20the%20Mavenco%20Merchant%20Admin%20Panel."
+                target="_blank"
+                rel="noreferrer"
+                className="p-3 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-left flex items-center gap-2.5 transition-all group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-emerald-300 group-hover:text-emerald-200">WhatsApp Chat</div>
+                  <div className="text-[10px] text-slate-400">Instant Response</div>
+                </div>
+              </a>
+
+              <a
+                href="mailto:ammar.tanwar.dev@gmail.com?subject=Request%20Admin%20Panel%20Demo%20-%20Mavenco%20Platform&body=Hi%20Mavenco%20Team%2C%0A%0AI%20would%20like%20to%20request%20a%20live%20demo%20of%20the%20Merchant%20Admin%20Panel.%0A%0AName%3A%0ABrand%20Name%3A%0APhone%2FWhatsApp%3A"
+                className="p-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-left flex items-center gap-2.5 transition-all group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs font-bold text-rose-300 group-hover:text-rose-200">Direct Email</div>
+                  <div className="text-[10px] text-slate-400">ammar.tanwar.dev</div>
+                </div>
+              </a>
+            </div>
+
+            {/* Form */}
+            {!isSubmitted ? (
+              <form onSubmit={handleDemoSubmit} className="space-y-3.5 pt-2">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Or Send Us Your Details Below:
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-slate-300 font-medium">Your Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Rahul Sharma"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="w-full mt-1 p-2 bg-[#0C0E17] border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-600 focus:border-rose-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-slate-300 font-medium">Brand / Store Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Zenith Apparel"
+                      value={brandName}
+                      onChange={(e) => setBrandName(e.target.value)}
+                      className="w-full mt-1 p-2 bg-[#0C0E17] border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-600 focus:border-rose-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-slate-300 font-medium">Email Address *</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="rahul@brand.com"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      className="w-full mt-1 p-2 bg-[#0C0E17] border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-600 focus:border-rose-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-slate-300 font-medium">WhatsApp / Phone Number</label>
+                    <input
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      className="w-full mt-1 p-2 bg-[#0C0E17] border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-600 focus:border-rose-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-300 font-medium">SaaS Tier of Interest</label>
+                  <select
+                    value={interestedPlan}
+                    onChange={(e) => setInterestedPlan(e.target.value)}
+                    className="w-full mt-1 p-2 bg-[#0C0E17] border border-slate-700 rounded-xl text-xs text-white focus:border-rose-500 focus:outline-none"
+                  >
+                    <option value="Starter Boutique (₹24,999)">Starter Boutique (₹24,999 + ₹2,000/mo server)</option>
+                    <option value="Professional Scale (₹49,999)">Professional Scale (₹49,999 + ₹4,000/mo server - Recommended)</option>
+                    <option value="Enterprise Global (₹1,39,999)">Enterprise Global (₹1,39,999 + ₹8,000/mo dedicated cluster)</option>
+                  </select>
+                </div>
+
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={resetDemoForm}
+                    className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-6 py-2.5 bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-950/50 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <span>Submitting...</span>
+                    ) : (
+                      <>
+                        <span>Submit Demo Request</span>
+                        <Send className="w-3.5 h-3.5" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="py-6 text-center space-y-4">
+                <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/30">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-base font-bold text-white">Demo Request Received!</h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Thank you {fullName}! Our solutions team will contact you at <strong>{contactEmail}</strong> within 2 hours with temporary demo credentials.
+                  </p>
+                </div>
+
+                <div className="pt-3 flex justify-center gap-3">
+                  <a
+                    href="https://wa.me/919876543210?text=Hi%20Mavenco%2C%20I%20just%20submitted%20a%20demo%20request%20for%20my%20brand."
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Chat on WhatsApp Now</span>
+                  </a>
+                  <button
+                    onClick={resetDemoForm}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700"
+                  >
+                    Done
+                  </button>
+                </div>
               </div>
             )}
           </div>
-
-          <Link href="/cms" className="hover:text-white transition-colors flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-amber-400" />
-            <span>Visual CMS Overview</span>
-          </Link>
-
-          <a href="/#theme-studio" className="hover:text-white transition-colors flex items-center gap-1.5">
-            <Palette className="w-3.5 h-3.5 text-rose-400" />
-            <span>Theme Tokens</span>
-          </a>
-
-          <a href="/#architecture" className="hover:text-white transition-colors flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Architecture</span>
-          </a>
-        </nav>
-
-        {/* Action CTAs */}
-        <div className="hidden md:flex items-center gap-3">
-          <a
-            href="https://mavenco-admin.vercel.app/login"
-            target="_blank"
-            rel="noreferrer"
-            className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl shadow-lg shadow-rose-950/40 transition-all flex items-center gap-1.5 hover:scale-105"
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>Merchant Admin Demo</span>
-            <ExternalLink className="w-3 h-3 text-rose-200" />
-          </a>
-        </div>
-
-        {/* Mobile menu trigger */}
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden p-2 text-slate-400 hover:text-white"
-        >
-          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </div>
-
-      {/* Mobile Drawer */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#0F111A] border-b border-slate-800 p-4 space-y-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Live Client Stores</div>
-          <div className="space-y-1">
-            {demoStores.map((store) => (
-              <Link
-                key={store.slug}
-                href={`/stores/${store.slug}`}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 text-xs text-white"
-              >
-                <div className="font-bold">{store.name}</div>
-                <div className="text-[11px] text-slate-400">{store.industry}</div>
-              </Link>
-            ))}
-          </div>
-
-          <div className="pt-2 border-t border-slate-800 flex flex-col gap-2">
-            <Link
-              href="/cms"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg"
-            >
-              Visual CMS Overview
-            </Link>
-            <a
-              href="https://mavenco-admin.vercel.app/login"
-              target="_blank"
-              rel="noreferrer"
-              className="w-full py-2.5 bg-rose-600 text-center font-bold text-xs text-white rounded-lg flex items-center justify-center gap-1.5"
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>Launch Merchant Admin Demo</span>
-            </a>
-          </div>
         </div>
       )}
-    </header>
+    </>
   );
 }

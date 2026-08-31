@@ -265,7 +265,7 @@ export function PlatformShowcaseLanding() {
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white font-bold text-sm shadow-xl shadow-rose-950/50 flex items-center gap-2 transition-all hover:scale-105"
             >
               <DollarSign className="w-4 h-4" />
-              <span>Platform License &amp; AMC Pricing</span>
+              <span>Platform License &amp; Pricing</span>
             </a>
 
             <a
@@ -274,17 +274,6 @@ export function PlatformShowcaseLanding() {
             >
               <Store className="w-4 h-4 text-rose-400" />
               <span>Explore Demo Tenant Stores</span>
-            </a>
-
-            <a
-              href="https://mavenco-admin.vercel.app/login"
-              target="_blank"
-              rel="noreferrer"
-              className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-sm border border-slate-700 flex items-center gap-2 transition-all"
-            >
-              <Sliders className="w-4 h-4 text-rose-400" />
-              <span>Launch Merchant Admin</span>
-              <ExternalLink className="w-3.5 h-3.5" />
             </a>
 
             <Link

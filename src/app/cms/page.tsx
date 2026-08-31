@@ -799,14 +799,11 @@ export default function CmsOverviewPage() {
 
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
-              href="https://mavenco-admin.vercel.app/login"
-              target="_blank"
-              rel="noreferrer"
-              className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-xl flex items-center gap-2 transition-all hover:scale-105"
+              href="mailto:ammar.tanwar.dev@gmail.com?subject=Request%20Mavenco%20Admin%20Panel%20Demo"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-xs shadow-xl flex items-center gap-2 transition-all hover:scale-105"
             >
-              <Sliders className="w-4 h-4" />
-              <span>Launch Merchant Admin Demo</span>
-              <ExternalLink className="w-3.5 h-3.5" />
+              <MessageSquare className="w-4 h-4" />
+              <span>Contact Us for Admin Demo</span>
             </a>
 
             <Link
