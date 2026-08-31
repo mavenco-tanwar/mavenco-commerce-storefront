@@ -43,6 +43,8 @@ import { CustomerUgcGallery } from './CustomerUgcGallery';
 import { StoreSpeedTester } from './StoreSpeedTester';
 import { CurrencyCheckoutSimulator } from './CurrencyCheckoutSimulator';
 import { ShoppableReelsSection } from './ShoppableReelsSection';
+import { ThemeStagingStudio } from './ThemeStagingStudio';
+import { ShopifyMigrationTester } from './ShopifyMigrationTester';
 import { FlashSaleConcurrencySimulator } from './FlashSaleConcurrencySimulator';
 import { WhatsAppCommerceSimulator } from './WhatsAppCommerceSimulator';
 import { PlatformRoadmap } from './PlatformRoadmap';
@@ -510,6 +512,12 @@ export function PlatformShowcaseLanding() {
 
           {/* Real-Time Live Speed & TTFB Benchmark Tester */}
           <StoreSpeedTester />
+
+          {/* Live Theme & Typography Staging Studio */}
+          <ThemeStagingStudio />
+
+          {/* 1-Click Shopify Catalog Migration Previewer */}
+          <ShopifyMigrationTester />
 
           {/* High-Concurrency Flash Sale & Spike Simulator */}
           <FlashSaleConcurrencySimulator />
