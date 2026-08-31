@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { InstantStoreBuilder } from '@/components/home/InstantStoreBuilder';
 import {
   Layers,
   Sparkles,
@@ -299,6 +300,11 @@ export default function CmsOverviewPage() {
             </Link>
           </div>
         </div>
+      </section>
+
+      {/* ─── SECTION 0: 60-SECOND INSTANT STORE BUILDER ───────────────────────── */}
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <InstantStoreBuilder />
       </section>
 
       {/* ========================================================================= */}
