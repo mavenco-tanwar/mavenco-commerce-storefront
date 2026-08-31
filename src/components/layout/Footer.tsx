@@ -16,9 +16,12 @@ import {
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { Button } from '@/components/ui/Button';
 import { InstagramIcon, FacebookIcon, WhatsAppIcon } from '@/components/ui/SocialIcons';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
 
 export function Footer() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
@@ -37,7 +40,7 @@ export function Footer() {
         })
         .catch(() => {});
     }
-  }, []);
+  }, [pathname, searchParams]);
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();

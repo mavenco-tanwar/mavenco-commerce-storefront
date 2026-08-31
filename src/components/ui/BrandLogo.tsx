@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
 
 interface BrandLogoProps {
@@ -17,6 +18,8 @@ export function BrandLogo({
   showTagline = true,
   className = '',
 }: BrandLogoProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
 
   useEffect(() => {
@@ -33,7 +36,7 @@ export function BrandLogo({
         })
         .catch(() => {});
     }
-  }, []);
+  }, [pathname, searchParams]);
 
   const isLight = variant === 'light';
   const textColor = isLight ? '#FFFFFF' : '#111111';

@@ -38,9 +38,11 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
     const currentSlug =
       tenantSlug ||
       (typeof window !== 'undefined'
-        ? new URLSearchParams(window.location.search).get('tenant') || ''
+        ? window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/)?.[2] ||
+          new URLSearchParams(window.location.search).get('tenant') ||
+          ''
         : '') ||
-      'jqtrends';
+      'demo';
 
     const fetchLatest = async () => {
       try {

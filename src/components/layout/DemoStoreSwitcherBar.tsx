@@ -153,11 +153,15 @@ export function DemoStoreSwitcherBar() {
             {demoStores.map((store) => {
               const isSelected = currentTenant.slug === store.slug;
               return (
-                <Link
+                <button
                   key={store.slug}
-                  href={`/stores/${store.slug}`}
-                  onClick={() => setIsExpanded(false)}
-                  className={`p-2.5 rounded-xl border transition-all flex items-center justify-between group ${
+                  type="button"
+                  onClick={() => {
+                    setIsExpanded(false);
+                    document.cookie = `jq_active_tenant=${store.slug}; path=/; max-age=31536000`;
+                    window.location.href = `/stores/${store.slug}`;
+                  }}
+                  className={`p-2.5 rounded-xl border text-left transition-all flex items-center justify-between group ${
                     isSelected
                       ? 'bg-rose-500/15 border-rose-500 text-white font-bold'
                       : 'bg-[#0E111A] border-slate-800 hover:border-slate-700 text-slate-300'
@@ -179,7 +183,7 @@ export function DemoStoreSwitcherBar() {
                   ) : (
                     <span className="text-[10px] font-mono text-slate-400 shrink-0">/stores/{store.slug}</span>
                   )}
-                </Link>
+                </button>
               );
             })}
           </div>

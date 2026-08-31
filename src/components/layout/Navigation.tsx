@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { CategoryService } from '@/services/categories';
 import { CmsApiService, CmsMenuItem } from '@/services/api/cms';
@@ -12,6 +13,8 @@ import { categoriesData, collectionsData } from '@/data/categories';
 import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
 
 export function Navigation() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>(categoriesData);
@@ -25,7 +28,8 @@ export function Navigation() {
   ]);
 
   useEffect(() => {
-    setTenant(resolveTenant());
+    const t = resolveTenant();
+    setTenant(t);
     CmsApiService.getMenu('header-menu').then((items) => {
       if (items && items.length > 0) {
         setMenuItems(items);
@@ -41,7 +45,7 @@ export function Navigation() {
         setCollections(res.data);
       }
     });
-  }, []);
+  }, [pathname, searchParams]);
 
   // For tenant stores like Aura Living or Apex Athletics, render their clean distinct menu links
   if (tenant.slug !== 'jqtrends') {

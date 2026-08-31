@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Phone, Sparkles, Globe } from 'lucide-react';
 import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
 
 export function AnnouncementBar() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
 
   useEffect(() => {
@@ -22,7 +25,7 @@ export function AnnouncementBar() {
         })
         .catch(() => {});
     }
-  }, []);
+  }, [pathname, searchParams]);
 
   const ann = tenant.announcements;
 
