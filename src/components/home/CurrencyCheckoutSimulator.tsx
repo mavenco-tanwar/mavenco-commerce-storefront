@@ -1,21 +1,40 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Globe, MessageSquare, CheckCircle2, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
+import { Globe, MessageSquare, CheckCircle2, ShieldCheck, ArrowRight, Sparkles, Loader2 } from 'lucide-react';
+
+interface CurrencyItem {
+  symbol: string;
+  rate: number;
+  basePrice: number;
+  label: string;
+  flag: string;
+}
 
 export function CurrencyCheckoutSimulator() {
   const [selectedCurrency, setSelectedCurrency] = useState<'INR' | 'USD' | 'EUR' | 'GBP' | 'AED'>('INR');
-
-  const currencies = {
+  const [currencies, setCurrencies] = useState<Record<string, CurrencyItem>>({
     INR: { symbol: '₹', rate: 1, basePrice: 4999, label: 'Indian Rupee (INR)', flag: '🇮🇳' },
-    USD: { symbol: '$', rate: 0.012, basePrice: 59.99, label: 'US Dollar (USD)', flag: '🇺🇸' },
-    EUR: { symbol: '€', rate: 0.011, basePrice: 54.99, label: 'Euro (EUR)', flag: '🇪🇺' },
-    GBP: { symbol: '£', rate: 0.0095, basePrice: 47.99, label: 'British Pound (GBP)', flag: '🇬🇧' },
-    AED: { symbol: 'AED ', rate: 0.044, basePrice: 219.99, label: 'UAE Dirham (AED)', flag: '🇦🇪' },
-  };
+    USD: { symbol: '$', rate: 0.0116, basePrice: 57.99, label: 'US Dollar (USD)', flag: '🇺🇸' },
+    EUR: { symbol: '€', rate: 0.0108, basePrice: 53.99, label: 'Euro (EUR)', flag: '🇪🇺' },
+    GBP: { symbol: '£', rate: 0.0092, basePrice: 45.99, label: 'British Pound (GBP)', flag: '🇬🇧' },
+    AED: { symbol: 'AED ', rate: 0.0425, basePrice: 212.45, label: 'UAE Dirham (AED)', flag: '🇦🇪' },
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const curr = currencies[selectedCurrency];
+  useEffect(() => {
+    fetch('/api/v1/platform/rates')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res) => {
+        if (res?.data) {
+          setCurrencies(res.data);
+        }
+      })
+      .catch((err) => console.warn('Forex fetch error:', err));
+  }, []);
+
+  const curr = currencies[selectedCurrency] || currencies.INR;
 
   return (
     <div className="bg-gradient-to-b from-[#121522] via-[#0E111C] to-[#0A0C12] border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8 relative overflow-hidden">
@@ -23,13 +42,13 @@ export function CurrencyCheckoutSimulator() {
       <div className="text-center space-y-2 max-w-2xl mx-auto">
         <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-sky-500/10 text-sky-400 border border-sky-500/20 inline-flex items-center gap-1.5">
           <Globe className="w-3.5 h-3.5 text-sky-400" />
-          <span>Global Multi-Currency &amp; 1-Click Order Engine</span>
+          <span>Global Multi-Currency &amp; 1-Click Order Engine (Dynamic FX API)</span>
         </span>
         <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
           Sell Worldwide in Any Local Currency
         </h3>
         <p className="text-xs sm:text-sm text-slate-400">
-          Shoppers in London, Dubai, New York, and Mumbai experience real-time localized currency and instant VIP WhatsApp order confirmation.
+          Shoppers in London, Dubai, New York, and Mumbai experience real-time localized currency rates with instant VIP WhatsApp order dispatch.
         </p>
       </div>
 
@@ -41,7 +60,7 @@ export function CurrencyCheckoutSimulator() {
           return (
             <button
               key={code}
-              onClick={() => setSelectedCurrency(code)}
+              onClick={() => setSelectedCurrency(code as any)}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
                 isActive
                   ? 'bg-sky-600 text-white shadow-lg shadow-sky-950/50 scale-105'
@@ -79,7 +98,7 @@ export function CurrencyCheckoutSimulator() {
             </h4>
             <div className="flex items-baseline gap-2 pt-1">
               <span className="text-2xl sm:text-3xl font-extrabold text-white">
-                {curr.symbol}{curr.basePrice.toLocaleString()}
+                {curr.symbol}{typeof curr.basePrice === 'number' ? curr.basePrice.toLocaleString() : curr.basePrice}
               </span>
               <span className="text-xs text-slate-500 line-through">
                 {curr.symbol}{(curr.basePrice * 1.25).toFixed(0)}
@@ -90,8 +109,8 @@ export function CurrencyCheckoutSimulator() {
 
           <div className="space-y-2 p-3 bg-[#111420] rounded-xl border border-slate-800/80 text-[11px] text-slate-300">
             <div className="flex items-center justify-between">
-              <span className="text-slate-400">Localized FX Rate:</span>
-              <span className="font-mono text-white">1 USD ≈ {selectedCurrency === 'USD' ? '1.00' : selectedCurrency === 'INR' ? '86.40' : '0.92'}</span>
+              <span className="text-slate-400">Live Dynamic FX Rate:</span>
+              <span className="font-mono text-white">1 {selectedCurrency} ≈ ₹{(1 / curr.rate).toFixed(2)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-400">Duty &amp; Taxes:</span>
