@@ -44,7 +44,6 @@ import { StoreSpeedTester } from './StoreSpeedTester';
 import { InstantStoreBuilder } from './InstantStoreBuilder';
 import { CurrencyCheckoutSimulator } from './CurrencyCheckoutSimulator';
 import { PlatformRoadmap } from './PlatformRoadmap';
-import { PlatformStatsDashboard } from './PlatformStatsDashboard';
 
 export function PlatformShowcaseLanding() {
   // State for Section 1: Visual CMS Studio Interactive Preview
@@ -339,11 +338,6 @@ export function PlatformShowcaseLanding() {
           </div>
         </div>
       </section>
-
-      {/* ─── Live Platform Stats Dashboard ─────────────────────────────────── */}
-      <div className="border-y border-slate-800 bg-[#0D0F1A]">
-        <PlatformStatsDashboard />
-      </div>
 
       {/* Live Demo Stores Showcase Grid */}
       <section id="demo-stores" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
