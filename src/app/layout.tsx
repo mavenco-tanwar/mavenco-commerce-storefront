@@ -41,6 +41,7 @@ export const metadata: Metadata = {
 
 import { Suspense } from 'react';
 import { DynamicLayoutWrapper } from '@/components/layout/DynamicLayoutWrapper';
+import { FloatingWhatsAppWidget } from '@/components/ui/FloatingWhatsAppWidget';
 
 export default function RootLayout({
   children,
@@ -58,6 +59,7 @@ export default function RootLayout({
                   <Suspense fallback={<div className="min-h-screen bg-[#0A0C10]" />}>
                     <DynamicLayoutWrapper>{children}</DynamicLayoutWrapper>
                   </Suspense>
+                  <FloatingWhatsAppWidget />
                 </CartProvider>
               </WishlistProvider>
             </AuthProvider>

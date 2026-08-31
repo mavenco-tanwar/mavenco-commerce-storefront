@@ -32,6 +32,8 @@ import {
   Clock,
   DollarSign,
 } from 'lucide-react';
+import { RoiSavingsCalculator } from './RoiSavingsCalculator';
+import { PlatformComparisonMatrix } from './PlatformComparisonMatrix';
 
 export function PlatformShowcaseLanding() {
   // State for Section 1: Visual CMS Studio Interactive Preview
@@ -1209,15 +1211,19 @@ export function PlatformShowcaseLanding() {
               </div>
 
               <a
-                href="https://mavenco-admin.vercel.app/login"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3 text-center bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl border border-slate-700 transition-all block"
+                href="mailto:ammar.tanwar.dev@gmail.com?subject=Enterprise%20Plan%20Inquiry%20-%20Mavenco%20Commerce"
+                className="w-full py-3 text-center bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white text-xs font-bold rounded-xl shadow-lg transition-all block"
               >
                 Contact Enterprise Sales →
               </a>
             </div>
           </div>
+
+          {/* Interactive ROI & Savings Calculator vs Shopify */}
+          <RoiSavingsCalculator />
+
+          {/* Architecture & Feature Comparison Matrix */}
+          <PlatformComparisonMatrix />
 
           {/* Real-Time Cloud Infrastructure & Domain Policy Card */}
           <div className="bg-[#10131E] border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
