@@ -42,6 +42,7 @@ import { ArchitectureConfigurator } from './ArchitectureConfigurator';
 import { CustomerUgcGallery } from './CustomerUgcGallery';
 import { StoreSpeedTester } from './StoreSpeedTester';
 import { CurrencyCheckoutSimulator } from './CurrencyCheckoutSimulator';
+import { WhatsAppCommerceSimulator } from './WhatsAppCommerceSimulator';
 import { PlatformRoadmap } from './PlatformRoadmap';
 
 export function PlatformShowcaseLanding() {
@@ -504,6 +505,12 @@ export function PlatformShowcaseLanding() {
 
           {/* Real-Time Live Speed & TTFB Benchmark Tester */}
           <StoreSpeedTester />
+
+          {/* Native WhatsApp Commerce Engine Simulator */}
+          <WhatsAppCommerceSimulator />
+
+          {/* Headless REST API & SDK Playground */}
+          <ApiPlayground />
         </div>
       </section>
 
