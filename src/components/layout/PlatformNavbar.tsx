@@ -188,9 +188,9 @@ export function PlatformNavbar() {
               <span>SaaS Pricing</span>
             </Link>
 
-            <a href="/#faq" className="hover:text-white transition-colors flex items-center gap-1.5">
+            <Link href="/faq" className="hover:text-white transition-colors flex items-center gap-1.5">
               <span>Enterprise FAQ</span>
-            </a>
+            </Link>
           </nav>
 
           {/* Action CTAs */}
@@ -238,6 +238,13 @@ export function PlatformNavbar() {
                 className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg"
               >
                 SaaS Pricing & Plans
+              </Link>
+              <Link
+                href="/faq"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg"
+              >
+                Enterprise FAQ
               </Link>
               <button
                 onClick={() => {
