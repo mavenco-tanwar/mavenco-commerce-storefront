@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { TrendingUp, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { TrendingUp, ArrowRight } from 'lucide-react';
 
 interface ClientSpotlight {
   brand: string;
@@ -15,44 +15,9 @@ interface ClientSpotlight {
   color: string;
 }
 
-const DEFAULT_SPOTLIGHTS: ClientSpotlight[] = [
-  {
-    brand: 'Muskan Clothing',
-    slug: 'muskan-clothing',
-    industry: 'Haute Luxury & Ethnic Pret',
-    highlight: '+42% Mobile Conversion Rate',
-    savings: '₹2,40,000/yr saved in 0% transaction commission',
-    description:
-      'Migrated from a sluggish monolithic store to Mavenco Headless Edge. Page load time dropped from 3.8s to 0.4s, resulting in a dramatic reduction in checkout abandonment.',
-    badge: 'Fashion & Apparel',
-    color: 'from-rose-500/20 to-amber-500/10 border-rose-500/30 text-rose-400',
-  },
-  {
-    brand: 'Aura Living',
-    slug: 'auraliving',
-    industry: 'Nordic Minimalist Living & Decor',
-    highlight: 'Zero Third-Party App Fees',
-    savings: '₹1,40,000/yr saved on Shopify app subscriptions',
-    description:
-      'Replaced 7 paid Shopify plugins (PageFly, Loox reviews, SEO suite, mega menus) with Mavenco’s all-in-one native visual CMS and verified review system.',
-    badge: 'Home & Living',
-    color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-400',
-  },
-  {
-    brand: 'Apex Athletics',
-    slug: 'apexathletics',
-    industry: 'High-Performance Activewear',
-    highlight: '< 24ms Instant Page Transitions',
-    savings: '100% database isolation on MongoDB Atlas',
-    description:
-      'Launched a high-velocity direct-to-consumer store with dual custom domains and custom headless product bundling for athlete training kits.',
-    badge: 'Athleisure',
-    color: 'from-sky-500/20 to-indigo-500/10 border-sky-500/30 text-sky-400',
-  },
-];
-
 export function CaseStudies() {
-  const [spotlights, setSpotlights] = useState<ClientSpotlight[]>(DEFAULT_SPOTLIGHTS);
+  const [spotlights, setSpotlights] = useState<ClientSpotlight[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -69,18 +34,22 @@ export function CaseStudies() {
           const mapped: ClientSpotlight[] = res.data.slice(0, 3).map((t: any, idx: number) => ({
             brand: t.name,
             slug: t.slug,
-            industry: t.tagline || (t.slug.includes('aura') ? 'Nordic Home Living' : t.slug.includes('apex') ? 'Performance Activewear' : 'Haute Luxury Fashion'),
-            highlight: `100% Isolated Database Partition`,
+            industry: t.tagline || 'Modern Headless Commerce Store',
+            highlight: '100% Isolated Database Partition',
             savings: `0% Platform Commission (${t.metrics?.products || 12} SKUs live)`,
             description: `Active production storefront running on Next.js 16 Edge Compute with dedicated MongoDB Atlas database isolation.`,
-            badge: t.planName || 'Enterprise Scale',
+            badge: t.planName || 'Live Merchant',
             color: colors[idx % colors.length],
           }));
 
           setSpotlights(mapped);
+        } else if (isMounted) {
+          setSpotlights([]);
         }
       } catch (e) {
-        // Fallback to default
+        if (isMounted) setSpotlights([]);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     }
     loadTenantSpotlights();
@@ -88,6 +57,15 @@ export function CaseStudies() {
       isMounted = false;
     };
   }, []);
+
+  // If no active stores exist in MongoDB Atlas, do not render any fake or deleted mock stores
+  if (spotlights.length === 0 && !isLoading) {
+    return null;
+  }
+
+  if (spotlights.length === 0) {
+    return null;
+  }
 
   return (
     <div className="bg-[#10131E] border border-slate-800 rounded-3xl p-6 sm:p-10 space-y-8 shadow-2xl">
@@ -97,10 +75,10 @@ export function CaseStudies() {
           Client Growth Spotlights
         </span>
         <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
-          Real Brands, Real Exponential Returns
+          Active Live Stores on Mavenco
         </h3>
         <p className="text-xs sm:text-sm text-slate-400">
-          See how high-growth D2C brands scale faster, retain 100% of their gross revenue, and wow their shoppers with Mavenco Commerce.
+          Real production D2C brands powered by dedicated MongoDB Atlas database partitions.
         </p>
       </div>
 
@@ -116,7 +94,7 @@ export function CaseStudies() {
                 <span className="px-2.5 py-0.5 rounded-full bg-slate-900/80 text-[10px] font-bold uppercase tracking-wider text-slate-300 border border-slate-800">
                   {cs.badge}
                 </span>
-                <span className="text-[11px] font-mono font-bold text-white/80">Case #{idx + 1}</span>
+                <span className="text-[11px] font-mono font-bold text-white/80">Store #{idx + 1}</span>
               </div>
 
               <div>

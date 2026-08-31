@@ -40,29 +40,10 @@ export function PlatformNavbar() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const [demoStores, setDemoStores] = useState([
-    {
-      slug: 'demo',
-      name: 'Demo Store',
-      industry: 'Modern Lifestyle & Pret (Generic)',
-      badge: 'Interactive Demo',
-    },
-    {
-      slug: 'auraliving',
-      name: 'Aura Living',
-      industry: 'Nordic Minimalist Home Decor',
-      badge: 'Home & Decor',
-    },
-    {
-      slug: 'apexathletics',
-      name: 'Apex Athletics',
-      industry: 'High-Performance Activewear',
-      badge: 'Activewear & Gear',
-    },
-  ]);
+  const [demoStores, setDemoStores] = useState<Array<{ slug: string; name: string; industry: string; badge: string }>>([]);
 
   React.useEffect(() => {
-    fetch('/api/v1/tenant-config?list=all')
+    fetch('/api/v1/platform/tenants')
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (Array.isArray(json?.data) && json.data.length > 0) {
@@ -70,12 +51,16 @@ export function PlatformNavbar() {
             slug: t.slug,
             name: t.name,
             industry: t.tagline || 'Modern Commerce Store',
-            badge: t.slug === 'demo' ? 'Interactive Demo' : 'Live Storefront',
+            badge: t.planName || 'Live Storefront',
           }));
           setDemoStores(mapped);
+        } else {
+          setDemoStores([]);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setDemoStores([]);
+      });
   }, []);
 
   const handleDemoSubmit = async (e: React.FormEvent) => {
@@ -166,27 +151,30 @@ export function PlatformNavbar() {
                     <span>Explore Live Tenant Stores</span>
                     <span className="text-emerald-400 font-mono">Next.js Edge</span>
                   </div>
-                  {demoStores.map((store) => (
-                    <Link
-                      key={store.slug}
-                      href={`/stores/${store.slug}`}
-                      onClick={() => setIsStoreMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-800/80 transition-colors group border border-transparent hover:border-slate-700"
-                    >
-                      <div>
-                        <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors flex items-center gap-1.5">
-                          <span>{store.name}</span>
-                          {store.slug === 'muskan-clothing' && (
-                            <span className="px-1.5 py-0.2 bg-rose-500/20 text-rose-300 text-[9px] rounded font-mono">NEW</span>
-                          )}
+                  {demoStores.length === 0 ? (
+                    <div className="p-4 text-center text-xs text-slate-400">
+                      No active stores provisioned yet. Create a live store from Superadmin!
+                    </div>
+                  ) : (
+                    demoStores.map((store) => (
+                      <Link
+                        key={store.slug}
+                        href={`/stores/${store.slug}`}
+                        onClick={() => setIsStoreMenuOpen(false)}
+                        className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-800/80 transition-colors group border border-transparent hover:border-slate-700"
+                      >
+                        <div>
+                          <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors flex items-center gap-1.5">
+                            <span>{store.name}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-400">{store.industry}</div>
                         </div>
-                        <div className="text-[11px] text-slate-400">{store.industry}</div>
-                      </div>
-                      <span className="text-[10px] font-bold text-rose-300 bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20">
-                        Launch &rarr;
-                      </span>
-                    </Link>
-                  ))}
+                        <span className="text-[10px] font-bold text-rose-300 bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20">
+                          Launch &rarr;
+                        </span>
+                      </Link>
+                    ))
+                  )}
                 </div>
               )}
             </div>

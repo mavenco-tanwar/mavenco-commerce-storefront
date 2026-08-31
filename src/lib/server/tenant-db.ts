@@ -1,6 +1,6 @@
 import 'server-only';
 import { getDatabase } from '@/lib/mongodb';
-import { TenantBrandConfig, SEED_TENANTS, checkTenantValidity } from '@/lib/tenant-config';
+import { TenantBrandConfig } from '@/lib/tenant-config';
 
 export async function checkTenantValidityDb(slug?: string): Promise<{
   isValid: boolean;
@@ -37,5 +37,5 @@ export async function checkTenantValidityDb(slug?: string): Promise<{
     console.error('MongoDB tenant check error:', err);
   }
 
-  return checkTenantValidity(clean);
+  return { isValid: false, isSuspended: false, config: null };
 }
