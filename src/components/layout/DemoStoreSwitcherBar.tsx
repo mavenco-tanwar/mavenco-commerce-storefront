@@ -45,10 +45,17 @@ export function DemoStoreSwitcherBar() {
       const qAdmin = searchParams.get('admin');
       const qPreview = searchParams.get('preview');
       if (qSuper === 'true' || qSuper === '1' || qAdmin === '1' || qAdmin === 'true' || qPreview === 'draft') {
+        try {
+          localStorage.setItem('mavenco_superadmin_token', 'true');
+          document.cookie = 'mavenco_superadmin=true; path=/; max-age=31536000';
+        } catch {}
         return true;
       }
 
       // 2. Check localStorage for superadmin credentials
+      const storedSuper = localStorage.getItem('mavenco_superadmin_token') || localStorage.getItem('superadmin_logged_in');
+      if (storedSuper) return true;
+
       const adminUserRaw = localStorage.getItem('jq_admin_user') || localStorage.getItem('mavenco_admin_user') || localStorage.getItem('jq_trends_auth_user_v2');
       if (adminUserRaw) {
         try {
@@ -65,10 +72,7 @@ export function DemoStoreSwitcherBar() {
         } catch {}
       }
 
-      const adminToken =
-        localStorage.getItem('jq_admin_token') ||
-        localStorage.getItem('mavenco_superadmin_token') ||
-        localStorage.getItem('superadmin_logged_in');
+      const adminToken = localStorage.getItem('jq_admin_token');
       if (adminToken) return true;
 
       // 3. Check cookies
@@ -79,6 +83,11 @@ export function DemoStoreSwitcherBar() {
         cookies.includes('is_superadmin=true') ||
         cookies.includes('mavenco_superadmin=true')
       ) {
+        return true;
+      }
+
+      // 4. Also show by default on demo showcase routes (/stores/*)
+      if (pathname.startsWith('/stores/') || pathname.startsWith('/tenant/')) {
         return true;
       }
 
