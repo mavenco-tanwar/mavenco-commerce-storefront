@@ -28,6 +28,7 @@ export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }
       pathname.startsWith('/features') ||
       pathname.startsWith('/docs') ||
       pathname.startsWith('/faq') ||
+      pathname.startsWith('/status') ||
       pathname.startsWith('/pricing'));
 
   // If on a platform presentation page, render the Mavenco Commerce SaaS Header and Footer

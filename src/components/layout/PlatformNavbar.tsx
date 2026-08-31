@@ -188,6 +188,11 @@ export function PlatformNavbar() {
               <span>SaaS Pricing</span>
             </Link>
 
+            <Link href="/status" className="hover:text-white transition-colors flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>System Status</span>
+            </Link>
+
             <Link href="/faq" className="hover:text-white transition-colors flex items-center gap-1.5">
               <span>Enterprise FAQ</span>
             </Link>
