@@ -37,6 +37,28 @@ export function CloudPosSimulator() {
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'cash'>('upi');
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
 
+  const [dbProducts, setDbProducts] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch('/api/v1/products?limit=10')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (Array.isArray(json?.data) && json.data.length > 0) {
+          setDbProducts(json.data);
+          const initialCart: CartItem[] = json.data.slice(0, 2).map((p: any, idx: number) => ({
+            id: p.id || `item_${idx + 1}`,
+            title: p.title || 'Curated Design Piece',
+            sku: p.sku || `SKU-POS-${p.slug ? p.slug.substring(0, 4).toUpperCase() : idx + 101}`,
+            price: Number(p.price) || 2499,
+            qty: 1,
+            barcode: `890${Math.floor(1000000000 + (p.price || 1) * 123).toString().slice(0, 10)}`,
+          }));
+          setCart(initialCart);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const tax = Math.round(subtotal * 0.12);
   const total = subtotal + tax;
@@ -45,16 +67,22 @@ export function CloudPosSimulator() {
     setIsScanning(true);
     setTimeout(() => {
       setIsScanning(false);
+      const nextProduct = dbProducts[cart.length % (dbProducts.length || 1)] || {
+        title: 'Artisanal Travertine Candle Holder',
+        price: 899,
+        sku: 'LUM-CANDLE-03',
+      };
+      const barcodeNum = `890${Math.floor(1000000000 + Math.random() * 9000000000).toString().slice(0, 10)}`;
       const newItem: CartItem = {
         id: `item_${Date.now()}`,
-        title: 'Artisanal Travertine Candle Holder',
-        sku: 'LUM-CANDLE-03',
-        price: 899,
+        title: nextProduct.title || 'Scanned Retail SKU',
+        sku: nextProduct.sku || `SKU-RET-${cart.length + 101}`,
+        price: Number(nextProduct.price) || 1299,
         qty: 1,
-        barcode: '8901234567892',
+        barcode: barcodeNum,
       };
       setCart((prev) => [...prev, newItem]);
-      setScannedCode('8901234567892');
+      setScannedCode(barcodeNum);
     }, 500);
   };
 

@@ -6,7 +6,32 @@ import { Building2, Calculator, ArrowRight, ShieldCheck, Download, MessageSquare
 export function B2bWholesaleCalculator() {
   const [quantity, setQuantity] = useState<number>(50);
   const [unitRetailPrice, setUnitRetailPrice] = useState<number>(2499);
-  const [category, setCategory] = useState<'apparel' | 'decor' | 'activewear'>('apparel');
+  const [category, setCategory] = useState<string>('apparel');
+  const [categoriesList, setCategoriesList] = useState<Array<{ id: string; label: string; price: number }>>([
+    { id: 'apparel', label: 'Ethnic Pret', price: 2499 },
+    { id: 'decor', label: 'Home Living', price: 3999 },
+    { id: 'activewear', label: 'Activewear', price: 1899 },
+  ]);
+
+  React.useEffect(() => {
+    fetch('/api/v1/products?limit=6')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (Array.isArray(json?.data) && json.data.length > 0) {
+          const dynamicCats = json.data.slice(0, 3).map((p: any) => ({
+            id: p.slug || p.id,
+            label: p.category || p.title?.substring(0, 14) || 'Catalog SKU',
+            price: Number(p.price) || 2499,
+          }));
+          setCategoriesList(dynamicCats);
+          if (dynamicCats[0]) {
+            setCategory(dynamicCats[0].id);
+            setUnitRetailPrice(dynamicCats[0].price);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Tier Calculation
   let discountPercentage = 0;
@@ -178,16 +203,12 @@ export function B2bWholesaleCalculator() {
               Garment / Product Taxonomy
             </label>
             <div className="grid grid-cols-3 gap-2 text-xs">
-              {[
-                { id: 'apparel', label: 'Ethnic Pret', price: 2499 },
-                { id: 'decor', label: 'Home Living', price: 3999 },
-                { id: 'activewear', label: 'Activewear', price: 1899 },
-              ].map((cat) => (
+              {categoriesList.map((cat) => (
                 <button
                   key={cat.id}
                   type="button"
                   onClick={() => {
-                    setCategory(cat.id as any);
+                    setCategory(cat.id);
                     setUnitRetailPrice(cat.price);
                   }}
                   className={`p-2 rounded-xl border text-center font-bold transition-all ${

@@ -18,8 +18,7 @@ interface ReelItem {
 
 export function ShoppableReelsSection() {
   const [activeReel, setActiveReel] = useState<ReelItem | null>(null);
-
-  const reels: ReelItem[] = [
+  const [reels, setReels] = useState<ReelItem[]>([
     {
       id: 'reel_1',
       title: 'How I style the Banarasi Katan Silk Saree for festive weddings ✨',
@@ -64,7 +63,40 @@ export function ShoppableReelsSection() {
       productImage: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=400&auto=format&fit=crop&q=80',
       productSlug: '/new-arrivals',
     },
-  ];
+  ]);
+
+  React.useEffect(() => {
+    fetch('/api/v1/products?limit=8')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (Array.isArray(json?.data) && json.data.length > 0) {
+          const dynamicReels = json.data.slice(0, 4).map((p: any, idx: number) => {
+            const creators = ['@ananya_couture', '@auraliving_home', '@marathon_varun', '@riya_pret'];
+            const viewCounts = ['142K', '98K', '225K', '110K'];
+            const titles = [
+              `How I style the ${p.title} ✨`,
+              `Unboxing the ${p.title} — Pure luxury`,
+              `Performance and fit review of ${p.title} 🏃`,
+              `The ultimate styling guide for ${p.title}`,
+            ];
+            const img = p.images?.[0] || p.thumbnail || 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&auto=format&fit=crop&q=80';
+            return {
+              id: p.id || `dyn_reel_${idx}`,
+              title: titles[idx % titles.length],
+              creator: creators[idx % creators.length],
+              views: viewCounts[idx % viewCounts.length],
+              thumbnail: img,
+              productTitle: p.title || 'Curated Design Piece',
+              productPrice: `₹${(p.price || 1999).toLocaleString('en-IN')}`,
+              productImage: img,
+              productSlug: `/products/${p.slug || p.id}`,
+            };
+          });
+          setReels(dynamicReels);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="bg-[#10131E] border border-slate-800 rounded-3xl p-6 sm:p-10 space-y-8 shadow-2xl">
