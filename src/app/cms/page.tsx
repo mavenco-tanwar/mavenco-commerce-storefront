@@ -32,6 +32,14 @@ import {
   Camera,
   Mail,
   HelpCircle,
+  Tag,
+  Search,
+  BarChart2,
+  Star,
+  Map,
+  Gift,
+  Users,
+  Truck,
 } from 'lucide-react';
 
 export default function CmsOverviewPage() {
@@ -195,6 +203,54 @@ export default function CmsOverviewPage() {
       desc: 'Lead capture forms with automated welcome triggers, lookbook downloads, and discount delivery.',
       icon: Mail,
       color: 'from-blue-500 to-indigo-600',
+    },
+    {
+      title: 'Smart Search & Filters',
+      desc: 'Instant full-text search with faceted filters, autocomplete, and AI-powered product recommendations.',
+      icon: Search,
+      color: 'from-violet-500 to-purple-600',
+    },
+    {
+      title: 'Promo Tag & Badge Engine',
+      desc: 'Configurable product badges — New, Sale, Limited Edition — with per-SKU rules and expiry timers.',
+      icon: Tag,
+      color: 'from-lime-500 to-green-600',
+    },
+    {
+      title: 'Sales Analytics Dashboard',
+      desc: 'Embedded revenue charts, conversion funnels, and category-level heatmaps for marketing teams.',
+      icon: BarChart2,
+      color: 'from-sky-500 to-cyan-600',
+    },
+    {
+      title: 'Star Ratings & Q&A',
+      desc: 'Product-level star ratings with photo reviews, merchant replies, and buyer Q&A threads.',
+      icon: Star,
+      color: 'from-yellow-400 to-amber-500',
+    },
+    {
+      title: 'Store Locator & Map',
+      desc: 'Interactive map block with multi-city store pins, opening hours, and click-to-navigate CTAs.',
+      icon: Map,
+      color: 'from-teal-500 to-emerald-600',
+    },
+    {
+      title: 'Gift Card & Voucher Block',
+      desc: 'Digital gift card purchase flow with custom denominations, personalized notes, and email delivery.',
+      icon: Gift,
+      color: 'from-fuchsia-500 to-pink-600',
+    },
+    {
+      title: 'Referral & Loyalty Module',
+      desc: 'Friend referral widgets, loyalty point trackers, and tiered reward milestones for repeat buyers.',
+      icon: Users,
+      color: 'from-orange-500 to-red-500',
+    },
+    {
+      title: 'Order Tracking Timeline',
+      desc: 'Real-time shipment status with courier API integration, ETA countdown, and delivery confirmation.',
+      icon: Truck,
+      color: 'from-slate-400 to-slate-600',
     },
   ];
 
@@ -431,7 +487,7 @@ export default function CmsOverviewPage() {
               Component Architecture
             </span>
             <h2 className="text-3xl font-extrabold text-white">
-              15+ Production-Grade Content Blocks
+              16+ Production-Grade Content Blocks
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
               Pre-built, responsive, and accessibility-tested commerce modules ready to drag and drop.
