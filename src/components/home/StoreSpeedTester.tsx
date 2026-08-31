@@ -24,7 +24,7 @@ export function StoreSpeedTester() {
   const [testResult, setTestResult] = useState<BenchmarkData | null>(null);
 
   const sampleUrls = [
-    { label: 'Shopify Store', url: 'gymshark.com' },
+    { label: 'Shopify Store', url: 'mystore.myshopify.com' },
     { label: 'WooCommerce Store', url: 'sample-apparel.com' },
     { label: 'Mavenco Edge Store', url: 'mavenco-storefront.vercel.app' },
   ];
