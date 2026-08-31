@@ -681,3 +681,337 @@ export const productsData: Product[] = [
     fit: 'Relaxed summer fit',
   },
 ];
+
+// =========================================================================
+// TENANT CATALOG 1: AURA LIVING (NORDIC MINIMALIST HOME & LIVING)
+// =========================================================================
+export const AURA_LIVING_PRODUCTS: Product[] = [
+  {
+    id: 'aura-01',
+    name: 'Handcrafted Fluted Ceramic Vase',
+    slug: 'handcrafted-fluted-ceramic-vase',
+    sku: 'AURA-HOM-VAS-001',
+    department: 'women',
+    category: 'decor',
+    categoryName: 'Artisanal Decor',
+    price: 2499,
+    compareAtPrice: 3499,
+    discountPercent: 28,
+    shortDescription: 'Minimalist Scandinavian ceramic vase with matte chalk glaze finish.',
+    description: 'Elevate your living space with this sculptural fluted ceramic vase. Handcrafted by master artisans with textured clay and a velvety matte white finish, perfect for dried botanicals or fresh seasonal blooms.',
+    features: ['100% High-fire stoneware clay', 'Waterproof interior glaze', 'Non-slip protective velvet base pads'],
+    fabric: 'Matte Glazed Stoneware',
+    careInstructions: ['Wipe with damp microfiber cloth', 'Hand wash interior with warm soapy water'],
+    images: [
+      { url: 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?q=80&w=1000&auto=format&fit=crop', alt: 'Fluted Ceramic Vase Front', isPrimary: true },
+      { url: 'https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?q=80&w=1000&auto=format&fit=crop', alt: 'Fluted Ceramic Vase Styled Shelf' },
+    ],
+    colors: [{ name: 'Chalk White', hex: '#F5F5F3' }, { name: 'Sand Beige', hex: '#D7C4B7' }, { name: 'Charcoal Noir', hex: '#2A2A2A' }],
+    sizes: [{ size: 'Small (20cm)', inStock: true, stockCount: 15 }, { size: 'Medium (30cm)', inStock: true, stockCount: 20 }, { size: 'Large (40cm)', inStock: true, stockCount: 8 }],
+    rating: 4.9,
+    reviewCount: 64,
+    isFeatured: true,
+    isNewArrival: true,
+    isBestSeller: true,
+    isSale: true,
+    badge: 'Best Seller',
+    tags: ['home', 'decor', 'vase', 'ceramic', 'nordic', 'scandinavian'],
+    fit: 'Home Accent',
+  },
+  {
+    id: 'aura-02',
+    name: 'Woven Organic Nordic Throw Blanket',
+    slug: 'woven-organic-nordic-throw-blanket',
+    sku: 'AURA-HOM-THR-002',
+    department: 'women',
+    category: 'living',
+    categoryName: 'Textiles & Throws',
+    price: 3899,
+    compareAtPrice: 5299,
+    discountPercent: 26,
+    shortDescription: 'Sumptuously soft waffle-weave organic cotton throw with fringe hem.',
+    description: 'Wrap yourself in cozy Nordic comfort. Spun from certified organic cotton with a breathable waffle weave that delivers warm insulation during chilly evenings.',
+    features: ['100% GOTS Certified Organic Cotton', 'Natural vegetable-dyed earthy pigments', 'Hand-knotted tassel fringe details'],
+    fabric: '100% Organic Waffle Cotton',
+    careInstructions: ['Machine wash cold gentle cycle', 'Tumble dry low', 'Do not bleach'],
+    images: [
+      { url: 'https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?q=80&w=1000&auto=format&fit=crop', alt: 'Nordic Throw Blanket On Sofa', isPrimary: true },
+      { url: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1000&auto=format&fit=crop', alt: 'Throw Blanket Folded Detail' },
+    ],
+    colors: [{ name: 'Oatmeal Heather', hex: '#E6D7C3' }, { name: 'Earthy Clay', hex: '#C27D60' }, { name: 'Sage Olive', hex: '#8B9A7D' }],
+    sizes: [{ size: 'Standard (130x170cm)', inStock: true, stockCount: 25 }, { size: 'King (150x200cm)', inStock: true, stockCount: 12 }],
+    rating: 4.9,
+    reviewCount: 42,
+    isFeatured: true,
+    isNewArrival: false,
+    isBestSeller: true,
+    isSale: false,
+    badge: 'Popular',
+    tags: ['textiles', 'throw', 'blanket', 'cotton', 'home'],
+    fit: 'Standard Throw',
+  },
+  {
+    id: 'aura-03',
+    name: 'Terrazzo Bedside Minimalist Accent Lamp',
+    slug: 'terrazzo-bedside-minimalist-accent-lamp',
+    sku: 'AURA-HOM-LMP-003',
+    department: 'women',
+    category: 'lighting',
+    categoryName: 'Designer Lighting',
+    price: 4999,
+    compareAtPrice: 6999,
+    discountPercent: 28,
+    shortDescription: 'Architectural terrazzo cylinder base with opal frosted glass globe.',
+    description: 'A striking blend of raw stone and soft ambient illumination. Emits a soothing 2700K warm glow that creates a tranquil sanctuary in bedrooms and reading nooks.',
+    features: ['Solid cast Italian terrazzo base', 'Hand-blown opal frosted glass sphere', 'Braided fabric cord with brass inline dimmer'],
+    fabric: 'Terrazzo Stone & Opal Glass',
+    careInstructions: ['Dust with soft dry cloth', 'Compatible with E27 LED bulbs max 15W'],
+    images: [
+      { url: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=1000&auto=format&fit=crop', alt: 'Terrazzo Lamp Glowing On Nightstand', isPrimary: true },
+    ],
+    colors: [{ name: 'Neutral Speckle', hex: '#EBE5DF' }, { name: 'Rose Terrazzo', hex: '#E2C2C6' }],
+    sizes: [{ size: 'Compact (25cm High)', inStock: true, stockCount: 18 }],
+    rating: 4.8,
+    reviewCount: 31,
+    isFeatured: true,
+    isNewArrival: true,
+    isBestSeller: false,
+    isSale: true,
+    badge: 'Trending',
+    tags: ['lighting', 'lamp', 'terrazzo', 'minimalist'],
+    fit: 'Desk & Tabletop',
+  },
+  {
+    id: 'aura-04',
+    name: 'Carved Teakwood Centrepiece Bowl',
+    slug: 'carved-teakwood-centrepiece-bowl',
+    sku: 'AURA-HOM-BWL-004',
+    department: 'women',
+    category: 'dining',
+    categoryName: 'Dining & Kitchen',
+    price: 2199,
+    compareAtPrice: 2999,
+    discountPercent: 26,
+    shortDescription: 'Reclaimed teak root wood bowl with rich natural grain patterns.',
+    description: 'Each piece is individually carved from reclaimed plantation teak wood, highlighting organic contours and warm honey-amber grain.',
+    features: ['100% Solid sustainable teakwood', 'Food-safe organic beeswax finish', 'Unique organic live edge contours'],
+    fabric: 'Solid Plantation Teak Wood',
+    careInstructions: ['Hand wash with mild soap and dry immediately', 'Condition with mineral oil every 3 months'],
+    images: [
+      { url: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?q=80&w=1000&auto=format&fit=crop', alt: 'Teakwood Bowl Front View', isPrimary: true },
+    ],
+    colors: [{ name: 'Natural Honey Teak', hex: '#9E683B' }],
+    sizes: [{ size: 'Medium (26cm)', inStock: true, stockCount: 14 }, { size: 'Large (34cm)', inStock: true, stockCount: 7 }],
+    rating: 4.9,
+    reviewCount: 19,
+    isFeatured: false,
+    isNewArrival: true,
+    isBestSeller: false,
+    isSale: false,
+    badge: 'Artisanal',
+    tags: ['dining', 'bowl', 'wood', 'teak', 'tableware'],
+    fit: 'Tabletop Centrepiece',
+  },
+];
+
+// =========================================================================
+// TENANT CATALOG 2: APEX ATHLETICS (HIGH-PERFORMANCE ACTIVEWEAR)
+// =========================================================================
+export const APEX_ATHLETICS_PRODUCTS: Product[] = [
+  {
+    id: 'apex-01',
+    name: 'Apex Pro Seamless High-Waist Leggings',
+    slug: 'apex-pro-seamless-high-waist-leggings',
+    sku: 'APEX-ACT-LEG-001',
+    department: 'women',
+    category: 'bottoms',
+    categoryName: 'Tights & Leggings',
+    price: 2899,
+    compareAtPrice: 3999,
+    discountPercent: 27,
+    shortDescription: 'Squat-proof 4-way stretch compressive tights with ribbed tummy control.',
+    description: 'Engineered for intense weightlifting, HIIT, and sprint sessions. Features targeted ventilation zones, moisture-wicking quick-dry yarn, and zero front seam for zero chafing.',
+    features: ['100% Squat-proof ultra-high density knit', 'Core-sculpting ribbed compression waistband', 'Dual concealed side phone pockets'],
+    fabric: '78% Recycled Nylon, 22% Elastane',
+    careInstructions: ['Machine wash cold inside out', 'Hang dry only', 'Do not fabric soften'],
+    images: [
+      { url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1000&auto=format&fit=crop', alt: 'Apex Seamless Leggings Action View', isPrimary: true },
+      { url: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1000&auto=format&fit=crop', alt: 'Apex Leggings Fabric Stretch Close-up' },
+    ],
+    colors: [{ name: 'Obsidian Black', hex: '#1A1A1A' }, { name: 'Slate Teal', hex: '#2C4A52' }, { name: 'Crimson Surge', hex: '#8B1E28' }],
+    sizes: [{ size: 'XS', inStock: true, stockCount: 10 }, { size: 'S', inStock: true, stockCount: 22 }, { size: 'M', inStock: true, stockCount: 30 }, { size: 'L', inStock: true, stockCount: 16 }, { size: 'XL', inStock: true, stockCount: 8 }],
+    rating: 4.9,
+    reviewCount: 118,
+    isFeatured: true,
+    isNewArrival: true,
+    isBestSeller: true,
+    isSale: true,
+    badge: 'Pro Tier',
+    tags: ['gym', 'activewear', 'leggings', 'fitness', 'training'],
+    fit: 'High Compression Fit',
+  },
+  {
+    id: 'apex-02',
+    name: 'Aero-Mesh Performance Training Hoodie',
+    slug: 'aero-mesh-performance-training-hoodie',
+    sku: 'APEX-ACT-HOD-002',
+    department: 'women',
+    category: 'tops',
+    categoryName: 'Hoodies & Jackets',
+    price: 3699,
+    compareAtPrice: 4999,
+    discountPercent: 26,
+    shortDescription: 'Thermal regulating tech-fleece zip hoodie with water-repellent coating.',
+    description: 'Designed for cold-morning outdoor workouts and recovery. Micro-grid interior traps body heat while laser-cut underarm vents release excess moisture.',
+    features: ['DWR weather-resistant outer shell', 'Ergonomic 3-panel scuba hood with drawcord', 'Thumbhole cuffs to keep sleeves locked in place'],
+    fabric: '88% Technical Polyester, 12% Spandex',
+    careInstructions: ['Machine wash cold', 'Tumble dry low'],
+    images: [
+      { url: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?q=80&w=1000&auto=format&fit=crop', alt: 'Apex Training Hoodie Athlete View', isPrimary: true },
+    ],
+    colors: [{ name: 'Stealth Gunmetal', hex: '#33383B' }, { name: 'Arctic White', hex: '#EDEDED' }],
+    sizes: [{ size: 'S', inStock: true, stockCount: 14 }, { size: 'M', inStock: true, stockCount: 20 }, { size: 'L', inStock: true, stockCount: 15 }, { size: 'XL', inStock: true, stockCount: 7 }],
+    rating: 4.8,
+    reviewCount: 48,
+    isFeatured: true,
+    isNewArrival: false,
+    isBestSeller: true,
+    isSale: false,
+    badge: 'Best Seller',
+    tags: ['hoodie', 'training', 'warmup', 'athletics'],
+    fit: 'Athletic Tapered Fit',
+  },
+  {
+    id: 'apex-03',
+    name: 'Engineered Breathable Mesh Runners',
+    slug: 'engineered-breathable-mesh-runners',
+    sku: 'APEX-ACT-SHOE-003',
+    department: 'women',
+    category: 'footwear',
+    categoryName: 'Footwear',
+    price: 5499,
+    compareAtPrice: 7499,
+    discountPercent: 26,
+    shortDescription: 'Responsive carbon-foam cushioned running shoes for marathons and gym.',
+    description: 'Built with nitrogen-infused supercritical foam midsole for maximum energy return on every stride. Breathable jacquard mesh upper provides dynamic lockdown.',
+    features: ['High-traction rubberized outsole lugs', 'Energy-return nitrogen foam midsole', 'Reflective 3M safety accents for night runs'],
+    fabric: 'Jacquard Mesh & Nitrogen Foam',
+    careInstructions: ['Spot clean with soft brush and warm water'],
+    images: [
+      { url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop', alt: 'Apex Runners Front Angle', isPrimary: true },
+    ],
+    colors: [{ name: 'Flash Crimson', hex: '#D32F2F' }, { name: 'Triple Black', hex: '#111111' }],
+    sizes: [{ size: 'UK 6', inStock: true, stockCount: 6 }, { size: 'UK 7', inStock: true, stockCount: 12 }, { size: 'UK 8', inStock: true, stockCount: 18 }, { size: 'UK 9', inStock: true, stockCount: 14 }, { size: 'UK 10', inStock: true, stockCount: 8 }],
+    rating: 4.9,
+    reviewCount: 87,
+    isFeatured: true,
+    isNewArrival: true,
+    isBestSeller: true,
+    isSale: true,
+    badge: 'Pro Elite',
+    tags: ['shoes', 'runners', 'footwear', 'running'],
+    fit: 'True to size UK sizing',
+  },
+];
+
+// =========================================================================
+// TENANT CATALOG 3: HAUTE LUXURY & ETHNIC PRET (MUSKAN CLOTHING / JQ TRENDS)
+// =========================================================================
+export const HAUTE_LUXURY_PRODUCTS: Product[] = [
+  {
+    id: 'lux-01',
+    name: 'Pure Mulberry Silk Banarasi Saree',
+    slug: 'pure-mulberry-silk-banarasi-saree',
+    sku: 'MSK-LUX-SAR-001',
+    department: 'women',
+    category: 'sarees',
+    categoryName: 'Royal Sarees',
+    price: 14999,
+    compareAtPrice: 19999,
+    discountPercent: 25,
+    shortDescription: 'Heirloom handwoven pure Katan silk saree with real gold zari kadwa motifs.',
+    description: 'A masterpiece of Banarasi handloom artistry. Woven over 45 days by generational weavers using certified pure mulberry silk and intricate antique gold zari borders.',
+    features: ['100% Pure Katan Silk certified SilkMark', 'Intricate floral kadwa zari jaal throughout body', 'Includes unstitched running silk blouse piece (80cm)'],
+    fabric: 'Pure Mulberry Silk & Gold Zari',
+    careInstructions: ['Strictly Dry Clean Only', 'Store wrapped in pure cotton muslin cloth'],
+    images: [
+      { url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?q=80&w=1000&auto=format&fit=crop', alt: 'Royal Silk Saree Front Drape', isPrimary: true },
+      { url: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?q=80&w=1000&auto=format&fit=crop', alt: 'Gold Zari Border Detail' },
+    ],
+    colors: [{ name: 'Imperial Crimson', hex: '#8B0000' }, { name: 'Royal Emerald', hex: '#004B23' }, { name: 'Mustard Gold', hex: '#E5A93C' }],
+    sizes: [{ size: 'Free Size (5.5m + 0.8m Blouse)', inStock: true, stockCount: 8 }],
+    rating: 5.0,
+    reviewCount: 42,
+    isFeatured: true,
+    isNewArrival: true,
+    isBestSeller: true,
+    isSale: false,
+    badge: 'Heirloom Heritage',
+    tags: ['saree', 'silk', 'banarasi', 'wedding', 'bridal', 'luxury'],
+    fit: 'Traditional 6-yard Drape',
+  },
+  {
+    id: 'lux-02',
+    name: 'Artisanal Embroidered Velvet Tuxedo Blazer',
+    slug: 'artisanal-embroidered-velvet-tuxedo-blazer',
+    sku: 'MSK-LUX-BLZ-002',
+    department: 'women',
+    category: 'blazers',
+    categoryName: 'Atelier Tailoring',
+    price: 8999,
+    compareAtPrice: 12499,
+    discountPercent: 28,
+    shortDescription: 'Midnight sapphire plush micro-velvet blazer with hand-zardozi peak lapels.',
+    description: 'Statement evening tailoring at its finest. Cut from Italian micro-velvet with a sharp structured shoulder line and opulent hand-embroidered metallic thread work.',
+    features: ['Plush Italian cotton micro-velvet', 'Hand-stitched metallic zardozi lapel embroidery', 'Fully lined with pure silk satin'],
+    fabric: 'Italian Velvet & Silk Satin Lining',
+    careInstructions: ['Specialist Dry Clean Only'],
+    images: [
+      { url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=1000&auto=format&fit=crop', alt: 'Velvet Blazer Styled Model', isPrimary: true },
+    ],
+    colors: [{ name: 'Midnight Sapphire', hex: '#0F1E36' }, { name: 'Wine Velvet', hex: '#4A0E17' }, { name: 'Obsidian Noir', hex: '#111111' }],
+    sizes: [{ size: 'XS', inStock: true, stockCount: 4 }, { size: 'S', inStock: true, stockCount: 10 }, { size: 'M', inStock: true, stockCount: 12 }, { size: 'L', inStock: true, stockCount: 6 }],
+    rating: 4.9,
+    reviewCount: 38,
+    isFeatured: true,
+    isNewArrival: false,
+    isBestSeller: true,
+    isSale: true,
+    badge: 'Atelier Drop',
+    tags: ['blazer', 'velvet', 'luxury', 'evening', 'partywear'],
+    fit: 'Tailored Slim Fit',
+  },
+  ...productsData.slice(0, 8),
+];
+
+/**
+ * Multi-Tenant Dynamic Product Catalog Resolver
+ */
+export function getProductsForTenant(slug?: string): Product[] {
+  if (!slug) return productsData;
+  const clean = slug.toLowerCase().trim();
+
+  if (clean.includes('aura') || clean === 'auraliving') {
+    return AURA_LIVING_PRODUCTS;
+  }
+  if (clean.includes('apex') || clean === 'apexathletics') {
+    return APEX_ATHLETICS_PRODUCTS;
+  }
+  if (clean.includes('muskan') || clean === 'muskan-clothing' || clean === 'demo' || clean === 'jqtrends') {
+    return HAUTE_LUXURY_PRODUCTS;
+  }
+
+  // Check if store has seeded products in localStorage (for browser view)
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(`tenant_products_${clean}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+  }
+
+  return HAUTE_LUXURY_PRODUCTS;
+}
+

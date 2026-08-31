@@ -1,7 +1,7 @@
 import { apiClient } from './client';
 import { mapCmsProductToStorefrontProduct } from './adapters';
 import { Product, ProductQueryParams, ProductListResponse } from '@/types/product';
-import { productsData } from '@/data/products';
+import { productsData, getProductsForTenant } from '@/data/products';
 
 export class ProductApiService {
   /**
@@ -33,7 +33,17 @@ export class ProductApiService {
       let products: Product[] = (res.data || []).map((p) => mapCmsProductToStorefrontProduct(p));
 
       if (products.length === 0) {
-        products = [...productsData];
+        let activeTenant = (params as any).tenant || '';
+        if (!activeTenant && typeof window !== 'undefined') {
+          const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+          if (pathMatch) {
+            activeTenant = pathMatch[2];
+          } else {
+            const sp = new URLSearchParams(window.location.search);
+            activeTenant = sp.get('tenant') || '';
+          }
+        }
+        products = [...getProductsForTenant(activeTenant)];
       }
 
       // Client-side refinement for fine-grained options (sizes, colors, price range) if needed
@@ -118,7 +128,14 @@ export class ProductApiService {
     } catch {
       // Fallback
     }
-    const found = productsData.find((p) => p.slug === slug) || null;
+    let activeTenant = '';
+    if (typeof window !== 'undefined') {
+      const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+      if (pathMatch) activeTenant = pathMatch[2];
+      else activeTenant = new URLSearchParams(window.location.search).get('tenant') || '';
+    }
+    const allProducts = [...getProductsForTenant(activeTenant), ...productsData];
+    const found = allProducts.find((p) => p.slug === slug) || null;
     return { data: found };
   }
 
@@ -134,7 +151,14 @@ export class ProductApiService {
     } catch {
       // Fallback
     }
-    const found = productsData.find((p) => p.id === id) || null;
+    let activeTenant = '';
+    if (typeof window !== 'undefined') {
+      const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+      if (pathMatch) activeTenant = pathMatch[2];
+      else activeTenant = new URLSearchParams(window.location.search).get('tenant') || '';
+    }
+    const allProducts = [...getProductsForTenant(activeTenant), ...productsData];
+    const found = allProducts.find((p) => p.id === id) || null;
     return { data: found };
   }
 
