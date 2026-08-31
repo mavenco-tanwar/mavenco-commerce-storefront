@@ -184,9 +184,9 @@ export function PlatformNavbar() {
               <span>Visual CMS</span>
             </Link>
 
-            <a href="/#pricing" className="hover:text-white transition-colors flex items-center gap-1.5">
+            <Link href="/pricing" className="hover:text-white transition-colors flex items-center gap-1.5">
               <span>SaaS Pricing</span>
-            </a>
+            </Link>
 
             <a href="/#faq" className="hover:text-white transition-colors flex items-center gap-1.5">
               <span>Enterprise FAQ</span>
@@ -233,11 +233,11 @@ export function PlatformNavbar() {
 
             <div className="pt-2 border-t border-slate-800 flex flex-col gap-2">
               <Link
-                href="/cms"
+                href="/pricing"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg"
               >
-                Visual CMS Overview
+                SaaS Pricing & Plans
               </Link>
               <button
                 onClick={() => {

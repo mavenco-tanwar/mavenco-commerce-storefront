@@ -272,13 +272,13 @@ export function PlatformShowcaseLanding() {
 
           {/* CTAs */}
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <a
-              href="#pricing"
+            <Link
+              href="/pricing"
               className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white font-bold text-sm shadow-xl shadow-rose-950/50 flex items-center gap-2 transition-all hover:scale-105"
             >
               <DollarSign className="w-4 h-4" />
               <span>Platform License &amp; Pricing</span>
-            </a>
+            </Link>
 
             <a
               href="#demo-stores"
@@ -1024,312 +1024,68 @@ export function PlatformShowcaseLanding() {
       </section>
 
       {/* ========================================================================= */}
-      {/* SECTION 4: TRANSPARENT PRICING & CLOUD INFRASTRUCTURE (ONE-TIME + FLEXIBLE SERVER) */}
+      {/* SECTION 4: PLATFORM PRICING TEASER BANNER (FULL DETAILS AT /pricing) */}
       {/* ========================================================================= */}
-      <section id="pricing" className="py-24 bg-[#0A0C10] border-t border-slate-800 relative overflow-hidden">
+      <section id="pricing" className="py-20 bg-[#0A0C10] border-t border-slate-800 relative overflow-hidden">
         <div className="absolute top-0 right-1/3 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-10 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 relative z-10">
-          {/* Header */}
-          <div className="text-center space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold uppercase tracking-widest">
-              <DollarSign className="w-3.5 h-3.5" />
-              <span>Predictable Cloud Economics</span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-              One-Time Platform License • Flexible Cloud Infrastructure
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              We deploy your custom Headless Storefront and Merchant Admin Panel with an isolated MongoDB database partition. Server computing, database backups, media CDN, and transaction mail run on flexible, pay-as-you-go server maintenance without locked annual contracts. Custom domain renewal excluded and billed separately.
-            </p>
-          </div>
-
-          {/* Pricing Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Plan 1: Starter Boutique */}
-            <div className="bg-[#12151F] border border-slate-800 rounded-3xl p-7 flex flex-col justify-between shadow-2xl space-y-6">
-              <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">
-                    Tier 01 • Starter Boutique
-                  </span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    14-Day Trial Available
-                  </span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
+          {/* Header & Pricing Highlights Card */}
+          <div className="bg-gradient-to-br from-[#131624] via-[#10121D] to-[#0D0F18] border border-rose-500/30 rounded-3xl p-8 sm:p-12 shadow-2xl space-y-8">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="space-y-3 max-w-2xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold uppercase tracking-widest">
+                  <DollarSign className="w-3.5 h-3.5" />
+                  <span>Predictable Cloud Economics</span>
                 </div>
-
-                <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl sm:text-4xl font-black text-white">₹24,999</span>
-                    <span className="text-xs text-rose-400 font-bold uppercase tracking-wider">/ one-time</span>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Complete Storefront + Admin Workspace deployment with dedicated MongoDB partition.
-                  </p>
-                </div>
-
-                {/* 14-Day Sandbox Trial & Refund Terms Card */}
-                <div className="p-3.5 bg-gradient-to-br from-amber-950/30 via-[#10121A] to-[#12141F] rounded-2xl border border-amber-500/30 space-y-2 text-xs">
-                  <div className="flex items-center justify-between font-bold text-amber-300 text-[11px]">
-                    <span className="flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      <span>14-Day Evaluation Trial</span>
-                    </span>
-                    <span className="bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-mono">₹2,000 Deposit</span>
-                  </div>
-                  <div className="text-[10.5px] text-slate-300 space-y-1 leading-relaxed">
-                    <div className="flex items-start gap-1.5">
-                      <span className="text-emerald-400 font-bold">✓</span>
-                      <span><strong>100% Credited:</strong> If you love it, the ₹2,000 deposit is fully deducted from your ₹24,999 license.</span>
-                    </div>
-                    <div className="flex items-start gap-1.5">
-                      <span className="text-amber-400 font-bold">✓</span>
-                      <span><strong>50% Risk-Free Refund:</strong> If you don&apos;t proceed, we refund <strong>₹1,000 back</strong> to you.</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Cloud & Server Card */}
-                <div className="p-3.5 bg-[#0A0C10] rounded-2xl border border-slate-800 space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between font-bold text-emerald-400">
-                    <span>Cloud Server &amp; Database:</span>
-                    <span>₹2,000 / mo</span>
-                  </div>
-                  <div className="text-[10px] text-slate-400 leading-normal">
-                    Flexible recharge (pay monthly or 2-month blocks). Covers MongoDB cluster, Next.js Edge compute &amp; email delivery.
-                  </div>
-                </div>
-
-                {/* Quotas & Limits */}
-                <div className="space-y-2.5 pt-2 border-t border-slate-800 text-xs">
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Up to <strong>250 Products</strong> &amp; 1,000 Orders/mo</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong>2 GB</strong> Fast Cloud Asset Storage</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong>3 Staff</strong> Admin User Accounts</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Visual Homepage CMS &amp; Product Reviews</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Payment Gateways (Razorpay / Stripe / COD)</span>
-                  </div>
-                </div>
-              </div>
-
-              <a
-                href="https://mavenco-admin.vercel.app/login"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3.5 text-center bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-500 hover:to-rose-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all block"
-              >
-                Start 14-Day Trial (₹2,000 Deposit) →
-              </a>
-            </div>
-
-            {/* Plan 2: Professional Scale (FEATURED) */}
-            <div className="bg-gradient-to-b from-[#181B28] via-[#141724] to-[#12141F] border-2 border-rose-500/60 rounded-3xl p-7 flex flex-col justify-between shadow-2xl shadow-rose-950/40 space-y-6 relative">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-rose-600 to-amber-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full shadow-lg">
-                Most Popular Choice
-              </div>
-
-              <div className="space-y-5">
-                <div className="flex items-center justify-between pt-1">
-                  <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">
-                    Tier 02 • Professional Scale
-                  </span>
-                </div>
-
-                <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl sm:text-4xl font-black text-white">₹49,999</span>
-                    <span className="text-xs text-rose-400 font-bold uppercase tracking-wider">/ one-time</span>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    High-volume direct-to-consumer flagship storefront with AI automation and marketing engine.
-                  </p>
-                </div>
-
-                {/* Cloud & Server Card */}
-                <div className="p-3.5 bg-[#0A0C10] rounded-2xl border border-rose-500/30 space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between font-bold text-amber-400">
-                    <span>Cloud Server &amp; Database:</span>
-                    <span>₹4,000 / mo</span>
-                  </div>
-                  <div className="text-[10px] text-slate-400 leading-normal">
-                    Flexible recharge (pay monthly or multi-month). Covers dedicated DB indexing, Serverless Next.js Edge, CDN, &amp; transactional mail.
-                  </div>
-                </div>
-
-                {/* Quotas & Limits */}
-                <div className="space-y-2.5 pt-2 border-t border-slate-800 text-xs">
-                  <div className="flex items-center gap-2 text-slate-200">
-                    <Check className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span>Up to <strong>2,500 Products</strong> &amp; 10,000 Orders/mo</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-200">
-                    <Check className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span><strong>10 GB</strong> Media CDN &amp; WebP Optimization</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-200">
-                    <Check className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span><strong>15 Staff</strong> Accounts &amp; RBAC Access</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-200">
-                    <Check className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span><strong>Abandoned Cart Recovery</strong> Engine</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-200">
-                    <Check className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span><strong>AI Copywriting &amp; SEO</strong> Studio</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-200">
-                    <Check className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span><strong>Full Headless REST API &amp; Webhooks</strong></span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-200">
-                    <Check className="w-4 h-4 text-rose-400 shrink-0" />
-                    <span><strong>Advanced Funnel Analytics</strong> &amp; Projections</span>
-                  </div>
-                </div>
-              </div>
-
-              <a
-                href="https://mavenco-admin.vercel.app/login"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3.5 text-center bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all block"
-              >
-                Deploy Professional Scale →
-              </a>
-            </div>
-
-            {/* Plan 3: Enterprise Global */}
-            <div className="bg-[#12151F] border border-slate-800 rounded-3xl p-7 flex flex-col justify-between shadow-2xl space-y-6">
-              <div className="space-y-5">
-                <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">
-                    Tier 03 • Enterprise Global
-                  </span>
-                </div>
-
-                <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl sm:text-4xl font-black text-white">₹1,39,999</span>
-                    <span className="text-xs text-rose-400 font-bold uppercase tracking-wider">/ one-time</span>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Multi-brand, multi-region enterprise architecture with custom ERP sync and dedicated DB cluster.
-                  </p>
-                </div>
-
-                {/* Cloud & Server Card */}
-                <div className="p-3.5 bg-[#0A0C10] rounded-2xl border border-slate-800 space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between font-bold text-amber-400">
-                    <span>Dedicated Cloud Cluster:</span>
-                    <span>₹8,000 / mo</span>
-                  </div>
-                  <div className="text-[10px] text-slate-400 leading-normal">
-                    Dedicated multi-region database cluster, 24/7 VIP SLA &amp; custom DevOps support.
-                  </div>
-                </div>
-
-                {/* Quotas & Limits */}
-                <div className="space-y-2.5 pt-2 border-t border-slate-800 text-xs">
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Up to <strong>50,000 Products</strong> &amp; 250,000 Orders/mo</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong>100 GB</strong> Ultra-fast Cloud Storage</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span><strong>100 Staff</strong> Users &amp; Multi-Role RBAC</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Dedicated MongoDB Cluster Replica</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Custom ERP, SAP &amp; Warehouse Integrations</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-300">
-                    <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>24/7 Dedicated Cloud Solution Architect SLA</span>
-                  </div>
-                </div>
-              </div>
-
-              <a
-                href="mailto:ammar.tanwar.dev@gmail.com?subject=Enterprise%20Plan%20Inquiry%20-%20Mavenco%20Commerce"
-                className="w-full py-3 text-center bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white text-xs font-bold rounded-xl shadow-lg transition-all block"
-              >
-                Contact Enterprise Sales →
-              </a>
-            </div>
-          </div>
-
-          {/* Interactive Architecture Configurator */}
-          <ArchitectureConfigurator />
-
-          {/* Interactive ROI & Savings Calculator vs Shopify */}
-          <RoiSavingsCalculator />
-
-          {/* Real-Time Cloud Infrastructure & Domain Policy Card */}
-          <div className="bg-[#10131E] border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-              <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                  <span>Cloud Services &amp; Domain Renewal Policy</span>
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Transparency on what is covered inside the platform and what is billed separately.
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                  One-Time Platform License • Flexible Cloud Infrastructure
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-sans">
+                  Deploy your custom Headless Storefront and Merchant Admin Panel with dedicated MongoDB partition, sub-50ms Edge compute, and 0% GMV commission.
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold">
-                100% Transparent SLA
-              </span>
+
+              <Link
+                href="/pricing"
+                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white font-bold text-sm shadow-xl shadow-rose-950/50 flex items-center gap-2 transition-all hover:scale-105 self-start lg:self-auto shrink-0"
+              >
+                <span>View Full Pricing &amp; ROI Calculator</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-              <div className="p-4 bg-[#0A0C10] rounded-2xl border border-emerald-500/20 space-y-2">
-                <div className="font-bold text-emerald-400 uppercase text-[11px] tracking-wider flex items-center gap-1.5">
-                  <Check className="w-4 h-4" />
-                  <span>Included In Cloud Infrastructure &amp; Maintenance</span>
+            {/* 3 Quick Tier Summary Pills */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-800">
+              <Link href="/pricing" className="p-4 bg-[#0A0C10] hover:bg-[#121522] rounded-2xl border border-slate-800 hover:border-rose-500/40 transition-all group block">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="font-mono text-rose-400 font-bold uppercase text-[10px]">Tier 01 • Starter Boutique</span>
+                  <span className="text-amber-400 text-[10px] bg-amber-500/10 px-2 py-0.5 rounded">14-Day Trial</span>
                 </div>
-                <ul className="space-y-1.5 text-slate-300 leading-relaxed">
-                  <li>• <strong>MongoDB Atlas Cluster:</strong> Continuous database replication, high availability, daily snapshots.</li>
-                  <li>• <strong>Serverless Next.js Edge Compute:</strong> Global CDN caching, edge routing, sub-50ms TTFB.</li>
-                  <li>• <strong>Transactional Mail Daemon:</strong> Credentials dispatch, order notifications, customer invoices.</li>
-                  <li>• <strong>Media CDN:</strong> Responsive WebP image transformations and fast product media delivery.</li>
-                  <li>• <strong>Maintenance &amp; Security:</strong> Core platform version updates, framework patches, bug fixes.</li>
-                </ul>
-              </div>
+                <div className="text-2xl font-black text-white group-hover:text-amber-300 transition-colors">₹24,999</div>
+                <div className="text-[11px] text-slate-400 mt-1">₹2,000/mo Cloud Server &amp; DB • 250 Products</div>
+              </Link>
 
-              <div className="p-4 bg-[#0A0C10] rounded-2xl border border-amber-500/20 space-y-2">
-                <div className="font-bold text-amber-400 uppercase text-[11px] tracking-wider flex items-center gap-1.5">
-                  <Clock className="w-4 h-4" />
-                  <span>Excluded &amp; Billed Separately Upon Renewal</span>
+              <Link href="/pricing" className="p-4 bg-gradient-to-br from-[#161928] to-[#0A0C10] rounded-2xl border-2 border-rose-500/50 hover:border-rose-400 transition-all group block relative">
+                <div className="absolute -top-2.5 right-4 bg-gradient-to-r from-rose-600 to-amber-500 text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow">
+                  Most Popular
                 </div>
-                <ul className="space-y-1.5 text-slate-300 leading-relaxed">
-                  <li>• <strong>Custom Domain Names:</strong> Domain registrations (`.com`, `.in`, `.store`, etc.) are renewed yearly at actual registrar cost (approx ₹999 - ₹1,499/year per domain).</li>
-                  <li>• <strong>Custom Third-Party SMS Gateways:</strong> External transactional SMS gateway credits (OTP / Twilio) if custom SMS routes are requested.</li>
-                  <li>• <strong>Custom Payment Gateway Transaction Rates:</strong> Standard merchant acquirer fees charged by Razorpay / Stripe (approx 1.8% - 2.0%).</li>
-                </ul>
-              </div>
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="font-mono text-rose-300 font-bold uppercase text-[10px]">Tier 02 • Professional Scale</span>
+                </div>
+                <div className="text-2xl font-black text-white group-hover:text-rose-400 transition-colors">₹49,999</div>
+                <div className="text-[11px] text-slate-400 mt-1">₹4,000/mo Cloud Server &amp; DB • 2,500 Products</div>
+              </Link>
+
+              <Link href="/pricing" className="p-4 bg-[#0A0C10] hover:bg-[#121522] rounded-2xl border border-slate-800 hover:border-amber-500/40 transition-all group block">
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="font-mono text-amber-400 font-bold uppercase text-[10px]">Tier 03 • Enterprise Global</span>
+                  <span className="text-emerald-400 text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded">VIP SLA</span>
+                </div>
+                <div className="text-2xl font-black text-white group-hover:text-amber-300 transition-colors">₹1,39,999</div>
+                <div className="text-[11px] text-slate-400 mt-1">₹8,000/mo Dedicated DB Cluster • 50,000 Products</div>
+              </Link>
             </div>
           </div>
 
