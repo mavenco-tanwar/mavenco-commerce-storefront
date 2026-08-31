@@ -45,6 +45,7 @@ import { CurrencyCheckoutSimulator } from './CurrencyCheckoutSimulator';
 import { ShoppableReelsSection } from './ShoppableReelsSection';
 import { ThemeStagingStudio } from './ThemeStagingStudio';
 import { ShopifyMigrationTester } from './ShopifyMigrationTester';
+import { B2bWholesaleCalculator } from './B2bWholesaleCalculator';
 import { FlashSaleConcurrencySimulator } from './FlashSaleConcurrencySimulator';
 import { WhatsAppCommerceSimulator } from './WhatsAppCommerceSimulator';
 import { PlatformRoadmap } from './PlatformRoadmap';
@@ -518,6 +519,9 @@ export function PlatformShowcaseLanding() {
 
           {/* 1-Click Shopify Catalog Migration Previewer */}
           <ShopifyMigrationTester />
+
+          {/* B2B Wholesale & Volume Tier Calculator */}
+          <B2bWholesaleCalculator />
 
           {/* High-Concurrency Flash Sale & Spike Simulator */}
           <FlashSaleConcurrencySimulator />
