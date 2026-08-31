@@ -18,7 +18,7 @@ export function PlatformFooter() {
               <span className="text-base font-extrabold text-white tracking-tight">MAVENCO COMMERCE</span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed font-sans">
-              Next-generation multi-tenant headless ecommerce platform. Provisioning iso{ label: 'Shopify Store', url: 'mystore.myshopify.com' },drag-and-drop CMS, and dynamic design tokens on the fly.
+              Next-generation multi-tenant headless ecommerce platform. Provisioning isolated merchant storefronts, visual drag-and-drop CMS, and dynamic design tokens on the fly.
             </p>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold">
               <CheckCircle2 className="w-3.5 h-3.5" />
