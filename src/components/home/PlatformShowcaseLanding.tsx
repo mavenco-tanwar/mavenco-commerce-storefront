@@ -35,6 +35,9 @@ import {
 import { RoiSavingsCalculator } from './RoiSavingsCalculator';
 import { PlatformComparisonMatrix } from './PlatformComparisonMatrix';
 import { PlatformFaqAccordion } from './PlatformFaqAccordion';
+import { SpeedScorecard } from './SpeedScorecard';
+import { ApiPlayground } from './ApiPlayground';
+import { CaseStudies } from './CaseStudies';
 
 export function PlatformShowcaseLanding() {
   // State for Section 1: Visual CMS Studio Interactive Preview
@@ -421,6 +424,11 @@ export function PlatformShowcaseLanding() {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Client Growth Spotlights */}
+        <div className="pt-6">
+          <CaseStudies />
         </div>
       </section>
 
@@ -1259,11 +1267,17 @@ export function PlatformShowcaseLanding() {
             </div>
           </div>
 
+          {/* Global Speed & Edge Latency Benchmark Scorecard */}
+          <SpeedScorecard />
+
           {/* Interactive ROI & Savings Calculator vs Shopify */}
           <RoiSavingsCalculator />
 
           {/* Architecture & Feature Comparison Matrix */}
           <PlatformComparisonMatrix />
+
+          {/* Developer REST API & Webhooks Playground */}
+          <ApiPlayground />
 
           {/* Real-Time Cloud Infrastructure & Domain Policy Card */}
           <div className="bg-[#10131E] border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
