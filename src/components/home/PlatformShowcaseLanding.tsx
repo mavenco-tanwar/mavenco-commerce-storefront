@@ -40,6 +40,10 @@ import { ApiPlayground } from './ApiPlayground';
 import { CaseStudies } from './CaseStudies';
 import { ArchitectureConfigurator } from './ArchitectureConfigurator';
 import { CustomerUgcGallery } from './CustomerUgcGallery';
+import { StoreSpeedTester } from './StoreSpeedTester';
+import { InstantStoreBuilder } from './InstantStoreBuilder';
+import { CurrencyCheckoutSimulator } from './CurrencyCheckoutSimulator';
+import { PlatformRoadmap } from './PlatformRoadmap';
 
 export function PlatformShowcaseLanding() {
   // State for Section 1: Visual CMS Studio Interactive Preview
@@ -432,6 +436,7 @@ export function PlatformShowcaseLanding() {
         <div className="pt-6 space-y-12">
           <CaseStudies />
           <CustomerUgcGallery />
+          <InstantStoreBuilder />
         </div>
       </section>
 
@@ -1009,6 +1014,12 @@ export function PlatformShowcaseLanding() {
               </div>
             </div>
           </div>
+
+          {/* Global Multi-Currency & WhatsApp Checkout Simulator */}
+          <CurrencyCheckoutSimulator />
+
+          {/* Real-Time Live Speed & TTFB Benchmark Tester */}
+          <StoreSpeedTester />
         </div>
       </section>
 
@@ -1320,6 +1331,11 @@ export function PlatformShowcaseLanding() {
                 </ul>
               </div>
             </div>
+          </div>
+
+          {/* Public Platform Roadmap & Merchant Upvote Board */}
+          <div className="pt-4">
+            <PlatformRoadmap />
           </div>
 
           {/* Enterprise Architecture FAQs */}
