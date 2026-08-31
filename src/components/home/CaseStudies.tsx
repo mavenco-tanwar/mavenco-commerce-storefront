@@ -1,45 +1,93 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { TrendingUp, Sparkles, ArrowRight, ShieldCheck, Zap, DollarSign, Store } from 'lucide-react';
+import { TrendingUp, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+
+interface ClientSpotlight {
+  brand: string;
+  slug: string;
+  industry: string;
+  highlight: string;
+  savings: string;
+  description: string;
+  badge: string;
+  color: string;
+}
+
+const DEFAULT_SPOTLIGHTS: ClientSpotlight[] = [
+  {
+    brand: 'Muskan Clothing',
+    slug: 'muskan-clothing',
+    industry: 'Haute Luxury & Ethnic Pret',
+    highlight: '+42% Mobile Conversion Rate',
+    savings: '₹2,40,000/yr saved in 0% transaction commission',
+    description:
+      'Migrated from a sluggish monolithic store to Mavenco Headless Edge. Page load time dropped from 3.8s to 0.4s, resulting in a dramatic reduction in checkout abandonment.',
+    badge: 'Fashion & Apparel',
+    color: 'from-rose-500/20 to-amber-500/10 border-rose-500/30 text-rose-400',
+  },
+  {
+    brand: 'Aura Living',
+    slug: 'auraliving',
+    industry: 'Nordic Minimalist Living & Decor',
+    highlight: 'Zero Third-Party App Fees',
+    savings: '₹1,40,000/yr saved on Shopify app subscriptions',
+    description:
+      'Replaced 7 paid Shopify plugins (PageFly, Loox reviews, SEO suite, mega menus) with Mavenco’s all-in-one native visual CMS and verified review system.',
+    badge: 'Home & Living',
+    color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-400',
+  },
+  {
+    brand: 'Apex Athletics',
+    slug: 'apexathletics',
+    industry: 'High-Performance Activewear',
+    highlight: '< 24ms Instant Page Transitions',
+    savings: '100% database isolation on MongoDB Atlas',
+    description:
+      'Launched a high-velocity direct-to-consumer store with dual custom domains and custom headless product bundling for athlete training kits.',
+    badge: 'Athleisure',
+    color: 'from-sky-500/20 to-indigo-500/10 border-sky-500/30 text-sky-400',
+  },
+];
 
 export function CaseStudies() {
-  const caseStudies = [
-    {
-      brand: 'Muskan Clothing',
-      slug: 'muskan-clothing',
-      industry: 'Haute Luxury & Ethnic Pret',
-      highlight: '+42% Mobile Conversion Rate',
-      savings: '₹2,40,000/yr saved in 0% transaction commission',
-      description:
-        'Migrated from a sluggish monolithic store to Mavenco Headless Edge. Page load time dropped from 3.8s to 0.4s, resulting in a dramatic reduction in checkout abandonment.',
-      badge: 'Fashion & Apparel',
-      color: 'from-rose-500/20 to-amber-500/10 border-rose-500/30 text-rose-400',
-    },
-    {
-      brand: 'Aura Living',
-      slug: 'auraliving',
-      industry: 'Nordic Minimalist Living & Decor',
-      highlight: 'Zero Third-Party App Fees',
-      savings: '₹1,40,000/yr saved on Shopify app subscriptions',
-      description:
-        'Replaced 7 paid Shopify plugins (PageFly, Loox reviews, SEO suite, mega menus) with Mavenco’s all-in-one native visual CMS and verified review system.',
-      badge: 'Home & Living',
-      color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-400',
-    },
-    {
-      brand: 'Apex Athletics',
-      slug: 'apexathletics',
-      industry: 'High-Performance Activewear',
-      highlight: '< 24ms Instant Page Transitions',
-      savings: '100% database isolation on MongoDB Atlas',
-      description:
-        'Launched a high-velocity direct-to-consumer store with dual custom domains and custom headless product bundling for athlete training kits.',
-      badge: 'Athleisure',
-      color: 'from-sky-500/20 to-indigo-500/10 border-sky-500/30 text-sky-400',
-    },
-  ];
+  const [spotlights, setSpotlights] = useState<ClientSpotlight[]>(DEFAULT_SPOTLIGHTS);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadTenantSpotlights() {
+      try {
+        const res = await fetch('/api/v1/platform/tenants').then((r) => (r.ok ? r.json() : null));
+        if (isMounted && res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          const colors = [
+            'from-rose-500/20 to-amber-500/10 border-rose-500/30 text-rose-400',
+            'from-emerald-500/20 to-teal-500/10 border-emerald-500/30 text-emerald-400',
+            'from-sky-500/20 to-indigo-500/10 border-sky-500/30 text-sky-400',
+          ];
+
+          const mapped: ClientSpotlight[] = res.data.slice(0, 3).map((t: any, idx: number) => ({
+            brand: t.name,
+            slug: t.slug,
+            industry: t.tagline || (t.slug.includes('aura') ? 'Nordic Home Living' : t.slug.includes('apex') ? 'Performance Activewear' : 'Haute Luxury Fashion'),
+            highlight: `100% Isolated Database Partition`,
+            savings: `0% Platform Commission (${t.metrics?.products || 12} SKUs live)`,
+            description: `Active production storefront running on Next.js 16 Edge Compute with dedicated MongoDB Atlas database isolation.`,
+            badge: t.planName || 'Enterprise Scale',
+            color: colors[idx % colors.length],
+          }));
+
+          setSpotlights(mapped);
+        }
+      } catch (e) {
+        // Fallback to default
+      }
+    }
+    loadTenantSpotlights();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="bg-[#10131E] border border-slate-800 rounded-3xl p-6 sm:p-10 space-y-8 shadow-2xl">
@@ -58,7 +106,7 @@ export function CaseStudies() {
 
       {/* Grid of Case Studies */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        {caseStudies.map((cs, idx) => (
+        {spotlights.map((cs, idx) => (
           <div
             key={idx}
             className={`p-6 rounded-2xl bg-gradient-to-br ${cs.color} border space-y-4 flex flex-col justify-between`}

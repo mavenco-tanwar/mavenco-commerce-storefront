@@ -1270,20 +1270,11 @@ export function PlatformShowcaseLanding() {
             </div>
           </div>
 
-          {/* Global Speed & Edge Latency Benchmark Scorecard */}
-          <SpeedScorecard />
-
           {/* Interactive Architecture Configurator */}
           <ArchitectureConfigurator />
 
           {/* Interactive ROI & Savings Calculator vs Shopify */}
           <RoiSavingsCalculator />
-
-          {/* Architecture & Feature Comparison Matrix */}
-          <PlatformComparisonMatrix />
-
-          {/* Developer REST API & Webhooks Playground */}
-          <ApiPlayground />
 
           {/* Real-Time Cloud Infrastructure & Domain Policy Card */}
           <div className="bg-[#10131E] border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
