@@ -48,10 +48,11 @@ export function TrendingSection({
     loadTrending();
   }, []);
 
-  const displayedProducts = products.filter((p) => {
+  const filtered = products.filter((p) => {
     if (activeTab === 'all') return true;
     return p.department === activeTab;
   });
+  const displayedProducts = filtered.length > 0 ? filtered : products;
 
   return (
     <section className="py-16 md:py-24 bg-[#FAF6F2] border-y border-[#E8DED8] select-none">
