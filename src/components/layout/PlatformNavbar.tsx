@@ -141,41 +141,45 @@ export function PlatformNavbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
-            {/* Storefronts Dropdown */}
+          <nav className="hidden md:flex items-center gap-5 text-xs font-semibold text-slate-300">
+            {/* Live Brand Switcher Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setIsStoreMenuOpen(!isStoreMenuOpen)}
-                className="flex items-center gap-1.5 py-2 px-3 rounded-lg hover:text-white hover:bg-slate-800/80 transition-colors"
+                className="flex items-center gap-1.5 py-1.5 px-3 rounded-full bg-slate-800/80 hover:bg-slate-700/80 text-rose-300 border border-rose-500/30 transition-all font-bold"
               >
                 <Store className="w-3.5 h-3.5 text-rose-400" />
-                <span>Live Demo Stores</span>
+                <span>Live Brand Switcher</span>
                 <ChevronDown className="w-3 h-3 text-slate-400" />
               </button>
 
               {isStoreMenuOpen && (
                 <div
-                  className="absolute left-0 mt-2 w-72 bg-[#12151F] border border-slate-700/80 rounded-xl shadow-2xl p-2 space-y-1 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  className="absolute left-0 mt-2 w-80 bg-[#12151F] border border-slate-700/80 rounded-2xl shadow-2xl p-2.5 space-y-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                   onMouseLeave={() => setIsStoreMenuOpen(false)}
                 >
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Provisioned Demo Storefronts
+                  <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                    <span>Explore Live Tenant Stores</span>
+                    <span className="text-emerald-400 font-mono">Next.js Edge</span>
                   </div>
                   {demoStores.map((store) => (
                     <Link
                       key={store.slug}
                       href={`/stores/${store.slug}`}
                       onClick={() => setIsStoreMenuOpen(false)}
-                      className="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-800/80 transition-colors group"
+                      className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-800/80 transition-colors group border border-transparent hover:border-slate-700"
                     >
                       <div>
-                        <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors">
-                          {store.name}
+                        <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors flex items-center gap-1.5">
+                          <span>{store.name}</span>
+                          {store.slug === 'muskan-clothing' && (
+                            <span className="px-1.5 py-0.2 bg-rose-500/20 text-rose-300 text-[9px] rounded font-mono">NEW</span>
+                          )}
                         </div>
                         <div className="text-[11px] text-slate-400">{store.industry}</div>
                       </div>
-                      <span className="text-[10px] font-bold text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
-                        Explore
+                      <span className="text-[10px] font-bold text-rose-300 bg-rose-500/10 px-2 py-1 rounded-lg border border-rose-500/20">
+                        Launch &rarr;
                       </span>
                     </Link>
                   ))}
@@ -185,22 +189,20 @@ export function PlatformNavbar() {
 
             <Link href="/cms" className="hover:text-white transition-colors flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-amber-400" />
-              <span>Visual CMS Overview</span>
+              <span>Visual CMS</span>
             </Link>
 
-            <a href="/#theme-studio" className="hover:text-white transition-colors flex items-center gap-1.5">
-              <Palette className="w-3.5 h-3.5 text-rose-400" />
-              <span>Theme Tokens</span>
+            <a href="/#pricing" className="hover:text-white transition-colors flex items-center gap-1.5">
+              <span>SaaS Pricing</span>
             </a>
 
-            <a href="/#architecture" className="hover:text-white transition-colors flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Architecture</span>
+            <a href="/#faq" className="hover:text-white transition-colors flex items-center gap-1.5">
+              <span>Enterprise FAQ</span>
             </a>
           </nav>
 
           {/* Action CTAs */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2.5">
             <button
               onClick={() => setIsDemoModalOpen(true)}
               className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 rounded-xl shadow-lg shadow-rose-950/40 transition-all flex items-center gap-1.5 hover:scale-105"

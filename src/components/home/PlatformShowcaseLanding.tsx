@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { RoiSavingsCalculator } from './RoiSavingsCalculator';
 import { PlatformComparisonMatrix } from './PlatformComparisonMatrix';
+import { PlatformFaqAccordion } from './PlatformFaqAccordion';
 
 export function PlatformShowcaseLanding() {
   // State for Section 1: Visual CMS Studio Interactive Preview
@@ -286,6 +287,45 @@ export function PlatformShowcaseLanding() {
               <span>Visual CMS Deep Dive</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
+          </div>
+
+          {/* Animated Platform Performance & SLA Metrics Strip */}
+          <div className="pt-10 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-5xl mx-auto text-left">
+            <div className="p-4 bg-[#121522]/80 backdrop-blur-md rounded-2xl border border-slate-800 space-y-1">
+              <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold font-mono">
+                <Zap className="w-3.5 h-3.5" />
+                <span>&lt; 50ms TTFB</span>
+              </div>
+              <div className="text-sm font-extrabold text-white">Global Edge Speed</div>
+              <div className="text-[10px] text-slate-400">Next.js 16 Edge Compute</div>
+            </div>
+
+            <div className="p-4 bg-[#121522]/80 backdrop-blur-md rounded-2xl border border-slate-800 space-y-1">
+              <div className="flex items-center gap-1.5 text-rose-400 text-xs font-bold font-mono">
+                <DollarSign className="w-3.5 h-3.5" />
+                <span>0% Commission</span>
+              </div>
+              <div className="text-sm font-extrabold text-white">100% Profit Retention</div>
+              <div className="text-[10px] text-slate-400">Zero Transaction Fees</div>
+            </div>
+
+            <div className="p-4 bg-[#121522]/80 backdrop-blur-md rounded-2xl border border-slate-800 space-y-1">
+              <div className="flex items-center gap-1.5 text-sky-400 text-xs font-bold font-mono">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>99.98% SLA</span>
+              </div>
+              <div className="text-sm font-extrabold text-white">Database Isolation</div>
+              <div className="text-[10px] text-slate-400">Dedicated MongoDB Atlas</div>
+            </div>
+
+            <div className="p-4 bg-[#121522]/80 backdrop-blur-md rounded-2xl border border-slate-800 space-y-1">
+              <div className="flex items-center gap-1.5 text-amber-400 text-xs font-bold font-mono">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>10,000+ SKUs</span>
+              </div>
+              <div className="text-sm font-extrabold text-white">Infinite Scaling</div>
+              <div className="text-[10px] text-slate-400">Dual Custom Domains</div>
+            </div>
           </div>
         </div>
       </section>
@@ -1269,6 +1309,11 @@ export function PlatformShowcaseLanding() {
                 </ul>
               </div>
             </div>
+          </div>
+
+          {/* Enterprise Architecture FAQs */}
+          <div id="faq" className="pt-8">
+            <PlatformFaqAccordion />
           </div>
         </div>
       </section>
