@@ -184,13 +184,17 @@ export function PlatformNavbar() {
               <span>Visual CMS</span>
             </Link>
 
-            <a href="/#pricing" className="hover:text-white transition-colors flex items-center gap-1.5">
+            <Link href="/pricing" className="hover:text-white transition-colors flex items-center gap-1.5">
               <span>SaaS Pricing</span>
-            </a>
+            </Link>
 
-            <a href="/#faq" className="hover:text-white transition-colors flex items-center gap-1.5">
+            <Link href="/architecture" className="hover:text-white transition-colors flex items-center gap-1.5">
+              <span>Architecture</span>
+            </Link>
+
+            <Link href="/faq" className="hover:text-white transition-colors flex items-center gap-1.5">
               <span>Enterprise FAQ</span>
-            </a>
+            </Link>
           </nav>
 
           {/* Action CTAs */}
@@ -235,9 +239,30 @@ export function PlatformNavbar() {
               <Link
                 href="/cms"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg"
+                className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg hover:bg-slate-700"
               >
-                Visual CMS Overview
+                Visual CMS Canvas
+              </Link>
+              <Link
+                href="/pricing"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg hover:bg-slate-700"
+              >
+                SaaS Pricing &amp; Plans
+              </Link>
+              <Link
+                href="/architecture"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg hover:bg-slate-700"
+              >
+                Edge Architecture
+              </Link>
+              <Link
+                href="/faq"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full py-2 bg-slate-800 text-center font-bold text-xs text-slate-200 rounded-lg hover:bg-slate-700"
+              >
+                Enterprise FAQ
               </Link>
               <button
                 onClick={() => {
