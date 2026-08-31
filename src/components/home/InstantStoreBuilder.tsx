@@ -18,10 +18,10 @@ export function InstantStoreBuilder() {
   ];
 
   const palettes = [
-    { id: 'rose', name: 'Haute Blush', primary: '#E11D48', accent: '#FB7185', bg: '#FFF1F2' },
-    { id: 'forest', name: 'Nordic Forest', primary: '#1B4332', accent: '#74C69D', bg: '#FAF3E0' },
-    { id: 'carbon', name: 'Apex Carbon', primary: '#0A0A0A', accent: '#00F5D4', bg: '#161822' },
-    { id: 'royal', name: 'Imperial Indigo', primary: '#0F172A', accent: '#6366F1', bg: '#F8FAFC' },
+    { id: 'rose',   name: 'Haute Blush',     primary: '#E11D48', accent: '#FB7185', bg: '#1A0812', text: '#FFFFFF', subtle: '#F9A8D4' },
+    { id: 'forest', name: 'Nordic Forest',   primary: '#22C55E', accent: '#86EFAC', bg: '#052E16', text: '#FFFFFF', subtle: '#BBF7D0' },
+    { id: 'carbon', name: 'Apex Carbon',     primary: '#00F5D4', accent: '#38BDF8', bg: '#0D1117', text: '#FFFFFF', subtle: '#94A3B8' },
+    { id: 'royal',  name: 'Imperial Indigo', primary: '#818CF8', accent: '#C7D2FE', bg: '#0F0C29', text: '#FFFFFF', subtle: '#C4B5FD' },
   ];
 
   const handleBuild = (e: React.FormEvent) => {
@@ -143,23 +143,26 @@ export function InstantStoreBuilder() {
               className="p-6 rounded-2xl border transition-all duration-300 space-y-5"
               style={{
                 backgroundColor: selectedPaletteObj.bg,
-                borderColor: `${selectedPaletteObj.primary}33`,
+                borderColor: `${selectedPaletteObj.primary}55`,
               }}
             >
               <div className="flex items-center justify-between">
                 <span className="font-extrabold text-base tracking-tight" style={{ color: selectedPaletteObj.primary }}>
                   {brandName || 'Your Brand'}
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded bg-black/10 text-slate-800">
+                <span
+                  className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded"
+                  style={{ backgroundColor: `${selectedPaletteObj.primary}22`, color: selectedPaletteObj.subtle }}
+                >
                   {categories.find((c) => c.id === category)?.label}
                 </span>
               </div>
 
               <div className="space-y-2 py-3 text-center">
-                <h4 className="text-xl sm:text-2xl font-extrabold leading-tight" style={{ color: selectedPaletteObj.primary }}>
+                <h4 className="text-xl sm:text-2xl font-extrabold leading-tight" style={{ color: selectedPaletteObj.text }}>
                   Crafted for Distinction &amp; Elegance
                 </h4>
-                <p className="text-xs text-slate-700 max-w-sm mx-auto">
+                <p className="text-xs max-w-sm mx-auto" style={{ color: selectedPaletteObj.subtle }}>
                   0% transaction fees, sub-40ms edge performance, and visual drag-and-drop lookbooks.
                 </p>
               </div>
