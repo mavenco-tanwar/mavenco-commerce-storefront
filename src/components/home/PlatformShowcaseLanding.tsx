@@ -42,6 +42,119 @@ import { ArchitectureConfigurator } from './ArchitectureConfigurator';
 import { CustomerUgcGallery } from './CustomerUgcGallery';
 
 export function PlatformShowcaseLanding() {
+  // State for Section 1: Visual CMS Studio Interactive Preview
+  const [selectedCmsBlock, setSelectedCmsBlock] = useState<number>(0);
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+
+  // State for Section 2: Theme Token Studio Playground
+  const [activeFont, setActiveFont] = useState<'Playfair Display, serif' | 'Cinzel, serif' | 'Montserrat, sans-serif' | 'Plus Jakarta Sans, sans-serif'>('Playfair Display, serif');
+  const [activeThemeName, setActiveThemeName] = useState<'rose' | 'nordic' | 'athletic' | 'indigo'>('rose');
+  const [activeRadius, setActiveRadius] = useState<'rounded-lg' | 'rounded-full' | 'rounded-none'>('rounded-lg');
+
+  const themePalettes = {
+    rose: {
+      name: 'Haute Pret (Blush & Gold)',
+      primary: '#1A1412',
+      accent: '#B77A68',
+      background: '#FFFDFC',
+      cardBg: '#FFFFFF',
+      textColor: '#1A1412',
+      subTextColor: '#6B5E59',
+      tagline: 'Artisanal Festive Silhouettes',
+      announcementBg: '#1A1412',
+      announcementText: '#FFFDFC',
+      buttonText: '#FFFFFF',
+      isDark: false,
+    },
+    nordic: {
+      name: 'Nordic Sanctuary (Forest & Sand)',
+      primary: '#1B4332',
+      accent: '#2D6A4F',
+      background: '#FAF6EE',
+      cardBg: '#FFFFFF',
+      textColor: '#1B4332',
+      subTextColor: '#405B4E',
+      tagline: 'Mindful Interior Living',
+      announcementBg: '#1B4332',
+      announcementText: '#FAF6EE',
+      buttonText: '#FFFFFF',
+      isDark: false,
+    },
+    athletic: {
+      name: 'Apex Athletic (Carbon & Cyan)',
+      primary: '#0F172A',
+      accent: '#00F5D4',
+      background: '#090D16',
+      cardBg: '#111827',
+      textColor: '#F8FAFC',
+      subTextColor: '#94A3B8',
+      tagline: 'Championship Engineered Gear',
+      announcementBg: '#00F5D4',
+      announcementText: '#090D16',
+      buttonText: '#090D16',
+      isDark: true,
+    },
+    indigo: {
+      name: 'Modern Atelier (Slate & Indigo)',
+      primary: '#0F172A',
+      accent: '#6366F1',
+      background: '#F8FAFC',
+      cardBg: '#FFFFFF',
+      textColor: '#0F172A',
+      subTextColor: '#64748B',
+      tagline: 'Curated Design Capsule',
+      announcementBg: '#0F172A',
+      announcementText: '#F8FAFC',
+      buttonText: '#FFFFFF',
+      isDark: false,
+    },
+  };
+
+  const activePalette = themePalettes[activeThemeName];
+
+  const cmsBlocksData = [
+    {
+      id: 'hero',
+      title: 'Hero & Atelier Banner',
+      tag: 'Section 01',
+      badge: 'Visual Hero',
+      previewHeading: 'Next-Generation Luxury & Craftsmanship',
+      previewSub: 'High-impact full bleed media with dual action CTAs and live promo pill callouts.',
+      previewImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1000&auto=format&fit=crop&q=80',
+      controls: ['Dual Action Buttons', 'Video / Image Backdrop', 'Device Visibility Toggles'],
+    },
+    {
+      id: 'lookbook',
+      title: 'Editorial Haute Lookbook',
+      tag: 'Section 02',
+      badge: 'Narrative Story',
+      previewHeading: 'The Minimalist Autumn Narrative',
+      previewSub: 'Split editorial layouts designed for lookbook storytelling and collection previews.',
+      previewImage: 'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1000&auto=format&fit=crop&q=80',
+      controls: ['Shoppable Image Hotspots', 'Seasonal Lookbook Cards', 'Editorial Captions'],
+    },
+    {
+      id: 'categories',
+      title: 'Curated Category Strip',
+      tag: 'Section 03',
+      badge: 'Dynamic Carousel',
+      previewHeading: 'Explore Signature Departments',
+      previewSub: 'Horizontal category pills with custom photography and department filtering.',
+      previewImage: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1000&auto=format&fit=crop&q=80',
+      controls: ['Product Count Badges', 'Smooth Scroll Physics', 'Filter Direct Linking'],
+    },
+    {
+      id: 'promo',
+      title: 'Flash Sale & Countdown',
+      tag: 'Section 04',
+      badge: 'Urgency Banner',
+      previewHeading: 'Seasonal Private Circle Sale • 20% OFF',
+      previewSub: 'Configurable countdown clocks, coupon code copy buttons, and high-visibility ribbons.',
+      previewImage: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=1000&auto=format&fit=crop&q=80',
+      controls: ['Live Countdown Timer', 'Instant Coupon Copy', 'Targeted Discounts'],
+    },
+  ];
+
   const [tenants, setTenants] = useState([
     {
       id: 'store_demo',
@@ -323,70 +436,462 @@ export function PlatformShowcaseLanding() {
       </section>
 
       {/* ========================================================================= */}
-      {/* VISUAL CMS STUDIO SPOTLIGHT (Dedicated Deep-Dive on /cms) */}
+      {/* SECTION 1: VISUAL CMS INTERACTIVE STUDIO CANVAS (RICH SPLIT-SCREEN WORKFLOW) */}
       {/* ========================================================================= */}
-      <section id="cms-engine" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-[#121522] via-[#161A28] to-[#121522] border border-amber-500/30 rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8">
-          <div className="space-y-4 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold uppercase tracking-wider">
-              <Layers className="w-3.5 h-3.5 text-amber-400" />
-              <span>Visual CMS Architecture Studio</span>
+      <section id="cms-engine" className="py-24 bg-[#080A0E] border-y border-slate-800/90 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <span className="text-xs uppercase font-bold tracking-widest text-amber-400 flex items-center gap-1.5">
+                <Layers className="w-4 h-4" />
+                Visual CMS Architecture Studio
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                Interactive Drag-and-Drop Canvas
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-sans">
+                Experience how non-technical marketing and merchant teams assemble, reorder, and configure production-grade homepage sections with real-time responsive preview.
+              </p>
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Interactive Drag-and-Drop Studio Canvas
-            </h2>
+            <Link
+              href="/cms"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition-all self-start md:self-auto"
+            >
+              <span>Explore All 15+ CMS Components</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-              Experience our live visual drag-and-drop builder, real-time responsive device simulators (Desktop, iPad, iPhone), and dynamic Theme Token Customizer on the dedicated CMS studio page.
-            </p>
+          {/* Interactive Studio Workspace Simulation */}
+          <div className="bg-[#10131E] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl grid grid-cols-1 lg:grid-cols-12">
+            {/* Left: Component Tree & Layer Stack (5 cols) */}
+            <div className="lg:col-span-5 p-6 border-b lg:border-b-0 lg:border-r border-slate-800 space-y-4 bg-[#0D0F18]">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <Layout className="w-4 h-4 text-amber-400" />
+                  <span className="font-bold text-white text-xs uppercase tracking-wider">Homepage Section Stack</span>
+                </div>
+                <span className="text-[10px] bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded border border-amber-500/20 font-mono font-bold">
+                  {cmsBlocksData.length} Active Blocks
+                </span>
+              </div>
 
-            <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Link
-                href="/cms"
-                className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-amber-950/40 flex items-center gap-2 transition-all hover:scale-105"
-              >
-                <Layers className="w-4 h-4" />
-                <span>Launch Interactive CMS Studio Canvas</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-              <a
-                href="https://mavenco-admin.vercel.app/content/homepage"
-                target="_blank"
-                rel="noreferrer"
-                className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 flex items-center gap-2 transition-all"
-              >
-                <span>Try Admin Visual Editor</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              <p className="text-[11px] text-slate-400">
+                Click any section below to load its configuration into the live canvas viewer:
+              </p>
+
+              {/* Draggable Component List */}
+              <div className="space-y-2.5">
+                {cmsBlocksData.map((block, idx) => {
+                  const isSelected = selectedCmsBlock === idx;
+                  return (
+                    <button
+                      key={block.id}
+                      onClick={() => setSelectedCmsBlock(idx)}
+                      type="button"
+                      className={`w-full p-3.5 rounded-xl border text-left transition-all flex items-center justify-between group ${
+                        isSelected
+                          ? 'bg-amber-500/10 border-amber-500/50 shadow-md'
+                          : 'bg-[#131622] border-slate-800 hover:border-slate-700 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <GripVertical className={`w-4 h-4 transition-colors ${isSelected ? 'text-amber-400' : 'text-slate-600 group-hover:text-slate-400'}`} />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className={`font-bold text-xs ${isSelected ? 'text-white' : 'text-slate-200'}`}>
+                              {block.title}
+                            </span>
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-black/40 text-slate-400 font-mono">
+                              {block.tag}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{block.previewSub}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                        <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-amber-400 shadow-sm shadow-amber-400' : 'bg-slate-700'}`} />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Action Controls for Selected Block */}
+              <div className="p-4 bg-[#141824] rounded-2xl border border-slate-800/80 space-y-2.5 pt-3">
+                <div className="text-[11px] font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Configured Capabilities</span>
+                </div>
+                <div className="space-y-1.5">
+                  {cmsBlocksData[selectedCmsBlock].controls.map((ctrl) => (
+                    <div key={ctrl} className="flex items-center gap-2 text-[11px] text-slate-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                      <span>{ctrl}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Live Interactive Canvas Browser Preview (7 cols) */}
+            <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6 bg-[#111420]">
+              {/* Browser Window Chrome */}
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                    </div>
+                    <span className="text-[11px] font-mono text-slate-400 bg-[#0A0C10] px-3 py-1 rounded-md border border-slate-800 truncate max-w-[200px] sm:max-w-xs">
+                      https://storefront.edge/preview?block={cmsBlocksData[selectedCmsBlock].id}&amp;view={previewDevice}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 bg-[#0A0C10] p-1 rounded-xl border border-slate-800 text-slate-400">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDevice('desktop')}
+                      className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                        previewDevice === 'desktop'
+                          ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
+                          : 'hover:text-white hover:bg-slate-800'
+                      }`}
+                      title="Desktop View (Full Screen)"
+                    >
+                      <Monitor className="w-3.5 h-3.5" />
+                      <span className="text-[10px] hidden sm:inline">Desktop</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDevice('tablet')}
+                      className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                        previewDevice === 'tablet'
+                          ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
+                          : 'hover:text-white hover:bg-slate-800'
+                      }`}
+                      title="Tablet View (iPad 768px)"
+                    >
+                      <Tablet className="w-3.5 h-3.5" />
+                      <span className="text-[10px] hidden sm:inline">Tablet</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDevice('mobile')}
+                      className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                        previewDevice === 'mobile'
+                          ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
+                          : 'hover:text-white hover:bg-slate-800'
+                      }`}
+                      title="Mobile View (iPhone 375px)"
+                    >
+                      <Smartphone className="w-3.5 h-3.5" />
+                      <span className="text-[10px] hidden sm:inline">Mobile</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Rendered Live Component Card Preview (with Smooth Device Resize) */}
+                <div
+                  className={`relative overflow-hidden transition-all duration-500 ease-in-out bg-slate-950 shadow-2xl flex flex-col justify-end group ${
+                    previewDevice === 'desktop'
+                      ? 'w-full min-h-[320px] p-6 rounded-2xl border border-slate-700'
+                      : previewDevice === 'tablet'
+                      ? 'max-w-[480px] mx-auto min-h-[380px] p-5 rounded-3xl border-2 border-slate-600 shadow-amber-950/20 ring-1 ring-slate-700'
+                      : 'max-w-[320px] mx-auto min-h-[440px] p-4 rounded-[32px] border-4 border-slate-700 shadow-2xl ring-2 ring-slate-800'
+                  }`}
+                >
+                  {/* Mobile Dynamic Island / Notch */}
+                  {previewDevice === 'mobile' && (
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-3 bg-slate-900 rounded-full border border-slate-700/80 z-20 flex items-center justify-center pointer-events-none">
+                      <span className="w-2 h-2 rounded-full bg-slate-800" />
+                    </div>
+                  )}
+
+                  <Image
+                    src={cmsBlocksData[selectedCmsBlock].previewImage}
+                    alt={cmsBlocksData[selectedCmsBlock].title}
+                    fill
+                    className="object-cover opacity-45 group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
+
+                  <div className="relative z-10 space-y-3">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[10px] font-bold uppercase tracking-wider">
+                      <Sparkles className="w-3 h-3" />
+                      <span>{cmsBlocksData[selectedCmsBlock].badge}</span>
+                    </div>
+
+                    <h3
+                      className={`font-extrabold text-white leading-tight transition-all ${
+                        previewDevice === 'mobile'
+                          ? 'text-lg'
+                          : previewDevice === 'tablet'
+                          ? 'text-xl'
+                          : 'text-2xl'
+                      }`}
+                    >
+                      {cmsBlocksData[selectedCmsBlock].previewHeading}
+                    </h3>
+
+                    <p
+                      className={`text-slate-300 font-sans transition-all ${
+                        previewDevice === 'mobile' ? 'text-[11px] line-clamp-2' : 'text-xs max-w-md'
+                      }`}
+                    >
+                      {cmsBlocksData[selectedCmsBlock].previewSub}
+                    </p>
+
+                    <div
+                      className={`pt-2 flex ${
+                        previewDevice === 'mobile' ? 'flex-col' : 'items-center'
+                      } gap-2.5`}
+                    >
+                      <button className="w-full sm:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg shadow-lg flex items-center justify-center gap-1.5 transition-all">
+                        <span>Interactive CTA</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                      <button className="w-full sm:w-auto px-4 py-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-lg border border-white/20 backdrop-blur-md transition-all">
+                        Secondary Action
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Edge Publish Status Bar */}
+              <div className="flex items-center justify-between p-3.5 bg-[#0A0C10] rounded-xl border border-slate-800 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-slate-300 font-semibold">Real-Time Edge Sync</span>
+                  <span className="text-slate-500 font-mono">• &lt; 50ms Latency</span>
+                </div>
+
+                <a
+                  href="https://mavenco-admin.vercel.app/content/homepage"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] rounded-lg flex items-center gap-1 transition-all"
+                >
+                  <Sliders className="w-3 h-3" />
+                  <span>Launch CMS Editor</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* SECTION 2: INTERACTIVE THEME STUDIO & DYNAMIC DESIGN TOKENS PLAYGROUND */}
+      {/* ========================================================================= */}
+      <section id="theme-studio" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="text-center space-y-2">
+          <span className="text-xs uppercase font-bold tracking-widest text-rose-400 flex items-center justify-center gap-1.5">
+            <Palette className="w-4 h-4" />
+            Live Brand Customizer Studio
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Dynamic Design Tokens &amp; Google Fonts Engine
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
+            Interact with the live token controls below. Watch the storefront card adapt its typography, color palettes, and button radii in real time!
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Controls (6 cols) */}
+          <div className="lg:col-span-6 space-y-6 bg-[#12151F] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+            {/* Control 1: Font Selector */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <Type className="w-4 h-4 text-rose-400" />
+                  1. Select Google Heading Typography
+                </span>
+                <span className="text-[10px] text-rose-400 font-mono font-bold">Dynamic Font Injection</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: 'Playfair Display', val: 'Playfair Display, serif', style: 'font-serif' },
+                  { label: 'Cinzel Classical', val: 'Cinzel, serif', style: 'font-serif tracking-widest' },
+                  { label: 'Montserrat Athletic', val: 'Montserrat, sans-serif', style: 'font-sans font-black' },
+                  { label: 'Plus Jakarta Sans', val: 'Plus Jakarta Sans, sans-serif', style: 'font-sans' },
+                ].map((f) => (
+                  <button
+                    key={f.val}
+                    type="button"
+                    onClick={() => setActiveFont(f.val as any)}
+                    className={`p-3 rounded-xl border text-left text-xs transition-all ${
+                      activeFont === f.val
+                        ? 'bg-rose-500/15 border-rose-500 text-white shadow-md font-bold'
+                        : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
+                    }`}
+                  >
+                    <div className="text-white text-xs">{f.label}</div>
+                    <div className={`text-[10px] text-slate-400 mt-1 ${f.style}`}>Sample Headline Aa</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Control 2: Color Palette Swatches */}
+            <div className="space-y-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <Palette className="w-4 h-4 text-amber-400" />
+                  2. Select Brand Color Palette
+                </span>
+                <span className="text-[10px] text-amber-400 font-mono font-bold">Live CSS Variable</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {(Object.keys(themePalettes) as (keyof typeof themePalettes)[]).map((key) => {
+                  const pal = themePalettes[key];
+                  const isSelected = activeThemeName === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setActiveThemeName(key)}
+                      className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                        isSelected
+                          ? 'bg-amber-500/10 border-amber-500 text-white shadow-md'
+                          : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
+                      }`}
+                    >
+                      <div>
+                        <div className="text-xs font-bold text-white">{pal.name.split('(')[0]}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">{pal.tagline}</div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <div className="w-4 h-4 rounded-full border border-white/30" style={{ backgroundColor: pal.primary }} />
+                        <div className="w-4 h-4 rounded-full border border-white/30" style={{ backgroundColor: pal.accent }} />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Control 3: Button Curvature */}
+            <div className="space-y-3 pt-4 border-t border-slate-800">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <Sliders className="w-4 h-4 text-emerald-400" />
+                3. Select CTA Button Radius
+              </span>
+
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                {[
+                  { label: 'Rounded (8px)', val: 'rounded-lg' },
+                  { label: 'Pill Shape (Full)', val: 'rounded-full' },
+                  { label: 'Sharp Edge (0px)', val: 'rounded-none' },
+                ].map((r) => (
+                  <button
+                    key={r.val}
+                    type="button"
+                    onClick={() => setActiveRadius(r.val as any)}
+                    className={`py-2 px-3 rounded-xl border text-center font-bold text-xs transition-all ${
+                      activeRadius === r.val
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                        : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="w-full lg:w-96 p-5 bg-[#0D0F18] border border-slate-800 rounded-2xl space-y-3 shrink-0 shadow-xl">
-            <div className="flex items-center justify-between text-xs pb-2 border-b border-slate-800">
-              <span className="font-bold text-white flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>CMS Capabilities</span>
-              </span>
-              <span className="text-[10px] font-mono text-emerald-400">15+ Pre-Built Blocks</span>
-            </div>
+          {/* Right Live Reactive Mockup Card (6 cols) */}
+          <div className="lg:col-span-6 sticky top-24 space-y-4">
+            <div className="p-4 bg-[#12151F] border border-slate-800 rounded-3xl shadow-2xl space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800 text-xs">
+                <span className="font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  Live Reactive Storefront Canvas
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">React CSS Tokens: Active</span>
+              </div>
 
-            <div className="space-y-2 text-xs text-slate-400">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <span>Dual Action Hero &amp; Lookbook Sliders</span>
+              {/* Dynamic Styled Card Container */}
+              <div
+                className="p-6 sm:p-8 rounded-2xl border shadow-inner transition-all duration-300 space-y-6"
+                style={{
+                  backgroundColor: activePalette.background,
+                  borderColor: `${activePalette.accent}4D`,
+                }}
+              >
+                {/* Simulated Announcement Bar */}
+                <div
+                  className="p-2.5 rounded-lg text-center text-xs font-bold tracking-wide shadow-sm"
+                  style={{
+                    backgroundColor: activePalette.announcementBg,
+                    color: activePalette.announcementText,
+                  }}
+                >
+                  ⚡ Spring Private Preview • 20% OFF with Code{' '}
+                  <span
+                    className="underline font-black"
+                    style={{
+                      color: activePalette.isDark ? '#090D16' : activePalette.accent,
+                    }}
+                  >
+                    TOKEN20
+                  </span>
+                </div>
+
+                {/* Simulated Hero Card */}
+                <div className="space-y-4 text-center py-4">
+                  <span
+                    className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-md"
+                    style={{
+                      color: activePalette.accent,
+                      backgroundColor: `${activePalette.accent}20`,
+                    }}
+                  >
+                    {activePalette.tagline}
+                  </span>
+
+                  <h3
+                    className="text-2xl sm:text-3xl font-extrabold leading-tight tracking-tight transition-all"
+                    style={{ fontFamily: activeFont, color: activePalette.textColor }}
+                  >
+                    Effortless Luxury &amp; Timeless Distinction
+                  </h3>
+
+                  <p
+                    className="text-xs max-w-sm mx-auto font-sans leading-relaxed transition-all"
+                    style={{ color: activePalette.subTextColor }}
+                  >
+                    Rendered with zero rebuild delays. Brand customizers can alter every design token across merchant instances in real time.
+                  </p>
+
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      className={`px-6 py-3 font-bold text-xs shadow-xl transition-all hover:scale-105 ${activeRadius}`}
+                      style={{
+                        backgroundColor: activePalette.accent,
+                        color: activePalette.buttonText,
+                      }}
+                    >
+                      Explore Curated Drop →
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <span>Google Typography &amp; Dynamic Theme Tokens</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <span>Multi-Device Responsive Canvas Previews</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span>Sub-50ms Global Edge Content Delivery</span>
+
+              <div className="p-3.5 bg-[#0A0C10] rounded-xl border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between font-mono">
+                <span>Active Heading Font:</span>
+                <span className="text-white font-bold">{activeFont.split(',')[0]}</span>
               </div>
             </div>
           </div>
