@@ -1,26 +1,41 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Zap, ArrowRight, Gauge, CheckCircle2, AlertTriangle, RefreshCw, Globe, Sparkles } from 'lucide-react';
+import { Zap, ArrowRight, Gauge, CheckCircle2, RefreshCw, Globe, Sparkles, ShieldCheck } from 'lucide-react';
+
+interface BenchmarkData {
+  domain: string;
+  isMavenco: boolean;
+  platformDetected: string;
+  measuredTtfbMs: number;
+  fcpSeconds: number;
+  mavencoTtfbMs?: number;
+  mavencoFcpSeconds?: number;
+  conversionLiftPercent?: number;
+  annualFeeSavings?: string;
+  message?: string;
+  lighthouseScore?: number;
+}
 
 export function StoreSpeedTester() {
   const [storeUrl, setStoreUrl] = useState('');
   const [isTesting, setIsTesting] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [testResult, setTestResult] = useState<{
-    testedUrl: string;
-    legacyTtfb: number;
-    mavencoTtfb: number;
-    legacyFcp: number;
-    mavencoFcp: number;
-    conversionLift: number;
-    yearlySavingsEst: string;
-    livePingRegion: string;
-  } | null>(null);
+  const [testResult, setTestResult] = useState<BenchmarkData | null>(null);
 
-  const handleRunSpeedTest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!storeUrl.trim()) return;
+  const sampleUrls = [
+    { label: 'Shopify Store', url: 'gymshark.com' },
+    { label: 'WooCommerce Store', url: 'sample-apparel.com' },
+    { label: 'Mavenco Edge Store', url: 'mavenco-storefront.vercel.app' },
+  ];
+
+  const handleRunSpeedTest = async (urlToTest?: string) => {
+    const target = urlToTest || storeUrl;
+    if (!target.trim()) return;
+
+    if (urlToTest) {
+      setStoreUrl(urlToTest);
+    }
 
     setIsTesting(true);
     setProgress(20);
@@ -28,32 +43,18 @@ export function StoreSpeedTester() {
 
     const interval = setInterval(() => {
       setProgress((prev) => (prev >= 85 ? 85 : prev + 20));
-    }, 250);
+    }, 200);
 
     try {
-      const pingStartTime = performance.now();
-      const telemetryRes = await fetch('/api/v1/platform/telemetry').then((r) => (r.ok ? r.json() : null));
-      const liveLatency = Math.round(performance.now() - pingStartTime);
-
+      const res = await fetch(`/api/v1/platform/benchmark?url=${encodeURIComponent(target)}`).then((r) => r.json());
       clearInterval(interval);
       setProgress(100);
 
-      const isShopify = storeUrl.toLowerCase().includes('myshopify') || storeUrl.toLowerCase().includes('shopify');
-      const baseLegacyTtfb = isShopify ? 540 : 470 + Math.floor(Math.random() * 110);
-      const measuredMavencoTtfb = Math.min(45, Math.max(18, liveLatency || telemetryRes?.data?.edgeLatencyMs || 28));
-
-      setTestResult({
-        testedUrl: storeUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''),
-        legacyTtfb: baseLegacyTtfb,
-        mavencoTtfb: measuredMavencoTtfb,
-        legacyFcp: (baseLegacyTtfb * 2.7) / 1000,
-        mavencoFcp: 0.42,
-        conversionLift: 34 + Math.floor(Math.random() * 12),
-        yearlySavingsEst: '₹3.4L - ₹8.2L',
-        livePingRegion: telemetryRes?.data?.city ? `${telemetryRes.data.city}, ${telemetryRes.data.country}` : 'Mumbai (Asia-South)',
-      });
+      if (res?.success && res.data) {
+        setTestResult(res.data);
+      }
     } catch (err) {
-      console.warn('Telemetry ping error:', err);
+      console.warn('Benchmark error:', err);
     } finally {
       setIsTesting(false);
     }
@@ -67,20 +68,26 @@ export function StoreSpeedTester() {
       <div className="text-center space-y-2 max-w-2xl mx-auto">
         <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1.5">
           <Zap className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Real-Time Edge Speed Benchmark (Live DB Telemetry)</span>
+          <span>Real-Time Edge Speed Benchmark (Live Server Telemetry)</span>
         </span>
         <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
           Test Your Current Store&apos;s Edge Latency
         </h3>
         <p className="text-xs sm:text-sm text-slate-400">
-          Enter your current Shopify, WooCommerce, or Magento URL to compare live TTFB against Mavenco&apos;s Next.js 16 Edge runtime.
+          Enter your current Shopify, WooCommerce, or custom storefront URL to compare live TTFB against Mavenco&apos;s Next.js 16 Edge runtime.
         </p>
       </div>
 
       {/* URL Input Form */}
-      <form onSubmit={handleRunSpeedTest} className="max-w-2xl mx-auto">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleRunSpeedTest();
+        }}
+        className="max-w-2xl mx-auto space-y-3"
+      >
         <div className="flex flex-col sm:flex-row items-center gap-2.5 bg-[#06080E] p-2 rounded-2xl border border-slate-800 focus-within:border-emerald-500/60 shadow-lg">
-          <div className="flex items-center gap-2 px-3 py-1.5 text-slate-400 flex-1 w-full">
+          <div className="flex items-center gap-2 px-3 py-1.5 text-slate-400 flex-1 w-full min-w-0">
             <Globe className="w-4 h-4 text-emerald-400 shrink-0" />
             <input
               type="text"
@@ -88,7 +95,7 @@ export function StoreSpeedTester() {
               value={storeUrl}
               onChange={(e) => setStoreUrl(e.target.value)}
               placeholder="e.g. yourbrand.com or yourstore.myshopify.com"
-              className="w-full bg-transparent text-xs text-white placeholder:text-slate-600 focus:outline-none font-mono"
+              className="w-full bg-transparent text-xs text-white placeholder:text-slate-600 focus:outline-none font-mono truncate"
             />
           </div>
 
@@ -110,6 +117,21 @@ export function StoreSpeedTester() {
             )}
           </button>
         </div>
+
+        {/* Quick Sample Selector */}
+        <div className="flex items-center justify-center gap-2 flex-wrap text-[11px] text-slate-400">
+          <span className="text-slate-500 font-medium">Try quick test:</span>
+          {sampleUrls.map((s) => (
+            <button
+              key={s.url}
+              type="button"
+              onClick={() => handleRunSpeedTest(s.url)}
+              className="px-2.5 py-1 rounded-lg bg-[#0E111A] hover:bg-[#141724] border border-slate-800 text-slate-300 hover:text-white transition-all font-mono"
+            >
+              {s.label} ({s.url})
+            </button>
+          ))}
+        </div>
       </form>
 
       {/* Progress Bar when testing */}
@@ -122,77 +144,122 @@ export function StoreSpeedTester() {
             />
           </div>
           <p className="text-[11px] text-slate-400 font-mono">
-            Pinging live Anycast edge nodes in Mumbai, Singapore, and Frankfurt...
+            Sending live HTTP telemetry probes to edge nodes...
           </p>
         </div>
       )}
 
-      {/* Test Results Comparison Card */}
+      {/* Test Results Card */}
       {testResult && (
         <div className="max-w-4xl mx-auto bg-[#07090F] border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl animate-in fade-in duration-300">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800/80">
-            <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Benchmark Target</span>
-              <h4 className="font-bold text-white text-base font-mono flex items-center gap-2">
-                <span>{testResult.testedUrl}</span>
-                <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-sans">vs Mavenco Edge</span>
+          {testResult.isMavenco ? (
+            /* Result Variant A: Tested Store is Already Mavenco */
+            <div className="space-y-4 text-center">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Verified: Powered by Mavenco Edge Engine</span>
+              </div>
+
+              <h4 className="text-xl sm:text-2xl font-extrabold text-white">
+                <span className="font-mono text-emerald-300 break-all">{testResult.domain}</span> is Running at Maximum Velocity!
               </h4>
-            </div>
 
-            <div className="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>+{testResult.conversionLift}% Est. Mobile Conversion Lift</span>
-            </div>
-          </div>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto">
+                {testResult.message}
+              </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Metric 1: TTFB */}
-            <div className="p-4 bg-[#0F121C] rounded-xl border border-slate-800 space-y-2">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Time to First Byte (TTFB)</span>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Current Store:</span>
-                  <span className="text-rose-400 font-bold">{testResult.legacyTtfb}ms (Slow)</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 max-w-2xl mx-auto text-left">
+                <div className="p-4 bg-[#0F121C] rounded-xl border border-emerald-500/20 space-y-1">
+                  <div className="text-[10px] text-slate-400 font-mono uppercase">Live Edge Latency</div>
+                  <div className="text-2xl font-black text-emerald-400">{testResult.measuredTtfbMs}ms</div>
+                  <div className="text-[10px] text-emerald-300 font-medium">Sub-30ms Global TTFB</div>
                 </div>
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Mavenco Edge:</span>
-                  <span className="text-emerald-400 font-bold">{testResult.mavencoTtfb}ms (Live Ping)</span>
-                </div>
-              </div>
-              <div className="text-[10px] text-emerald-400 font-medium pt-1">
-                {(testResult.legacyTtfb / testResult.mavencoTtfb).toFixed(1)}x Faster Edge Latency ({testResult.livePingRegion})
-              </div>
-            </div>
 
-            {/* Metric 2: First Contentful Paint */}
-            <div className="p-4 bg-[#0F121C] rounded-xl border border-slate-800 space-y-2">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">First Contentful Paint (FCP)</span>
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Current Store:</span>
-                  <span className="text-amber-400 font-bold">{testResult.legacyFcp.toFixed(2)}s</span>
+                <div className="p-4 bg-[#0F121C] rounded-xl border border-emerald-500/20 space-y-1">
+                  <div className="text-[10px] text-slate-400 font-mono uppercase">Lighthouse Performance</div>
+                  <div className="text-2xl font-black text-amber-400">{testResult.lighthouseScore} / 100</div>
+                  <div className="text-[10px] text-amber-300 font-medium">Instant Visual Paint</div>
                 </div>
-                <div className="flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-400">Mavenco Edge:</span>
-                  <span className="text-emerald-400 font-bold">{testResult.mavencoFcp.toFixed(2)}s</span>
+
+                <div className="p-4 bg-[#0F121C] rounded-xl border border-emerald-500/20 space-y-1">
+                  <div className="text-[10px] text-slate-400 font-mono uppercase">SaaS Commission</div>
+                  <div className="text-2xl font-black text-white">0% Fee</div>
+                  <div className="text-[10px] text-slate-400">Direct Gateway Payout</div>
                 </div>
               </div>
-              <div className="text-[10px] text-emerald-400 font-medium pt-1">
-                Sub-half second visual load
-              </div>
             </div>
+          ) : (
+            /* Result Variant B: Tested Store is Legacy Third-Party */
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800/80">
+                <div className="min-w-0 pr-2">
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Benchmark Target</span>
+                  <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                    <h4 className="font-bold text-white text-base font-mono break-all">
+                      {testResult.domain}
+                    </h4>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono border border-slate-700">
+                      {testResult.platformDetected}
+                    </span>
+                  </div>
+                </div>
 
-            {/* Metric 3: Zero Commission Savings */}
-            <div className="p-4 bg-[#0F121C] rounded-xl border border-slate-800 space-y-2">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">0% Commission Gain</span>
-              <div className="text-xl font-bold text-white pt-1">
-                {testResult.yearlySavingsEst}
+                <div className="px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>+{testResult.conversionLiftPercent}% Est. Mobile Conversion Lift</span>
+                </div>
               </div>
-              <div className="text-[10px] text-slate-400">
-                Annual revenue retained vs Shopify 2% transaction fee
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Metric 1: TTFB */}
+                <div className="p-4 bg-[#0F121C] rounded-xl border border-slate-800 space-y-2">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Time to First Byte (TTFB)</span>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-400">Current Store:</span>
+                      <span className="text-rose-400 font-bold">{testResult.measuredTtfbMs}ms (Slow)</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-400">Mavenco Edge:</span>
+                      <span className="text-emerald-400 font-bold">{testResult.mavencoTtfbMs}ms (Instant)</span>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-emerald-400 font-medium pt-1">
+                    {(testResult.measuredTtfbMs / (testResult.mavencoTtfbMs || 26)).toFixed(1)}x Faster Server Response
+                  </div>
+                </div>
+
+                {/* Metric 2: First Contentful Paint */}
+                <div className="p-4 bg-[#0F121C] rounded-xl border border-slate-800 space-y-2">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">First Contentful Paint (FCP)</span>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-400">Current Store:</span>
+                      <span className="text-amber-400 font-bold">{testResult.fcpSeconds.toFixed(2)}s</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-400">Mavenco Edge:</span>
+                      <span className="text-emerald-400 font-bold">{testResult.mavencoFcpSeconds?.toFixed(2)}s</span>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-emerald-400 font-medium pt-1">
+                    Sub-half second visual load
+                  </div>
+                </div>
+
+                {/* Metric 3: Zero Commission Savings */}
+                <div className="p-4 bg-[#0F121C] rounded-xl border border-slate-800 space-y-2">
+                  <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">0% Commission Gain</span>
+                  <div className="text-xl font-bold text-white pt-1">
+                    {testResult.annualFeeSavings}
+                  </div>
+                  <div className="text-[10px] text-slate-400">
+                    Annual revenue retained vs Shopify 2% transaction fee
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
