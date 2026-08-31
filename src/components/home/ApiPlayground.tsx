@@ -1,16 +1,39 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Terminal, Copy, Check, Sparkles, Code2, ArrowRight, Zap, Play } from 'lucide-react';
+import { Terminal, Copy, Check, Sparkles, Code2, ArrowRight, Zap, Play, RefreshCw } from 'lucide-react';
 
 export function ApiPlayground() {
   const [activeLang, setActiveLang] = useState<'curl' | 'nextjs' | 'python' | 'flutter'>('curl');
   const [copied, setCopied] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
-  const [latency, setLatency] = useState(24);
+  const [latency, setLatency] = useState<number>(24);
+  const [responseData, setResponseData] = useState<any>({
+    status: 'success',
+    tenant: 'demo',
+    latencyMs: 24,
+    source: 'mongodb_atlas_edge',
+    data: {
+      id: 'tenant_demo',
+      name: 'Demo Store',
+      tagline: 'Curated Modern Lifestyle & Apparel',
+      currency: 'INR',
+      currencySymbol: '₹',
+      theme: {
+        primaryColor: '#E11D48',
+        accentColor: '#FB7185',
+        headingFont: 'Playfair Display, serif',
+      },
+      partition: {
+        database: 'tenant_demo_isolated',
+        status: 'active',
+        ssl: 'TLS 1.3 Wildcard Active',
+      },
+    },
+  });
 
   const snippets = {
-    curl: `curl -X GET "https://mavenco-storefront.vercel.app/api/v1/tenant-config?tenant=muskan-clothing" \\
+    curl: `curl -X GET "https://mavenco-storefront.vercel.app/api/v1/tenant-config?tenant=demo" \\
   -H "Authorization: Bearer sk_live_demo_9821" \\
   -H "Content-Type: application/json"`,
 
@@ -19,7 +42,7 @@ import { MavencoClient } from '@mavenco/sdk';
 
 const client = new MavencoClient({
   apiKey: process.env.MAVENCO_API_KEY,
-  tenant: 'muskan-clothing',
+  tenant: 'demo',
 });
 
 export async function getStoreCatalog() {
@@ -33,7 +56,7 @@ export async function getStoreCatalog() {
     python: `# Python / FastAPI ERP Catalog Sync
 import requests
 
-url = "https://mavenco-storefront.vercel.app/api/v1/tenant-config?tenant=muskan-clothing"
+url = "https://mavenco-storefront.vercel.app/api/v1/tenant-config?tenant=demo"
 headers = {"Authorization": "Bearer sk_live_demo_9821"}
 
 response = requests.get(url, headers=headers)
@@ -46,34 +69,11 @@ import 'dart:convert';
 
 Future<StoreConfig> fetchTenantStore() async {
   final res = await http.get(
-    Uri.parse('https://mavenco-storefront.vercel.app/api/v1/tenant-config?tenant=muskan-clothing'),
+    Uri.parse('https://mavenco-storefront.vercel.app/api/v1/tenant-config?tenant=demo'),
     headers: {'Authorization': 'Bearer sk_live_demo_9821'},
   );
   return StoreConfig.fromJson(jsonDecode(res.body)['data']);
 }`,
-  };
-
-  const sampleJson = {
-    status: 'success',
-    tenant: 'muskan-clothing',
-    latencyMs: latency,
-    data: {
-      id: 'store_muskan-clothing',
-      name: 'Muskan Clothing',
-      tagline: 'Curated Modern Lifestyle & Apparel',
-      currency: 'INR',
-      currencySymbol: '₹',
-      theme: {
-        primaryColor: '#0F172A',
-        accentColor: '#6366F1',
-        headingFont: 'Playfair Display, serif',
-      },
-      partition: {
-        database: 'tenant_muskan_clothing',
-        status: 'active',
-        ssl: 'TLS 1.3 Wildcard Active',
-      },
-    },
   };
 
   const handleCopy = () => {
@@ -82,12 +82,29 @@ Future<StoreConfig> fetchTenantStore() async {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleRun = () => {
+  const handleRun = async () => {
     setIsRunning(true);
-    setTimeout(() => {
-      setLatency(Math.floor(Math.random() * 8) + 21); // 21ms - 29ms
+    const start = performance.now();
+    try {
+      const res = await fetch('/api/v1/tenant-config?tenant=demo');
+      const measured = Math.max(14, Math.round(performance.now() - start));
+      setLatency(measured);
+      if (res.ok) {
+        const json = await res.json();
+        setResponseData({
+          status: 'success',
+          tenant: 'demo',
+          latencyMs: measured,
+          source: 'mongodb_atlas_edge',
+          data: json.data || json,
+        });
+      }
+    } catch {
+      const measured = Math.max(18, Math.round(performance.now() - start));
+      setLatency(measured);
+    } finally {
       setIsRunning(false);
-    }, 250);
+    }
   };
 
   return (
@@ -148,10 +165,10 @@ Future<StoreConfig> fetchTenantStore() async {
             <button
               onClick={handleRun}
               disabled={isRunning}
-              className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-lg shadow flex items-center gap-1.5 transition-all disabled:opacity-50"
+              className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-lg shadow flex items-center gap-1.5 transition-all disabled:opacity-50"
             >
-              <Play className="w-3 h-3 fill-current" />
-              <span>{isRunning ? 'Executing...' : 'Run Request'}</span>
+              {isRunning ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3 fill-current" />}
+              <span>{isRunning ? 'Probing...' : 'Run Live API Probe'}</span>
             </button>
           </div>
         </div>
@@ -168,8 +185,8 @@ Future<StoreConfig> fetchTenantStore() async {
             </span>
           </div>
 
-          <pre className="p-4 text-xs font-mono text-emerald-300 overflow-x-auto flex-1 leading-relaxed bg-[#06080C]">
-            <code>{JSON.stringify(sampleJson, null, 2)}</code>
+          <pre className="p-4 text-xs font-mono text-emerald-300 overflow-x-auto flex-1 leading-relaxed bg-[#06080C] max-h-80">
+            <code>{JSON.stringify(responseData, null, 2)}</code>
           </pre>
 
           <div className="p-3 bg-[#12151F] border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">

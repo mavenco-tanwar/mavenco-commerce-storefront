@@ -10,6 +10,8 @@ import { PlatformFooter } from './PlatformFooter';
 import { ToastContainer } from './ToastContainer';
 import { checkTenantValidity } from '@/lib/tenant-config';
 
+import { DemoStoreSwitcherBar } from './DemoStoreSwitcherBar';
+
 export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
@@ -42,13 +44,14 @@ export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }
     );
   }
 
-  // Otherwise, render the active merchant store layout (with AnnouncementBar, Store Header & Footer)
+  // Otherwise, render the active merchant store layout (with AnnouncementBar, Store Header & Footer, and DemoStoreSwitcherBar)
   return (
     <div className="min-h-screen flex flex-col bg-[#FFFDFC] text-[#111111] antialiased">
       <AnnouncementBar />
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
+      <DemoStoreSwitcherBar />
       <ToastContainer />
     </div>
   );
