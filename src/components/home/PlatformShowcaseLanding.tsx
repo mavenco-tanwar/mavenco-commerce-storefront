@@ -46,6 +46,7 @@ import { ShoppableReelsSection } from './ShoppableReelsSection';
 import { ThemeStagingStudio } from './ThemeStagingStudio';
 import { ShopifyMigrationTester } from './ShopifyMigrationTester';
 import { B2bWholesaleCalculator } from './B2bWholesaleCalculator';
+import { CloudPosSimulator } from './CloudPosSimulator';
 import { FlashSaleConcurrencySimulator } from './FlashSaleConcurrencySimulator';
 import { WhatsAppCommerceSimulator } from './WhatsAppCommerceSimulator';
 import { PlatformRoadmap } from './PlatformRoadmap';
@@ -522,6 +523,9 @@ export function PlatformShowcaseLanding() {
 
           {/* B2B Wholesale & Volume Tier Calculator */}
           <B2bWholesaleCalculator />
+
+          {/* Omnichannel Cloud POS & Retail Barcode Terminal */}
+          <CloudPosSimulator />
 
           {/* High-Concurrency Flash Sale & Spike Simulator */}
           <FlashSaleConcurrencySimulator />
