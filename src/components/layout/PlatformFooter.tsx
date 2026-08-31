@@ -1,10 +1,39 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sparkles, Layers, Sliders, ExternalLink, Palette, Globe, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Layers, Sliders, ExternalLink, Palette, Globe, CheckCircle2, Loader2 } from 'lucide-react';
+
+interface TenantFooterItem {
+  slug: string;
+  name: string;
+  tagline?: string;
+  category?: string;
+}
 
 export function PlatformFooter() {
+  const [tenants, setTenants] = useState<TenantFooterItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/v1/platform/tenants')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (json?.data?.length) {
+          setTenants(
+            json.data.map((t: { slug: string; name: string; tagline?: string; category?: string }) => ({
+              slug: t.slug,
+              name: t.name,
+              tagline: t.tagline,
+              category: t.category,
+            }))
+          );
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <footer className="bg-[#080A0E] text-slate-400 border-t border-slate-800 text-xs select-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -26,30 +55,61 @@ export function PlatformFooter() {
             </div>
           </div>
 
-          {/* Col 2: Live Provisioned Stores */}
+          {/* Col 2: Live Provisioned Stores (Dynamic from DB) */}
           <div className="space-y-3">
-            <div className="text-xs font-bold uppercase tracking-wider text-white">
+            <div className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
               Live Demo Storefronts
+              {loading && <Loader2 className="w-3 h-3 animate-spin text-slate-500" />}
             </div>
             <ul className="space-y-2 text-xs">
-              <li>
-                <Link href="/stores/demo" className="hover:text-rose-400 transition-colors flex items-center justify-between">
-                  <span>Demo Store (Modern Lifestyle)</span>
-                  <span className="text-[10px] text-slate-500 font-mono">/stores/demo</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/stores/auraliving" className="hover:text-rose-400 transition-colors flex items-center justify-between">
-                  <span>Aura Living (Home Decor)</span>
-                  <span className="text-[10px] text-slate-500 font-mono">/stores/auraliving</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/stores/apexathletics" className="hover:text-rose-400 transition-colors flex items-center justify-between">
-                  <span>Apex Athletics (Activewear)</span>
-                  <span className="text-[10px] text-slate-500 font-mono">/stores/apexathletics</span>
-                </Link>
-              </li>
+              {loading ? (
+                <li className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-4 bg-slate-800/60 rounded animate-pulse w-4/5" />
+                  ))}
+                </li>
+              ) : tenants.length > 0 ? (
+                tenants.map((t) => (
+                  <li key={t.slug}>
+                    <Link
+                      href={`/stores/${t.slug}`}
+                      className="hover:text-rose-400 transition-colors flex items-center justify-between"
+                    >
+                      <span>
+                        {t.name}
+                        {t.category && (
+                          <span className="text-slate-500 ml-1">({t.category})</span>
+                        )}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono shrink-0 ml-2">
+                        /stores/{t.slug}
+                      </span>
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                /* Fallback if DB is empty */
+                <>
+                  <li>
+                    <Link href="/stores/demo" className="hover:text-rose-400 transition-colors flex items-center justify-between">
+                      <span>Demo Store (Modern Lifestyle)</span>
+                      <span className="text-[10px] text-slate-500 font-mono">/stores/demo</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/stores/auraliving" className="hover:text-rose-400 transition-colors flex items-center justify-between">
+                      <span>Aura Living (Home Decor)</span>
+                      <span className="text-[10px] text-slate-500 font-mono">/stores/auraliving</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/stores/apexathletics" className="hover:text-rose-400 transition-colors flex items-center justify-between">
+                      <span>Apex Athletics (Activewear)</span>
+                      <span className="text-[10px] text-slate-500 font-mono">/stores/apexathletics</span>
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
@@ -114,6 +174,10 @@ export function PlatformFooter() {
                 <span>Isolation:</span>
                 <span className="text-emerald-400">100% Isolated</span>
               </div>
+              <div className="flex justify-between border-t border-slate-800 pt-2 mt-1">
+                <span>Live Tenants:</span>
+                <span className="text-white font-bold">{loading ? '…' : tenants.length > 0 ? tenants.length : '–'}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -131,3 +195,4 @@ export function PlatformFooter() {
     </footer>
   );
 }
+
