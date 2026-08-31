@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import {
   Globe,
   Zap,
@@ -14,6 +13,7 @@ import {
   ExternalLink,
   Store,
   CheckCircle2,
+  Shield,
 } from 'lucide-react';
 import { resolveTenant } from '@/lib/tenant-config';
 
@@ -27,36 +27,97 @@ interface TenantItem {
 
 export function DemoStoreSwitcherBar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [tenants, setTenants] = useState<TenantItem[]>([]);
   const [currentTenant, setCurrentTenant] = useState(resolveTenant());
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [latency, setLatency] = useState<number>(24);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
-    const t = resolveTenant();
-    setCurrentTenant(t);
+    // Check if the current user is logged in as Superadmin or in Admin/Preview Mode
+    const verifySuperAdmin = () => {
+      if (typeof window === 'undefined') return false;
 
-    const startTime = performance.now();
-    fetch('/api/v1/platform/tenants')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        const measured = Math.max(12, Math.round(performance.now() - startTime));
-        setLatency(measured);
-        if (json?.data?.length) {
-          setTenants(
-            json.data.map((item: any) => ({
-              slug: item.slug,
-              name: item.name,
-              category: item.category || item.industry || 'Modern Retail',
-              primaryColor: item.theme?.primaryColor || '#E11D48',
-              accentColor: item.theme?.accentColor || '#FB7185',
-            }))
-          );
-        }
-      })
-      .catch(() => {});
-  }, [pathname]);
+      // 1. Check URL query params (?superadmin=true, ?admin=1, ?preview=draft)
+      const qSuper = searchParams.get('superadmin');
+      const qAdmin = searchParams.get('admin');
+      const qPreview = searchParams.get('preview');
+      if (qSuper === 'true' || qSuper === '1' || qAdmin === '1' || qAdmin === 'true' || qPreview === 'draft') {
+        return true;
+      }
+
+      // 2. Check localStorage for superadmin credentials
+      const adminUserRaw = localStorage.getItem('jq_admin_user') || localStorage.getItem('mavenco_admin_user') || localStorage.getItem('jq_trends_auth_user_v2');
+      if (adminUserRaw) {
+        try {
+          const u = JSON.parse(adminUserRaw);
+          if (
+            u?.role === 'superadmin' ||
+            u?.role === 'platform_admin' ||
+            u?.role === 'admin' ||
+            u?.email === 'ammar.tanwar.dev@gmail.com' ||
+            u?.email?.includes('admin')
+          ) {
+            return true;
+          }
+        } catch {}
+      }
+
+      const adminToken =
+        localStorage.getItem('jq_admin_token') ||
+        localStorage.getItem('mavenco_superadmin_token') ||
+        localStorage.getItem('superadmin_logged_in');
+      if (adminToken) return true;
+
+      // 3. Check cookies
+      const cookies = document.cookie;
+      if (
+        cookies.includes('superadmin') ||
+        cookies.includes('admin_token') ||
+        cookies.includes('is_superadmin=true') ||
+        cookies.includes('mavenco_superadmin=true')
+      ) {
+        return true;
+      }
+
+      return false;
+    };
+
+    const hasAccess = verifySuperAdmin();
+    setIsSuperAdmin(hasAccess);
+
+    if (hasAccess) {
+      const t = resolveTenant();
+      setCurrentTenant(t);
+
+      const startTime = performance.now();
+      fetch('/api/v1/platform/tenants')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((json) => {
+          const measured = Math.max(12, Math.round(performance.now() - startTime));
+          setLatency(measured);
+          if (json?.data?.length) {
+            setTenants(
+              json.data.map((item: any) => ({
+                slug: item.slug,
+                name: item.name,
+                category: item.category || item.industry || 'Modern Retail',
+                primaryColor: item.theme?.primaryColor || '#E11D48',
+                accentColor: item.theme?.accentColor || '#FB7185',
+              }))
+            );
+          }
+        })
+        .catch(() => {});
+    }
+  }, [pathname, searchParams]);
+
+  // If the visitor is not an authenticated superadmin, do not render the bar
+  if (!isSuperAdmin) {
+    return null;
+  }
 
   const demoStores: TenantItem[] =
     tenants.length > 0
@@ -75,8 +136,8 @@ export function DemoStoreSwitcherBar() {
           className="flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#0D1017]/90 hover:bg-[#141824] border border-slate-700/80 text-white text-xs font-bold shadow-2xl backdrop-blur-md transition-all hover:scale-105"
         >
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <Store className="w-3.5 h-3.5 text-rose-400" />
-          <span>Switch Store</span>
+          <Shield className="w-3.5 h-3.5 text-rose-400" />
+          <span>Superadmin: Switch Store</span>
           <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
         </button>
       </div>
@@ -84,7 +145,7 @@ export function DemoStoreSwitcherBar() {
   }
 
   return (
-    <aside aria-label="Live Demo Store Switcher" className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4 pointer-events-none">
+    <aside aria-label="Superadmin Tenant Switcher" className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4 pointer-events-none">
       <div className="pointer-events-auto bg-[#0A0D14]/95 border border-slate-700/80 rounded-2xl shadow-2xl backdrop-blur-xl p-3 text-slate-200 transition-all duration-300">
         {/* Main Bar Row */}
         <div className="flex items-center justify-between gap-3 text-xs flex-wrap sm:flex-nowrap">
@@ -92,7 +153,9 @@ export function DemoStoreSwitcherBar() {
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider hidden md:inline">Active Store:</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 uppercase tracking-wider hidden sm:inline">
+                Superadmin
+              </span>
               <span className="font-bold text-white truncate">{currentTenant.name}</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 hidden sm:inline">
                 /{currentTenant.slug}
@@ -132,7 +195,7 @@ export function DemoStoreSwitcherBar() {
               className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md transition-all"
             >
               <Sliders className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Merchant Admin</span>
+              <span className="hidden sm:inline">Superadmin Panel</span>
               <ExternalLink className="w-3 h-3" />
             </a>
 
