@@ -42,6 +42,7 @@ import { ArchitectureConfigurator } from './ArchitectureConfigurator';
 import { CustomerUgcGallery } from './CustomerUgcGallery';
 import { StoreSpeedTester } from './StoreSpeedTester';
 import { CurrencyCheckoutSimulator } from './CurrencyCheckoutSimulator';
+import { FlashSaleConcurrencySimulator } from './FlashSaleConcurrencySimulator';
 import { WhatsAppCommerceSimulator } from './WhatsAppCommerceSimulator';
 import { PlatformRoadmap } from './PlatformRoadmap';
 
@@ -505,6 +506,9 @@ export function PlatformShowcaseLanding() {
 
           {/* Real-Time Live Speed & TTFB Benchmark Tester */}
           <StoreSpeedTester />
+
+          {/* High-Concurrency Flash Sale & Spike Simulator */}
+          <FlashSaleConcurrencySimulator />
 
           {/* Native WhatsApp Commerce Engine Simulator */}
           <WhatsAppCommerceSimulator />
