@@ -38,6 +38,8 @@ import { PlatformFaqAccordion } from './PlatformFaqAccordion';
 import { SpeedScorecard } from './SpeedScorecard';
 import { ApiPlayground } from './ApiPlayground';
 import { CaseStudies } from './CaseStudies';
+import { ArchitectureConfigurator } from './ArchitectureConfigurator';
+import { CustomerUgcGallery } from './CustomerUgcGallery';
 
 export function PlatformShowcaseLanding() {
   // State for Section 1: Visual CMS Studio Interactive Preview
@@ -427,8 +429,9 @@ export function PlatformShowcaseLanding() {
         </div>
 
         {/* Client Growth Spotlights */}
-        <div className="pt-6">
+        <div className="pt-6 space-y-12">
           <CaseStudies />
+          <CustomerUgcGallery />
         </div>
       </section>
 
@@ -1269,6 +1272,9 @@ export function PlatformShowcaseLanding() {
 
           {/* Global Speed & Edge Latency Benchmark Scorecard */}
           <SpeedScorecard />
+
+          {/* Interactive Architecture Configurator */}
+          <ArchitectureConfigurator />
 
           {/* Interactive ROI & Savings Calculator vs Shopify */}
           <RoiSavingsCalculator />

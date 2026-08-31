@@ -42,6 +42,7 @@ export const metadata: Metadata = {
 import { Suspense } from 'react';
 import { DynamicLayoutWrapper } from '@/components/layout/DynamicLayoutWrapper';
 import { FloatingWhatsAppWidget } from '@/components/ui/FloatingWhatsAppWidget';
+import { CurrencyProvider } from '@/lib/currency-context';
 
 export default function RootLayout({
   children,
@@ -56,10 +57,12 @@ export default function RootLayout({
             <AuthProvider>
               <WishlistProvider>
                 <CartProvider>
-                  <Suspense fallback={<div className="min-h-screen bg-[#0A0C10]" />}>
-                    <DynamicLayoutWrapper>{children}</DynamicLayoutWrapper>
-                  </Suspense>
-                  <FloatingWhatsAppWidget />
+                  <CurrencyProvider>
+                    <Suspense fallback={<div className="min-h-screen bg-[#0A0C10]" />}>
+                      <DynamicLayoutWrapper>{children}</DynamicLayoutWrapper>
+                    </Suspense>
+                    <FloatingWhatsAppWidget />
+                  </CurrencyProvider>
                 </CartProvider>
               </WishlistProvider>
             </AuthProvider>

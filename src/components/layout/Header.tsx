@@ -21,8 +21,11 @@ import { CartDrawer } from './CartDrawer';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
+import { useCurrency, CURRENCIES } from '@/lib/currency-context';
 
 export function Header() {
+  const { currency, setCurrency, currencyInfo } = useCurrency();
+  const [isCurrencyMenuOpen, setIsCurrencyMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -59,22 +62,65 @@ export function Header() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="md:hidden p-2 text-[#111111] hover:bg-[#F8F1EA] transition-colors rounded-none"
-                aria-label="Open mobile menu"
+                className="lg:hidden p-2 text-[#111111] hover:text-[#B77A68] transition-colors -ml-2"
+                aria-label="Open navigation menu"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-6 h-6 stroke-[1.75]" />
               </button>
-
-              <BrandLogo size="md" />
+              <BrandLogo />
             </div>
 
-            {/* Center: Desktop Mega Navigation */}
-            <div className="hidden md:flex flex-1 justify-center">
+            {/* Middle: Desktop Main Navigation */}
+            <div className="hidden lg:flex flex-1 justify-center px-4">
               <Navigation />
             </div>
 
-            {/* Right: Actions (Search, Wishlist, Bag, Account) */}
+            {/* Right: Actions */}
             <div className="flex items-center gap-1 sm:gap-2">
+              {/* Multi-Currency FX Selector */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsCurrencyMenuOpen(!isCurrencyMenuOpen)}
+                  className="flex items-center gap-1 py-1 px-2 rounded border border-[#E8DED8] bg-[#FFFDFC] text-[11px] font-mono font-bold text-[#111111] hover:bg-[#F8F1EA] transition-all"
+                  title="Change Store Currency"
+                >
+                  <span>{currencyInfo.flag}</span>
+                  <span>{currencyInfo.code}</span>
+                  <ChevronDown className="w-3 h-3 text-[#777777]" />
+                </button>
+
+                {isCurrencyMenuOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-1 w-44 bg-[#FFFDFC] border border-[#E8DED8] shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150"
+                    onMouseLeave={() => setIsCurrencyMenuOpen(false)}
+                  >
+                    <div className="px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-[#777777]">
+                      Global Currency (FX)
+                    </div>
+                    {Object.values(CURRENCIES).map((c) => (
+                      <button
+                        key={c.code}
+                        onClick={() => {
+                          setCurrency(c.code);
+                          setIsCurrencyMenuOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-1.5 text-xs transition-colors text-left ${
+                          currency === c.code
+                            ? 'bg-[#F8F1EA] text-[#B77A68] font-bold'
+                            : 'text-[#111111] hover:bg-[#F8F1EA]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span>{c.flag}</span>
+                          <span>{c.name}</span>
+                        </div>
+                        <span className="font-mono text-[10px] text-[#777777]">{c.code}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Search Trigger */}
               <button
                 onClick={() => setIsSearchOpen(true)}
