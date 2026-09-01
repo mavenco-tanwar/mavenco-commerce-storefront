@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sparkles, Layers, ShieldCheck, Database, Zap, DollarSign, Globe, Check, ArrowRight, Server, MessageSquare, Download } from 'lucide-react';
+import { Sparkles, Layers, ShieldCheck, Database, Zap, DollarSign, Globe, Check, ArrowRight, Server, Mail, Download } from 'lucide-react';
 
 export function ArchitectureConfigurator() {
   const [step, setStep] = useState<number>(1);
@@ -30,11 +30,26 @@ export function ArchitectureConfigurator() {
     custom_ingress: 'Custom Enterprise Anycast Edge Ingress',
   };
 
-  const handleSendBlueprintWhatsApp = () => {
-    const summary = `Hi Mavenco Solutions Team,\n\nI just configured my custom store architecture on your visual studio:\n\n🏬 *Brand Name:* ${brandName}\n🏷️ *Industry:* ${industryNames[industry]}\n🌐 *Domain Strategy:* ${domainNames[domainType]}\n💳 *Payment Gateway:* ${gatewayNames[gateway]}\n⚡ *Database:* Dedicated MongoDB Atlas Cluster\n🚀 *Commission:* 0% Platform Fee\n\nPlease share the deployment timeline and launch quotation!`;
-    const cleanPhone = '918239019096';
-    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(summary)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+  const handleSendBlueprintEmail = () => {
+    const subject = `Architecture Specification & Quote Request - ${brandName}`;
+    const body = `Hi Mavenco Solutions Team,
+
+I have configured my custom store architecture blueprint on your visual studio:
+
+- Brand Name: ${brandName}
+- Industry Architecture: ${industryNames[industry]}
+- Domain Strategy: ${domainNames[domainType]}
+- Checkout & Payment Stack: ${gatewayNames[gateway]}
+- Database Layer: Dedicated MongoDB Atlas Cluster Partition
+- Transaction Fee: 0% Platform Commission
+
+Please review this architecture specification and send me the estimated deployment schedule and SaaS quotation.
+
+Best regards,
+${brandName} Team`;
+
+    const mailtoUrl = `mailto:ammar.tanwar.dev@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
   };
 
   const handleDownloadRfpPdf = () => {
@@ -363,18 +378,18 @@ export function ArchitectureConfigurator() {
               <button
                 type="button"
                 onClick={handleDownloadRfpPdf}
-                className="py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs rounded-xl border border-slate-700 shadow-md flex items-center justify-center gap-2 transition-all"
+                className="py-3 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs rounded-xl border border-slate-700 shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
                 <span>📄 Download Technical RFP Spec (PDF)</span>
               </button>
 
               <button
                 type="button"
-                onClick={handleSendBlueprintWhatsApp}
-                className="py-3 px-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-105"
+                onClick={handleSendBlueprintEmail}
+                className="py-3 px-4 bg-gradient-to-r from-rose-600 via-pink-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-105 cursor-pointer"
               >
-                <MessageSquare className="w-4 h-4" />
-                <span>Deploy via WhatsApp (+91 82390 19096)</span>
+                <Mail className="w-4 h-4" />
+                <span>Email Blueprint (ammar.tanwar.dev)</span>
               </button>
             </div>
           </div>
