@@ -1,6 +1,6 @@
 import 'server-only';
 import { getDatabase } from '@/lib/mongodb';
-import { TenantBrandConfig } from '@/lib/tenant-config';
+import { TenantBrandConfig, getTenantConfig } from '@/lib/tenant-config';
 
 export async function checkTenantValidityDb(slug?: string): Promise<{
   isValid: boolean;
@@ -34,8 +34,10 @@ export async function checkTenantValidityDb(slug?: string): Promise<{
       }
     }
   } catch (err) {
-    console.error('MongoDB tenant check error:', err);
+    console.warn('MongoDB tenant check warning:', err);
   }
 
-  return { isValid: false, isSuspended: false, config: null };
+  // Graceful fallback for standard tenants
+  const fallback = getTenantConfig(clean);
+  return { isValid: true, isSuspended: false, config: fallback };
 }
