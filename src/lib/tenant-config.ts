@@ -41,57 +41,7 @@ export interface TenantBrandConfig {
   }[];
 }
 
-export const SEED_TENANTS: Record<string, TenantBrandConfig> = {
-  demo: createDefaultTenantBrandConfig('demo'),
-  lumina: {
-    id: 'store_lumina_atelier',
-    name: 'Lumina Atelier',
-    slug: 'lumina',
-    tagline: 'Contemporary Artisanal Lighting & Objects',
-    description: 'High-precision craftsmanship, sustainable materials, and timeless aesthetic silhouettes for the modern lifestyle.',
-    currency: 'USD',
-    currencySymbol: '$',
-    theme: {
-      primaryColor: '#1E1B4B',
-      secondaryColor: '#FFFDF9',
-      accentColor: '#F59E0B',
-      headingFont: 'Playfair Display, serif',
-      bodyFont: 'Plus Jakarta Sans, sans-serif',
-    },
-    contact: {
-      phone: '+1 (555) 234-5678',
-      email: 'sophia@luminaatelier.com',
-      whatsapp: '15552345678',
-      address: '742 Evergreen Terrace, Suite 100, New York, NY',
-    },
-    announcements: {
-      leftCallout: 'Welcome to Lumina Atelier',
-      mainText: 'Artisanal Studio Collection Live Now • Worldwide Express Delivery •',
-      highlightText: 'EXPLORE EDIT',
-      link: '/new-arrivals?tenant=lumina',
-    },
-    navLinks: [
-      { label: 'NEW IN', href: '/new-arrivals?tenant=lumina', badge: 'Atelier' },
-      { label: 'LIGHTING', href: '/women?tenant=lumina' },
-      { label: 'HOME OBJECTS', href: '/kids?tenant=lumina' },
-      { label: 'COLLECTIONS', href: '/collections/festive?tenant=lumina' },
-      { label: 'ABOUT STORY', href: '/about?tenant=lumina' },
-      { label: 'STUDIO CONTACT', href: '/contact?tenant=lumina' },
-    ],
-    footerShopLinks: [
-      { label: 'Artisanal Lighting', href: '/women?tenant=lumina' },
-      { label: 'Sculptural Vessels', href: '/kids?tenant=lumina' },
-      { label: 'New Season Edit', href: '/new-arrivals?tenant=lumina' },
-    ],
-    footerCareLinks: [
-      { label: 'Brand Story & Philosophy', href: '/about?tenant=lumina' },
-      { label: 'Studio & Showroom Locator', href: '/contact?tenant=lumina' },
-      { label: 'Care & Restoration Guide', href: '/faq?tenant=lumina' },
-    ],
-  },
-  auraliving: createDefaultTenantBrandConfig('auraliving'),
-  apexathletics: createDefaultTenantBrandConfig('apexathletics'),
-};
+export const SEED_TENANTS: Record<string, TenantBrandConfig> = {};
 
 export function formatStoreName(slug: string): string {
   return slug
@@ -110,8 +60,8 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
     id: `store_${clean}`,
     name: displayName,
     slug: clean,
-    tagline: 'Curated Modern Lifestyle & Apparel',
-    description: `Welcome to ${displayName}. A curated modern storefront showcasing seasonal apparel, lifestyle essentials, and contemporary designs.`,
+    tagline: 'Contemporary Commerce & Apparel',
+    description: `Welcome to ${displayName}. Premium storefront powered by Mavenco Commerce platform.`,
     currency: 'INR',
     currencySymbol: '₹',
     theme: {
@@ -122,19 +72,19 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
       bodyFont: 'Plus Jakarta Sans, sans-serif',
     },
     contact: {
-      phone: '+91 82390 19096',
-      email: 'ammar.tanwar.dev@gmail.com',
-      whatsapp: '918239019096',
-      address: 'Mavenco Global Commerce Studio, CA / Delhi',
+      phone: '',
+      email: '',
+      whatsapp: '',
+      address: '',
     },
     announcements: {
       leftCallout: `Welcome to ${displayName}`,
-      mainText: 'New Season Atelier Drops Live Now • Complimentary Doorstep Delivery •',
-      highlightText: 'EXPLORE NEW IN',
+      mainText: 'Curated Drops Live Now • Complimentary Doorstep Delivery •',
+      highlightText: 'EXPLORE EDIT',
       link: '/new-arrivals',
     },
     navLinks: [
-      { label: 'NEW ARRIVALS', href: '/new-arrivals', badge: 'Fresh' },
+      { label: 'NEW IN', href: '/new-arrivals', badge: 'Fresh' },
       { label: 'APPAREL', href: '/women' },
       { label: 'LIFESTYLE', href: '/kids' },
       { label: 'COLLECTIONS', href: '/collections/festive' },
@@ -144,11 +94,6 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
       { label: 'Curated Apparel', href: '/women' },
       { label: 'Lifestyle & Living', href: '/kids' },
       { label: 'New Season Lookbook', href: '/new-arrivals' },
-      { label: 'Limited Capsule', href: '/collections/festive' },
-      { label: 'Special Offers', href: '/sale' },
-    ],
-    footerCareLinks: [
-      { label: `About ${displayName}`, href: '/about-us' },
       { label: 'Shipping & Delivery Policy', href: '/shipping-policy' },
       { label: 'Returns & Exchanges', href: '/return-policy' },
       { label: 'Client Support Concierge', href: '/contact' },
