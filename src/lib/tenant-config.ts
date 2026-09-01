@@ -43,6 +43,52 @@ export interface TenantBrandConfig {
 
 export const SEED_TENANTS: Record<string, TenantBrandConfig> = {
   demo: createDefaultTenantBrandConfig('demo'),
+  lumina: {
+    id: 'store_lumina_atelier',
+    name: 'Lumina Atelier',
+    slug: 'lumina',
+    tagline: 'Contemporary Artisanal Lighting & Objects',
+    description: 'High-precision craftsmanship, sustainable materials, and timeless aesthetic silhouettes for the modern lifestyle.',
+    currency: 'USD',
+    currencySymbol: '$',
+    theme: {
+      primaryColor: '#1E1B4B',
+      secondaryColor: '#FFFDF9',
+      accentColor: '#F59E0B',
+      headingFont: 'Playfair Display, serif',
+      bodyFont: 'Plus Jakarta Sans, sans-serif',
+    },
+    contact: {
+      phone: '+1 (555) 234-5678',
+      email: 'sophia@luminaatelier.com',
+      whatsapp: '15552345678',
+      address: '742 Evergreen Terrace, Suite 100, New York, NY',
+    },
+    announcements: {
+      leftCallout: 'Welcome to Lumina Atelier',
+      mainText: 'Artisanal Studio Collection Live Now • Worldwide Express Delivery •',
+      highlightText: 'EXPLORE EDIT',
+      link: '/new-arrivals?tenant=lumina',
+    },
+    navLinks: [
+      { label: 'NEW IN', href: '/new-arrivals?tenant=lumina', badge: 'Atelier' },
+      { label: 'LIGHTING', href: '/women?tenant=lumina' },
+      { label: 'HOME OBJECTS', href: '/kids?tenant=lumina' },
+      { label: 'COLLECTIONS', href: '/collections/festive?tenant=lumina' },
+      { label: 'ABOUT STORY', href: '/about?tenant=lumina' },
+      { label: 'STUDIO CONTACT', href: '/contact?tenant=lumina' },
+    ],
+    footerShopLinks: [
+      { label: 'Artisanal Lighting', href: '/women?tenant=lumina' },
+      { label: 'Sculptural Vessels', href: '/kids?tenant=lumina' },
+      { label: 'New Season Edit', href: '/new-arrivals?tenant=lumina' },
+    ],
+    footerCareLinks: [
+      { label: 'Brand Story & Philosophy', href: '/about?tenant=lumina' },
+      { label: 'Studio & Showroom Locator', href: '/contact?tenant=lumina' },
+      { label: 'Care & Restoration Guide', href: '/faq?tenant=lumina' },
+    ],
+  },
   auraliving: createDefaultTenantBrandConfig('auraliving'),
   apexathletics: createDefaultTenantBrandConfig('apexathletics'),
 };
@@ -378,6 +424,12 @@ export function updateTenantConfig(slug: string, updates: Partial<TenantBrandCon
 export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
   if (tenantParam) {
     const clean = tenantParam.toLowerCase().trim();
+    if (typeof window !== 'undefined') {
+      try {
+        document.cookie = `jq_active_tenant=${clean}; path=/; max-age=604800; SameSite=Lax`;
+        localStorage.setItem('jq_active_tenant', clean);
+      } catch {}
+    }
     return getTenantConfig(clean);
   }
 
@@ -387,6 +439,10 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
     const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
     if (pathMatch) {
       const slug = pathMatch[2].toLowerCase();
+      try {
+        document.cookie = `jq_active_tenant=${slug}; path=/; max-age=604800; SameSite=Lax`;
+        localStorage.setItem('jq_active_tenant', slug);
+      } catch {}
       return getTenantConfig(slug);
     }
 
@@ -394,23 +450,39 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
     const urlParams = new URLSearchParams(window.location.search);
     const qTenant = urlParams.get('tenant');
     if (qTenant) {
-      return getTenantConfig(qTenant);
+      const slug = qTenant.toLowerCase().trim();
+      try {
+        document.cookie = `jq_active_tenant=${slug}; path=/; max-age=604800; SameSite=Lax`;
+        localStorage.setItem('jq_active_tenant', slug);
+      } catch {}
+      return getTenantConfig(slug);
     }
 
     // 3. Check domain / subdomain
     const host = window.location.hostname.toLowerCase();
+    if (host.includes('lumina') || host.startsWith('lumina.')) return getTenantConfig('lumina');
     if (host.includes('auraliving') || host.startsWith('auraliving.')) return getTenantConfig('auraliving');
     if (host.includes('apexathletics') || host.startsWith('apexathletics.')) return getTenantConfig('apexathletics');
     if (host.includes('jqtrends') || host.startsWith('jqtrends.')) return getTenantConfig('jqtrends');
 
     // 4. Check cookie
-    const cookies = document.cookie.split(';');
-    for (const cookie of cookies) {
-      const [name, val] = cookie.trim().split('=');
-      if (name === 'jq_active_tenant' && val) {
-        return getTenantConfig(val);
+    try {
+      const cookies = document.cookie.split(';');
+      for (const cookie of cookies) {
+        const [name, val] = cookie.trim().split('=');
+        if (name === 'jq_active_tenant' && val) {
+          return getTenantConfig(val);
+        }
       }
-    }
+    } catch {}
+
+    // 5. Check localStorage fallback
+    try {
+      const stored = localStorage.getItem('jq_active_tenant');
+      if (stored) {
+        return getTenantConfig(stored);
+      }
+    } catch {}
   }
 
   return getTenantConfig('demo');

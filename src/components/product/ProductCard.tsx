@@ -10,6 +10,7 @@ import { RatingStars } from '@/components/ui/RatingStars';
 import { Badge } from '@/components/ui/Badge';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { resolveTenant } from '@/lib/tenant-config';
 
 export interface ProductCardProps {
   product: Product;
@@ -20,6 +21,8 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [selectedColor, setSelectedColor] = useState(product.colors[0]?.name || '');
   const [showQuickSizes, setShowQuickSizes] = useState(false);
+  const activeTenant = resolveTenant();
+  const productUrl = `/products/${product.slug}${activeTenant.slug && activeTenant.slug !== 'demo' && activeTenant.slug !== 'jqtrends' ? `?tenant=${activeTenant.slug}` : ''}`;
 
   const { addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -61,7 +64,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
     >
       {/* Top Media Container */}
       <div className="relative w-full aspect-3/4 overflow-hidden bg-[#FAF6F2]">
-        <Link href={`/products/${product.slug}`} className="relative block w-full h-full">
+        <Link href={productUrl} className="relative block w-full h-full">
           <Image
             src={isHovered ? secondaryImage : primaryImage}
             alt={product.name || 'Product Image'}
@@ -102,14 +105,16 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
           />
         </button>
 
-        {/* Desktop Quick Add Bar / Size Reveal */}
+        {/* Quick Add Overlay */}
         <div className="absolute bottom-0 inset-x-0 z-20 transition-all duration-300">
           {!showQuickSizes ? (
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setShowQuickSizes(true);
+              onClick={() => {
+                if (product.sizes.length === 1 && product.sizes[0].inStock) {
+                  handleQuickAdd(product.sizes[0].size);
+                } else {
+                  setShowQuickSizes(true);
+                }
               }}
               className="w-full py-2.5 bg-[#111111]/90 hover:bg-[#111111] text-[#FFFDFC] text-xs uppercase font-bold tracking-widest flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-200 backdrop-blur-xs"
             >
@@ -117,11 +122,19 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
               <span>Quick Add</span>
             </button>
           ) : (
-            <div className="bg-[#FFFDFC] border-t border-[#E8DED8] p-2 animate-in slide-in-from-bottom-2 duration-200">
-              <p className="text-[10px] uppercase font-bold text-[#777777] text-center mb-1.5 tracking-wider">
-                Select Size
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-1">
+            <div className="p-2.5 bg-[#FFFDFC]/95 backdrop-blur-md border-t border-[#E8DED8] animate-in fade-in slide-in-from-bottom-2">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#111111]">
+                  Select Size:
+                </span>
+                <button
+                  onClick={() => setShowQuickSizes(false)}
+                  className="text-[10px] text-[#777777] hover:text-[#111111]"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
                 {product.sizes.map((s) => (
                   <button
                     key={s.size}
@@ -180,7 +193,7 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
           </div>
 
           {/* Product Name */}
-          <Link href={`/products/${product.slug}`} className="block">
+          <Link href={productUrl} className="block">
             <h3 className="text-xs sm:text-sm font-semibold text-[#111111] hover:text-[#B77A68] transition-colors line-clamp-1">
               {product.name}
             </h3>
