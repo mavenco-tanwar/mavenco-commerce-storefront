@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
     .toLowerCase()
     .trim();
 
+  const base = getDefaultHeaderConfig(tenantSlug);
+
   try {
     const db = await getDatabase();
     if (db) {
@@ -36,13 +38,52 @@ export async function GET(request: NextRequest) {
       });
 
       if (doc?.config) {
-        const { _id, ...cleanDoc } = doc;
+        const raw = doc.config;
+        const mergedConfig: HeaderConfig = {
+          ...base,
+          ...raw,
+          tenantSlug: tenantSlug,
+          announcementBar: {
+            ...base.announcementBar,
+            ...(raw.announcementBar || {}),
+            styles: {
+              ...base.announcementBar.styles,
+              ...(raw.announcementBar?.styles || {}),
+            },
+            blocks: Array.isArray(raw.announcementBar?.blocks)
+              ? raw.announcementBar.blocks
+              : base.announcementBar.blocks,
+          },
+          mainHeader: {
+            ...base.mainHeader,
+            ...(raw.mainHeader || {}),
+            styles: {
+              ...base.mainHeader.styles,
+              ...(raw.mainHeader?.styles || {}),
+            },
+            blocks: Array.isArray(raw.mainHeader?.blocks)
+              ? raw.mainHeader.blocks
+              : base.mainHeader.blocks,
+          },
+          sticky: {
+            ...base.sticky,
+            ...(raw.sticky || {}),
+          },
+          mobile: {
+            ...base.mobile,
+            ...(raw.mobile || {}),
+          },
+          navigationMenu: Array.isArray(raw.navigationMenu)
+            ? raw.navigationMenu
+            : base.navigationMenu,
+        };
+
         return NextResponse.json(
           {
-            data: cleanDoc.config,
+            data: mergedConfig,
             status: 'success',
-            version: cleanDoc.version || 1,
-            publishedAt: cleanDoc.updatedAt || cleanDoc.publishedAt,
+            version: doc.version || 1,
+            publishedAt: doc.updatedAt || doc.publishedAt,
             source: 'mongodb_atlas',
             timestamp: new Date().toISOString(),
           },
@@ -55,10 +96,9 @@ export async function GET(request: NextRequest) {
   }
 
   // Graceful fallback to default seed
-  const fallback = getDefaultHeaderConfig(tenantSlug);
   return NextResponse.json(
     {
-      data: fallback,
+      data: base,
       status: 'fallback',
       version: 1,
       source: 'default_seed',
@@ -82,14 +122,11 @@ async function handleSave(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const config: HeaderConfig = body.config || body;
-    if (!tenantSlug && config.tenantSlug) {
-      tenantSlug = config.tenantSlug.toLowerCase().trim();
+    const incoming: HeaderConfig = body.config || body;
+    if (!tenantSlug && incoming.tenantSlug) {
+      tenantSlug = incoming.tenantSlug.toLowerCase().trim();
     }
     if (!tenantSlug) tenantSlug = 'lumina';
-
-    config.tenantSlug = tenantSlug;
-    config.updatedAt = new Date().toISOString();
 
     const db = await getDatabase();
     if (db) {
@@ -98,15 +135,60 @@ async function handleSave(request: NextRequest) {
         type: 'header',
       });
 
+      const base = existing?.config || getDefaultHeaderConfig(tenantSlug);
       const nextVersion = (existing?.version || 0) + 1;
-      config.version = nextVersion;
+
+      const fullConfig: HeaderConfig = {
+        ...base,
+        ...incoming,
+        tenantSlug: tenantSlug,
+        version: nextVersion,
+        status: (body.status || incoming.status || 'published') as any,
+        updatedAt: new Date().toISOString(),
+        announcementBar: {
+          ...base.announcementBar,
+          ...(incoming.announcementBar || {}),
+          styles: {
+            ...base.announcementBar.styles,
+            ...(incoming.announcementBar?.styles || {}),
+          },
+          blocks:
+            incoming.announcementBar?.blocks !== undefined
+              ? incoming.announcementBar.blocks
+              : base.announcementBar.blocks,
+        },
+        mainHeader: {
+          ...base.mainHeader,
+          ...(incoming.mainHeader || {}),
+          styles: {
+            ...base.mainHeader.styles,
+            ...(incoming.mainHeader?.styles || {}),
+          },
+          blocks:
+            incoming.mainHeader?.blocks !== undefined
+              ? incoming.mainHeader.blocks
+              : base.mainHeader.blocks,
+        },
+        sticky: {
+          ...base.sticky,
+          ...(incoming.sticky || {}),
+        },
+        mobile: {
+          ...base.mobile,
+          ...(incoming.mobile || {}),
+        },
+        navigationMenu:
+          incoming.navigationMenu !== undefined
+            ? incoming.navigationMenu
+            : base.navigationMenu,
+      };
 
       const recordToSave = {
         tenantSlug: tenantSlug,
         type: 'header',
         version: nextVersion,
-        status: body.status || config.status || 'published',
-        config: config,
+        status: fullConfig.status,
+        config: fullConfig,
         updatedAt: new Date().toISOString(),
         publishedAt: new Date().toISOString(),
         persistedToDb: true,
@@ -127,9 +209,9 @@ async function handleSave(request: NextRequest) {
       return NextResponse.json(
         {
           success: true,
-          data: config,
+          data: fullConfig,
           version: nextVersion,
-          status: 'published',
+          status: fullConfig.status,
           message: `Header configuration for ${tenantSlug} successfully published to MongoDB Atlas.`,
         },
         { headers: corsHeaders() }
