@@ -31,6 +31,7 @@ export function AnnouncementBar() {
 
   return (
     <div
+      suppressHydrationWarning
       className="text-xs py-2 px-4 border-b select-none relative z-40"
       style={{
         backgroundColor: tenant.theme.primaryColor,
@@ -38,10 +39,10 @@ export function AnnouncementBar() {
         borderColor: `${tenant.theme.accentColor}33`,
       }}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="max-w-7xl mx-auto flex items-center justify-between" suppressHydrationWarning>
         {/* Left Side: Support Callout (Desktop) */}
         <div className="hidden lg:flex items-center gap-4 text-[11px]" style={{ color: tenant.theme.accentColor }}>
-          <span className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
+          <span suppressHydrationWarning className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer">
             <Sparkles className="w-3 h-3" />
             {ann.leftCallout}
           </span>
@@ -58,15 +59,16 @@ export function AnnouncementBar() {
         </div>
 
         {/* Center: Announcement */}
-        <div className="flex-1 flex items-center justify-center gap-2 text-center">
+        <div className="flex-1 flex items-center justify-center gap-2 text-center" suppressHydrationWarning>
           <div className="font-medium tracking-wide text-xs">
             <Link
               href={ann.link || '/sale'}
               className="hover:underline inline-flex items-center gap-1.5"
             >
-              <span>{ann.mainText}</span>
+              <span suppressHydrationWarning>{ann.mainText}</span>
               {ann.highlightText && (
                 <span
+                  suppressHydrationWarning
                   className="font-bold tracking-wider uppercase underline underline-offset-2"
                   style={{ color: tenant.theme.accentColor }}
                 >
@@ -78,13 +80,13 @@ export function AnnouncementBar() {
         </div>
 
         {/* Right Side: Currency & Store Tag */}
-        <div className="hidden md:flex items-center gap-3 text-[11px] font-mono opacity-80">
+        <div className="hidden md:flex items-center gap-3 text-[11px] font-mono opacity-80" suppressHydrationWarning>
           <span className="flex items-center gap-1">
             <Globe className="w-3 h-3" />
             {tenant.currency} ({tenant.currencySymbol})
           </span>
           <span className="opacity-40">•</span>
-          <span className="uppercase tracking-widest">{tenant.name}</span>
+          <span suppressHydrationWarning className="uppercase tracking-widest">{tenant.name}</span>
         </div>
       </div>
     </div>

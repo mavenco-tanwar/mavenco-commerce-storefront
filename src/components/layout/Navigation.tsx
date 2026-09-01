@@ -50,17 +50,19 @@ export function Navigation() {
   // For tenant stores like Aura Living or Apex Athletics, render their clean distinct menu links
   if (tenant.slug !== 'jqtrends') {
     return (
-      <nav className="hidden md:flex items-center justify-center gap-7 lg:gap-10 text-xs uppercase tracking-widest font-semibold select-none">
+      <nav suppressHydrationWarning className="hidden md:flex items-center justify-center gap-7 lg:gap-10 text-xs uppercase tracking-widest font-semibold select-none">
         {tenant.navLinks.map((link) => (
           <Link
             key={link.label}
             href={link.href}
+            suppressHydrationWarning
             className="hover:opacity-75 transition-opacity flex items-center gap-1.5"
             style={{ color: tenant.theme.primaryColor }}
           >
-            <span>{link.label}</span>
+            <span suppressHydrationWarning>{link.label}</span>
             {link.badge && (
               <span
+                suppressHydrationWarning
                 className="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider text-white"
                 style={{ backgroundColor: tenant.theme.accentColor }}
               >
