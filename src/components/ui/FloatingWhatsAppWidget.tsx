@@ -97,10 +97,10 @@ function FloatingWhatsAppWidgetContent() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 select-none">
+    <div className="fixed bottom-6 right-6 z-50 select-none flex flex-col items-end">
       {/* Floating Popup Card */}
       {isOpen && (
-        <div className="mb-3 w-80 sm:w-96 bg-[#141724]/95 backdrop-blur-xl border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="mb-3 w-[calc(100vw-2rem)] max-w-sm sm:max-w-md bg-[#141724]/95 backdrop-blur-xl border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
           <div
             className="p-4 text-white flex items-center justify-between"
