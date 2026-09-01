@@ -49,9 +49,20 @@ export function Navigation() {
 
   // For tenant stores like Aura Living or Apex Athletics, render their clean distinct menu links
   if (tenant.slug !== 'jqtrends') {
+    const activeNavLinks =
+      tenant.navLinks && tenant.navLinks.length > 0
+        ? tenant.navLinks
+        : [
+            { label: 'NEW IN', href: '/new-arrivals', badge: 'Fresh' },
+            { label: 'APPAREL', href: '/women' },
+            { label: 'LIFESTYLE', href: '/kids' },
+            { label: 'COLLECTIONS', href: '/collections/festive' },
+            { label: 'SALE', href: '/sale' },
+          ];
+
     return (
       <nav suppressHydrationWarning className="hidden md:flex items-center justify-center gap-7 lg:gap-10 text-xs uppercase tracking-widest font-semibold select-none">
-        {tenant.navLinks.map((link) => (
+        {activeNavLinks.map((link) => (
           <Link
             key={link.label}
             href={link.href}

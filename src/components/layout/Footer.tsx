@@ -223,10 +223,18 @@ export function Footer() {
                 ? 'Shop Departments'
                 : tenant.slug === 'auraliving'
                 ? 'Sanctuary Spaces'
-                : 'Athletic Disciplines'}
+                : 'Collections & Edits'}
             </h3>
             <ul className="space-y-2.5 text-xs opacity-75">
-              {tenant.footerShopLinks.map((link) => (
+              {(tenant.footerShopLinks && tenant.footerShopLinks.length > 0
+                ? tenant.footerShopLinks
+                : [
+                    { label: 'Curated Apparel', href: '/women' },
+                    { label: 'Lifestyle & Living', href: '/kids' },
+                    { label: 'New Season Lookbook', href: '/new-arrivals' },
+                    { label: 'Limited Capsule', href: '/collections/festive' },
+                  ]
+              ).map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="hover:text-white hover:underline transition-colors">
                     {link.label}
@@ -240,7 +248,15 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-widest text-white">Client Care</h3>
             <ul className="space-y-2.5 text-xs opacity-75">
-              {tenant.footerCareLinks.map((link) => (
+              {(tenant.footerCareLinks && tenant.footerCareLinks.length > 0
+                ? tenant.footerCareLinks
+                : [
+                    { label: 'Brand Story & Philosophy', href: '/about' },
+                    { label: 'Studio & Showroom Locator', href: '/contact' },
+                    { label: 'Client Support Concierge', href: '/contact' },
+                    { label: 'Shipping & Returns Policy', href: '/shipping-policy' },
+                  ]
+              ).map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="hover:text-white hover:underline transition-colors">
                     {link.label}
