@@ -127,6 +127,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
 
           case 'trending':
           case 'product-grid':
+          case 'products':
             return (
               <TrendingSection
                 key={section.id}
@@ -147,20 +148,22 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customImage={sData.bannerImage || sData.image}
+                customImage={sData.desktopImage || sData.bannerImage || sData.image}
                 customCtaText={sData.ctaText || sData.primaryCtaText}
                 customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl}
               />
             );
 
           case 'new-arrivals':
+          case 'product-carousel':
+          case 'carousel':
             return (
               <NewArrivalsStudio
                 key={section.id}
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customLimit={sData.limit || 4}
+                customLimit={sData.limit || 6}
               />
             );
 
@@ -188,6 +191,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
             );
 
           case 'testimonials':
+          case 'reviews':
             return (
               <TestimonialsSection
                 key={section.id}
@@ -199,6 +203,8 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
             );
 
           case 'instagram-feed':
+          case 'instagram':
+          case 'social':
             return (
               <InstagramFeed
                 key={section.id}
@@ -210,6 +216,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
             );
 
           case 'newsletter':
+          case 'newsletter-club':
             return (
               <NewsletterSection
                 key={section.id}
@@ -220,6 +227,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
               />
             );
 
+          case 'promo-banner':
           case 'promotional-banner':
           case 'promotional_banner':
             return (
