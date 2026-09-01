@@ -4,16 +4,14 @@ import React, { useState } from 'react';
 import { DollarSign, TrendingUp, Sparkles, Check, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 
 export function RoiSavingsCalculator() {
-  const [monthlyGmv, setMonthlyGmv] = useState<number>(1000000); // Default ₹10,00,000 / month
+  const [monthlyGmv, setMonthlyGmv] = useState<number>(30000); // Default ₹30,000 / month
 
   // Calculations
   // Shopify:
-  // 1. Transaction fees (approx 2% on ₹10L = ₹20,000/mo)
-  // 2. Essential App Subscriptions ($180/mo = ~₹15,000/mo for PageFly CMS, Loox reviews, Klaviyo add-on, SEO optimizer)
-  // 3. Shopify Plan ($105/mo = ~₹8,800/mo)
-  // Monthly Shopify Cost = (monthlyGmv * 0.02) + 23800
+  // 1. Transaction fees (2% on GMV)
+  // 2. Essential App Subscriptions + Shopify Plan
   const shopifyTransactionFee = monthlyGmv * 0.02;
-  const shopifyAppsAndPlan = 23800;
+  const shopifyAppsAndPlan = monthlyGmv < 100000 ? 12800 : 23800;
   const shopifyMonthlyTotal = shopifyTransactionFee + shopifyAppsAndPlan;
   const shopifyAnnualTotal = shopifyMonthlyTotal * 12;
 
@@ -22,10 +20,11 @@ export function RoiSavingsCalculator() {
   // 2. Built-in Visual Drag & Drop CMS = ₹0
   // 3. Built-in AI Copywriter & SEO Studio = ₹0
   // 4. Built-in Verified Reviews = ₹0
-  // 5. Cloud Hosting & Dedicated Mongo Cluster: ₹4,000/mo (Professional Scale)
-  // 6. Annual Platform License Amortized: ₹49,999 one-time
-  const mavencoMonthlyTotal = 4000;
-  const mavencoAnnualTotal = 49999 + mavencoMonthlyTotal * 12;
+  // 5. Cloud Hosting & Dedicated Mongo Cluster: ₹2,000/mo (Starter) or ₹4,000/mo (Pro)
+  // 6. Annual Platform License Amortized: ₹24,999 (Starter) or ₹49,999 (Pro)
+  const mavencoMonthlyHosting = monthlyGmv < 100000 ? 2000 : 4000;
+  const mavencoLicense = monthlyGmv < 100000 ? 24999 : 49999;
+  const mavencoAnnualTotal = mavencoLicense + mavencoMonthlyHosting * 12;
 
   const annualSavings = Math.max(0, shopifyAnnualTotal - mavencoAnnualTotal);
   const savingsPercent = Math.round((annualSavings / shopifyAnnualTotal) * 100);
@@ -60,22 +59,22 @@ export function RoiSavingsCalculator() {
 
         <input
           type="range"
-          min={100000}
+          min={30000}
           max={5000000}
-          step={50000}
+          step={10000}
           value={monthlyGmv}
           onChange={(e) => setMonthlyGmv(Number(e.target.value))}
           className="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-rose-500"
         />
 
         <div className="flex justify-between text-[11px] text-slate-500 font-mono">
-          <span>₹1 Lakh /mo</span>
+          <span>₹30K /mo</span>
           <span>₹25 Lakhs /mo</span>
           <span>₹50 Lakhs /mo</span>
         </div>
       </div>
 
-      {/* Comparison Grid */}
+      {/* 2-Column Comparison Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
         {/* Shopify Breakdown */}
         <div className="p-6 bg-[#0E1018] rounded-2xl border border-red-500/20 space-y-4">
@@ -91,11 +90,15 @@ export function RoiSavingsCalculator() {
             </div>
             <div className="flex justify-between py-1.5 border-b border-slate-800">
               <span className="text-slate-400">Essential App Subscriptions:</span>
-              <span className="font-mono text-red-300">₹1,80,000/yr</span>
+              <span className="font-mono text-red-300">
+                ₹{((monthlyGmv < 100000 ? 8000 : 15000) * 12).toLocaleString('en-IN')}/yr
+              </span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-slate-800">
-              <span className="text-slate-400">Shopify Core Plan ($105/mo):</span>
-              <span className="font-mono text-red-300">₹1,05,600/yr</span>
+              <span className="text-slate-400">Shopify Plan ({monthlyGmv < 100000 ? 'Basic $39' : 'Core $105'}/mo):</span>
+              <span className="font-mono text-red-300">
+                ₹{((monthlyGmv < 100000 ? 4800 : 8800) * 12).toLocaleString('en-IN')}/yr
+              </span>
             </div>
           </div>
 
@@ -130,7 +133,9 @@ export function RoiSavingsCalculator() {
             </div>
             <div className="flex justify-between py-1.5 border-b border-slate-800/80">
               <span className="text-slate-400">Dedicated MongoDB + Edge Hosting:</span>
-              <span className="font-mono text-slate-200">₹48,000/yr (₹4k/mo)</span>
+              <span className="font-mono text-slate-200">
+                ₹{(mavencoMonthlyHosting * 12).toLocaleString('en-IN')}/yr (₹{mavencoMonthlyHosting / 1000}k/mo)
+              </span>
             </div>
           </div>
 
