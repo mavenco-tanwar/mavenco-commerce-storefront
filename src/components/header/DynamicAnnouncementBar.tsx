@@ -77,7 +77,7 @@ export function DynamicAnnouncementBar({
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Left Zone */}
-        <div className="hidden lg:flex items-center gap-4 text-[11px] shrink-0">
+        <div className="flex items-center gap-3 sm:gap-4 text-[11px] shrink-0">
           {leftBlocks.map((block) => (
             <HeaderBlockRenderer
               key={block.id}
@@ -89,7 +89,7 @@ export function DynamicAnnouncementBar({
         </div>
 
         {/* Center Zone */}
-        <div className="flex-1 flex items-center justify-center text-center font-medium overflow-hidden">
+        <div className="flex-1 flex items-center justify-center text-center font-medium overflow-hidden px-2">
           {centerBlocks.map((block, idx) => {
             if (rotationEnabled && idx !== activeCenterIdx) return null;
 
@@ -119,7 +119,7 @@ export function DynamicAnnouncementBar({
         </div>
 
         {/* Right Zone */}
-        <div className="hidden md:flex items-center gap-4 text-[11px] shrink-0">
+        <div className="flex items-center gap-3 sm:gap-4 text-[11px] shrink-0">
           {rightBlocks.map((block) => (
             <HeaderBlockRenderer
               key={block.id}
