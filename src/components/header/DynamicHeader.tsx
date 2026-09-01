@@ -40,11 +40,35 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
   // Fetch live Header configuration from MongoDB Atlas API
   useEffect(() => {
     let isMounted = true;
-    fetch(`/api/v1/content/header?tenant=${activeTenantSlug}`)
+    fetch(`/api/v1/content/header?tenant=${activeTenantSlug}&_t=${Date.now()}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
-        if (isMounted && json?.data?.id) {
-          setConfig(json.data);
+        if (isMounted && json?.data) {
+          const raw = json.data;
+          const base = getDefaultHeaderConfig(activeTenantSlug);
+          setConfig({
+            ...base,
+            ...raw,
+            announcementBar: {
+              ...base.announcementBar,
+              ...(raw.announcementBar || {}),
+              styles: {
+                ...base.announcementBar.styles,
+                ...(raw.announcementBar?.styles || {}),
+              },
+              blocks: raw.announcementBar?.blocks || base.announcementBar.blocks,
+            },
+            mainHeader: {
+              ...base.mainHeader,
+              ...(raw.mainHeader || {}),
+              styles: {
+                ...base.mainHeader.styles,
+                ...(raw.mainHeader?.styles || {}),
+              },
+              blocks: raw.mainHeader?.blocks || base.mainHeader.blocks,
+            },
+            navigationMenu: raw.navigationMenu || base.navigationMenu,
+          });
         }
       })
       .catch(() => {});
@@ -52,7 +76,7 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
     return () => {
       isMounted = false;
     };
-  }, [activeTenantSlug, pathname]);
+  }, [activeTenantSlug, pathname, searchParams]);
 
   // Sticky Scroll listener
   useEffect(() => {
