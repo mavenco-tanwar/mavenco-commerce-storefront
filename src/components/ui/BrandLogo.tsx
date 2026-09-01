@@ -60,10 +60,12 @@ export function BrandLogo({
   return (
     <Link
       href={`/stores/${tenant.slug}`}
+      suppressHydrationWarning
       className={`inline-flex items-center gap-3 group transition-opacity hover:opacity-90 ${className}`}
       aria-label={`${tenant.name} - Home`}
     >
       <div
+        suppressHydrationWarning
         className="w-10 h-10 rounded-xl flex items-center justify-center font-serif font-black text-lg shadow-sm shrink-0 transition-transform group-hover:scale-105"
         style={{
           backgroundColor: tenant.theme.primaryColor,
@@ -73,8 +75,9 @@ export function BrandLogo({
         {monogram}
       </div>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col" suppressHydrationWarning>
         <span
+          suppressHydrationWarning
           className="font-serif font-extrabold text-base sm:text-lg tracking-wider leading-none"
           style={{ color: textColor }}
         >
@@ -82,6 +85,7 @@ export function BrandLogo({
         </span>
         {showTagline && (
           <span
+            suppressHydrationWarning
             className="text-[9px] uppercase tracking-widest font-semibold mt-1"
             style={{ color: tenant.theme.accentColor }}
           >
