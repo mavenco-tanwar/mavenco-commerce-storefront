@@ -75,7 +75,9 @@ export class CmsApiService {
     isPreview: boolean = false,
     tenantSlug?: string
   ): Promise<CmsHomepageSection[]> {
-    const slug = tenantSlug || 'jqtrends';
+    const slug = (tenantSlug || 'demo').toLowerCase().trim();
+
+    // 1. API Fetch via apiClient (calls server /api/v1/content/homepage which reads MongoDB)
     try {
       const endpoint = `/api/v1/content/homepage?tenant=${slug}${isPreview ? '&preview=draft' : ''}`;
       const res = await apiClient.get<CmsHomepageResponse>(endpoint);
@@ -87,6 +89,7 @@ export class CmsApiService {
       // Fallback
     }
 
+    // 2. Local In-Memory Store Fallback
     try {
       const { getStoredHomepageSections } = require('@/lib/cms-store');
       const stored = getStoredHomepageSections(slug);

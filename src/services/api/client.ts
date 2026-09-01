@@ -54,7 +54,7 @@ class ApiClient {
       config.baseUrl ||
       process.env.NEXT_PUBLIC_CMS_API_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
-      (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000')
+      (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000')
     ).trim().replace(/\/+$/, '');
 
     if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
