@@ -41,11 +41,7 @@ export interface TenantBrandConfig {
   }[];
 }
 
-export const SEED_TENANTS: Record<string, TenantBrandConfig> = {
-  demo: createDefaultTenantBrandConfig('demo'),
-  auraliving: createDefaultTenantBrandConfig('auraliving'),
-  apexathletics: createDefaultTenantBrandConfig('apexathletics'),
-};
+export const SEED_TENANTS: Record<string, TenantBrandConfig> = {};
 
 export function formatStoreName(slug: string): string {
   return slug
@@ -64,8 +60,8 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
     id: `store_${clean}`,
     name: displayName,
     slug: clean,
-    tagline: 'Curated Modern Lifestyle & Apparel',
-    description: `Welcome to ${displayName}. A curated modern storefront showcasing seasonal apparel, lifestyle essentials, and contemporary designs.`,
+    tagline: 'Contemporary Commerce & Apparel',
+    description: `Welcome to ${displayName}. Premium storefront powered by Mavenco Commerce platform.`,
     currency: 'INR',
     currencySymbol: '₹',
     theme: {
@@ -76,19 +72,19 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
       bodyFont: 'Plus Jakarta Sans, sans-serif',
     },
     contact: {
-      phone: '+91 82390 19096',
-      email: 'ammar.tanwar.dev@gmail.com',
-      whatsapp: '918239019096',
-      address: 'Mavenco Global Commerce Studio, CA / Delhi',
+      phone: '',
+      email: '',
+      whatsapp: '',
+      address: '',
     },
     announcements: {
       leftCallout: `Welcome to ${displayName}`,
-      mainText: 'New Season Atelier Drops Live Now • Complimentary Doorstep Delivery •',
-      highlightText: 'EXPLORE NEW IN',
+      mainText: 'Curated Drops Live Now • Complimentary Doorstep Delivery •',
+      highlightText: 'EXPLORE EDIT',
       link: '/new-arrivals',
     },
     navLinks: [
-      { label: 'NEW ARRIVALS', href: '/new-arrivals', badge: 'Fresh' },
+      { label: 'NEW IN', href: '/new-arrivals', badge: 'Fresh' },
       { label: 'APPAREL', href: '/women' },
       { label: 'LIFESTYLE', href: '/kids' },
       { label: 'COLLECTIONS', href: '/collections/festive' },
@@ -98,11 +94,6 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
       { label: 'Curated Apparel', href: '/women' },
       { label: 'Lifestyle & Living', href: '/kids' },
       { label: 'New Season Lookbook', href: '/new-arrivals' },
-      { label: 'Limited Capsule', href: '/collections/festive' },
-      { label: 'Special Offers', href: '/sale' },
-    ],
-    footerCareLinks: [
-      { label: `About ${displayName}`, href: '/about-us' },
       { label: 'Shipping & Delivery Policy', href: '/shipping-policy' },
       { label: 'Returns & Exchanges', href: '/return-policy' },
       { label: 'Client Support Concierge', href: '/contact' },
@@ -378,6 +369,12 @@ export function updateTenantConfig(slug: string, updates: Partial<TenantBrandCon
 export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
   if (tenantParam) {
     const clean = tenantParam.toLowerCase().trim();
+    if (typeof window !== 'undefined') {
+      try {
+        document.cookie = `jq_active_tenant=${clean}; path=/; max-age=604800; SameSite=Lax`;
+        localStorage.setItem('jq_active_tenant', clean);
+      } catch {}
+    }
     return getTenantConfig(clean);
   }
 
@@ -387,6 +384,10 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
     const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
     if (pathMatch) {
       const slug = pathMatch[2].toLowerCase();
+      try {
+        document.cookie = `jq_active_tenant=${slug}; path=/; max-age=604800; SameSite=Lax`;
+        localStorage.setItem('jq_active_tenant', slug);
+      } catch {}
       return getTenantConfig(slug);
     }
 
@@ -394,23 +395,39 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
     const urlParams = new URLSearchParams(window.location.search);
     const qTenant = urlParams.get('tenant');
     if (qTenant) {
-      return getTenantConfig(qTenant);
+      const slug = qTenant.toLowerCase().trim();
+      try {
+        document.cookie = `jq_active_tenant=${slug}; path=/; max-age=604800; SameSite=Lax`;
+        localStorage.setItem('jq_active_tenant', slug);
+      } catch {}
+      return getTenantConfig(slug);
     }
 
     // 3. Check domain / subdomain
     const host = window.location.hostname.toLowerCase();
+    if (host.includes('lumina') || host.startsWith('lumina.')) return getTenantConfig('lumina');
     if (host.includes('auraliving') || host.startsWith('auraliving.')) return getTenantConfig('auraliving');
     if (host.includes('apexathletics') || host.startsWith('apexathletics.')) return getTenantConfig('apexathletics');
     if (host.includes('jqtrends') || host.startsWith('jqtrends.')) return getTenantConfig('jqtrends');
 
     // 4. Check cookie
-    const cookies = document.cookie.split(';');
-    for (const cookie of cookies) {
-      const [name, val] = cookie.trim().split('=');
-      if (name === 'jq_active_tenant' && val) {
-        return getTenantConfig(val);
+    try {
+      const cookies = document.cookie.split(';');
+      for (const cookie of cookies) {
+        const [name, val] = cookie.trim().split('=');
+        if (name === 'jq_active_tenant' && val) {
+          return getTenantConfig(val);
+        }
       }
-    }
+    } catch {}
+
+    // 5. Check localStorage fallback
+    try {
+      const stored = localStorage.getItem('jq_active_tenant');
+      if (stored) {
+        return getTenantConfig(stored);
+      }
+    } catch {}
   }
 
   return getTenantConfig('demo');

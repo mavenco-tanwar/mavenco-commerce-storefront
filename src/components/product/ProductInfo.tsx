@@ -26,9 +26,24 @@ import { useToast } from '@/context/ToastContext';
 
 export interface ProductInfoProps {
   product: Product;
+  pdpConfig?: {
+    stickyBuyBar?: boolean;
+    showStockUrgency?: boolean;
+    stockThreshold?: number;
+    enableDeliveryEstimator?: boolean;
+    defaultEstimatedDays?: string;
+    enableSizeGuideModal?: boolean;
+    enableFabricCareAccordion?: boolean;
+    enableArtisanProvenance?: boolean;
+    trustBadges?: Array<{ id: string; title: string; desc: string; enabled: boolean }>;
+    showFrequentlyBoughtTogether?: boolean;
+    showCustomerReviews?: boolean;
+    showRelatedProducts?: boolean;
+    accentColor?: string;
+  };
 }
 
-export function ProductInfo({ product }: ProductInfoProps) {
+export function ProductInfo({ product, pdpConfig }: ProductInfoProps) {
   const [selectedColor, setSelectedColor] = useState(
     product.colors[0]?.name || 'Standard'
   );
@@ -265,23 +280,39 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <PincodeChecker />
 
       {/* Trust Signals */}
-      <div className="grid grid-cols-3 gap-2 py-4 border-y border-[#E8DED8] text-center text-[11px] text-[#777777]">
-        <div className="flex flex-col items-center gap-1">
-          <Truck className="w-4 h-4 text-[#B77A68]" />
-          <span className="font-semibold text-[#111111]">Free Shipping</span>
-          <span>Orders over ₹999</span>
+      {pdpConfig?.trustBadges && pdpConfig.trustBadges.filter((b) => b.enabled).length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 py-4 border-y border-[#E8DED8]">
+          {pdpConfig.trustBadges
+            .filter((b) => b.enabled)
+            .map((badge) => (
+              <div key={badge.id} className="p-2.5 bg-[#FAF6F2] rounded-xl border border-[#E8DED8]/60 space-y-0.5 text-xs">
+                <div className="font-bold text-[#111111] flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="truncate">{badge.title}</span>
+                </div>
+                <p className="text-[10px] text-[#777777] line-clamp-1">{badge.desc}</p>
+              </div>
+            ))}
         </div>
-        <div className="flex flex-col items-center gap-1">
-          <RotateCcw className="w-4 h-4 text-[#B77A68]" />
-          <span className="font-semibold text-[#111111]">7 Days Return</span>
-          <span>Easy doorstep pickup</span>
+      ) : (
+        <div className="grid grid-cols-3 gap-2 py-4 border-y border-[#E8DED8] text-center text-[11px] text-[#777777]">
+          <div className="flex flex-col items-center gap-1">
+            <Truck className="w-4 h-4 text-[#B77A68]" />
+            <span className="font-semibold text-[#111111]">Free Shipping</span>
+            <span>{pdpConfig?.defaultEstimatedDays || 'Orders over ₹999'}</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <RotateCcw className="w-4 h-4 text-[#B77A68]" />
+            <span className="font-semibold text-[#111111]">7 Days Return</span>
+            <span>Easy doorstep pickup</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <ShieldCheck className="w-4 h-4 text-[#B77A68]" />
+            <span className="font-semibold text-[#111111]">100% Genuine</span>
+            <span>Pure luxury fabric</span>
+          </div>
         </div>
-        <div className="flex flex-col items-center gap-1">
-          <ShieldCheck className="w-4 h-4 text-[#B77A68]" />
-          <span className="font-semibold text-[#111111]">100% Genuine</span>
-          <span>Pure luxury fabric</span>
-        </div>
-      </div>
+      )}
 
       {/* Size Guide Modal */}
       <SizeGuideModal
