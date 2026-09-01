@@ -104,39 +104,100 @@ export function InstantStoreBuilder() {
     }, 300);
   };
 
-  const handleCustomAiPrompt = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!aiPrompt.trim()) return;
+  const handleCustomAiPrompt = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const promptToUse = aiPrompt.trim() || 'Minimalist Japanese ceramics and organic green tea brand based in Kyoto';
     setIsAiGenerating(true);
 
     setTimeout(() => {
-      const lower = aiPrompt.toLowerCase();
+      const lower = promptToUse.toLowerCase();
       let matchedCategory: 'apparel' | 'decor' | 'athletics' | 'beauty' = 'apparel';
       let matchedPalette: 'rose' | 'forest' | 'carbon' | 'royal' = 'rose';
       let genBrand = 'Aura Concept';
+      let genHeadline = 'Crafted for Modern Distinctions';
+      let genSubtext = 'Sub-40ms Edge delivery, zero transaction fee architecture, and visual lookbooks.';
+      let genItems = ['Signature Drop 01', 'Limited Edition Release', 'Private Reserve Capsule'];
 
-      if (lower.includes('home') || lower.includes('decor') || lower.includes('furniture') || lower.includes('ceramic') || lower.includes('coffee') || lower.includes('tea')) {
+      if (
+        lower.includes('home') ||
+        lower.includes('decor') ||
+        lower.includes('furniture') ||
+        lower.includes('ceramic') ||
+        lower.includes('coffee') ||
+        lower.includes('tea') ||
+        lower.includes('pottery') ||
+        lower.includes('kyoto') ||
+        lower.includes('japanese')
+      ) {
         matchedCategory = 'decor';
         matchedPalette = 'forest';
-        genBrand = 'Aura Craft Living';
-      } else if (lower.includes('sport') || lower.includes('gym') || lower.includes('run') || lower.includes('fit') || lower.includes('shoe') || lower.includes('active')) {
+        genBrand = lower.includes('kyoto') || lower.includes('tea') ? 'Komorebi Tea & Clay' : 'Aura Craft Living';
+        genHeadline = 'Mindful Organic Pottery & Living Spaces';
+        genSubtext = 'Wabi-sabi aesthetics, handmade stoneware matcha bowls, and organic Kyoto harvests.';
+        genItems = ['Kyoto Clay Matcha Bowl', 'Wabi-Sabi Fluted Vase', 'Hana Teak Table Lamp'];
+      } else if (
+        lower.includes('sport') ||
+        lower.includes('gym') ||
+        lower.includes('run') ||
+        lower.includes('fit') ||
+        lower.includes('shoe') ||
+        lower.includes('active') ||
+        lower.includes('marathon') ||
+        lower.includes('sneaker')
+      ) {
         matchedCategory = 'athletics';
         matchedPalette = 'carbon';
-        genBrand = 'Kratos Elite';
-      } else if (lower.includes('skin') || lower.includes('beauty') || lower.includes('oil') || lower.includes('cream') || lower.includes('herbal') || lower.includes('hair')) {
+        genBrand = 'Apex Velocity';
+        genHeadline = 'Aerodynamic Performance Engineering';
+        genSubtext = 'Sub-180g carbon marathon runners and thermal moisture-regulating gear.';
+        genItems = ['Carbon Plate Marathon Speed', 'Seamless Compression Singlet', 'Ultralight Hydration Pack'];
+      } else if (
+        lower.includes('skin') ||
+        lower.includes('beauty') ||
+        lower.includes('oil') ||
+        lower.includes('cream') ||
+        lower.includes('herbal') ||
+        lower.includes('hair') ||
+        lower.includes('ayurved') ||
+        lower.includes('serum')
+      ) {
         matchedCategory = 'beauty';
         matchedPalette = 'royal';
-        genBrand = 'Elixir Botanics';
+        genBrand = 'Veda Botanica';
+        genHeadline = 'Ancient Botanicals, Modern Purity';
+        genSubtext = 'Cold-pressed kumkumadi serums, saffron elixirs, and clean herbal rituals.';
+        genItems = ['24k Gold Kumkumadi Oil', 'Saffron Radiance Nectar', 'Kansa Wand Massage Elixir'];
+      } else if (
+        lower.includes('silk') ||
+        lower.includes('couture') ||
+        lower.includes('saree') ||
+        lower.includes('gown') ||
+        lower.includes('paris') ||
+        lower.includes('pret') ||
+        lower.includes('fashion') ||
+        lower.includes('dress')
+      ) {
+        matchedCategory = 'apparel';
+        matchedPalette = 'rose';
+        genBrand = 'Maison Étoile';
+        genHeadline = 'Atelier Silks & Haute Pret Couture';
+        genSubtext = 'Bespoke handwoven silks and runway eveningwear crafted for modern icons.';
+        genItems = ['Silk Organza Corset Gown', 'Handwoven Brocade Blazer', 'Pleated Crepe Jumpsuit'];
       } else {
-        genBrand = 'Luxe Pret Atelier';
+        const words = promptToUse.split(' ').filter((w) => w.length > 2);
+        const namePart = words.slice(0, 2).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        genBrand = namePart ? `${namePart} Atelier` : 'Luxe Concept Pret';
+        genHeadline = `Artisanal Distinction for ${genBrand}`;
+        genSubtext = 'Custom headless storefront rendered with sub-40ms Edge speed and isolated DB.';
+        genItems = [`${genBrand} Signature Capsule`, 'Atelier Heritage Edition', 'Seasonal Lookbook Drop'];
       }
 
       setBrandName(genBrand);
       setCategory(matchedCategory);
       setPalette(matchedPalette);
-      setHeadline(`Artisanal Excellence for ${genBrand}`);
-      setSubtext(`Engineered with sub-40ms Edge delivery, zero transaction fee infrastructure, and live lookbooks.`);
-      setSampleItems(['Signature Drop 01', 'Limited Edition Release', 'Private Reserve Capsule']);
+      setHeadline(genHeadline);
+      setSubtext(genSubtext);
+      setSampleItems(genItems);
       setIsAiGenerating(false);
       setAiPrompt('');
     }, 450);
@@ -196,8 +257,9 @@ export function InstantStoreBuilder() {
           </div>
           <button
             type="submit"
+            onClick={(e) => handleCustomAiPrompt(e)}
             disabled={isAiGenerating}
-            className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
+            className="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 cursor-pointer"
           >
             {isAiGenerating ? (
               <>
