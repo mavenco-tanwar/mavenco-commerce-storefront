@@ -78,27 +78,14 @@ export function createDefaultTenantBrandConfig(slug: string): TenantBrandConfig 
       address: '',
     },
     announcements: {
-      leftCallout: `Welcome to ${displayName}`,
-      mainText: 'Curated Drops Live Now • Complimentary Doorstep Delivery •',
-      highlightText: 'EXPLORE EDIT',
-      link: '/new-arrivals',
+      leftCallout: '',
+      mainText: '',
+      highlightText: '',
+      link: '',
     },
-    navLinks: [
-      { label: 'NEW IN', href: '/new-arrivals', badge: 'Fresh' },
-      { label: 'APPAREL', href: '/women' },
-      { label: 'LIFESTYLE', href: '/kids' },
-      { label: 'COLLECTIONS', href: '/collections/festive' },
-      { label: 'SALE', href: '/sale' },
-    ],
-    footerShopLinks: [
-      { label: 'Curated Apparel', href: '/women' },
-      { label: 'Lifestyle & Living', href: '/kids' },
-      { label: 'New Season Lookbook', href: '/new-arrivals' },
-      { label: 'Shipping & Delivery Policy', href: '/shipping-policy' },
-      { label: 'Returns & Exchanges', href: '/return-policy' },
-      { label: 'Client Support Concierge', href: '/contact' },
-      { label: 'Track Your Order', href: '/account' },
-    ],
+    navLinks: [],
+    footerShopLinks: [],
+    footerCareLinks: [],
   };
 }
 
