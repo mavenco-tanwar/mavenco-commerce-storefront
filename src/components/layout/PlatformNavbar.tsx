@@ -289,34 +289,26 @@ export function PlatformNavbar() {
               </button>
             </div>
 
-            {/* Quick Instant Channels */}
-            <div className="grid grid-cols-2 gap-2.5">
+            {/* Direct Email Channel Banner */}
+            <div>
               <a
-                href="https://wa.me/918239019096?text=Hi%20Mavenco%20Team%2C%20I%20would%20like%20to%20request%20a%20live%20demo%20of%20the%20Mavenco%20Merchant%20Admin%20Panel."
-                target="_blank"
-                rel="noreferrer"
-                className="p-3 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-left flex items-center gap-2.5 transition-all group"
+                href="mailto:ammar.tanwar.dev@gmail.com?subject=Request%20Admin%20Panel%20Demo%20-%20Mavenco%20Platform&body=Hi%20Mavenco%20Team%2C%0A%0AI%20would%20like%20to%20request%20a%20live%20demo%20of%20the%20Merchant%20Admin%20Panel.%0A%0AName%3A%0ABrand%20Name%3A%0AEmail%3A"
+                className="w-full p-3.5 bg-gradient-to-r from-rose-500/15 via-slate-900 to-amber-500/15 hover:from-rose-500/25 hover:to-amber-500/25 border border-rose-500/30 rounded-2xl text-left flex items-center justify-between transition-all group shadow-sm"
               >
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-                  <MessageSquare className="w-4 h-4" />
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400 shrink-0 border border-rose-500/30">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-rose-300 group-hover:text-rose-200">
+                      Direct Email Support Channel
+                    </div>
+                    <div className="text-[11px] text-slate-400 font-mono">ammar.tanwar.dev@gmail.com</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-emerald-300 group-hover:text-emerald-200">WhatsApp Query</div>
-                  <div className="text-[10px] text-slate-400 font-mono">+91 82390 19096</div>
-                </div>
-              </a>
-
-              <a
-                href="mailto:ammar.tanwar.dev@gmail.com?subject=Request%20Admin%20Panel%20Demo%20-%20Mavenco%20Platform&body=Hi%20Mavenco%20Team%2C%0A%0AI%20would%20like%20to%20request%20a%20live%20demo%20of%20the%20Merchant%20Admin%20Panel.%0A%0AName%3A%0ABrand%20Name%3A%0APhone%2FWhatsApp%3A"
-                className="p-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-left flex items-center gap-2.5 transition-all group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-rose-300 group-hover:text-rose-200">Direct Email</div>
-                  <div className="text-[10px] text-slate-400">ammar.tanwar.dev</div>
-                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20">
+                  Compose Email &rarr;
+                </span>
               </a>
             </div>
 
@@ -367,10 +359,10 @@ export function PlatformNavbar() {
                   </div>
 
                   <div>
-                    <label className="text-xs text-slate-300 font-medium">WhatsApp / Phone Number</label>
+                    <label className="text-xs text-slate-300 font-medium">Contact Phone (Optional)</label>
                     <input
                       type="tel"
-                      placeholder="+91 82390 19096"
+                      placeholder="+91 98765 43210"
                       value={contactPhone}
                       onChange={(e) => setContactPhone(e.target.value)}
                       className="w-full mt-1 p-2 bg-[#0C0E17] border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-600 focus:border-rose-500 focus:outline-none"
@@ -385,27 +377,33 @@ export function PlatformNavbar() {
                     onChange={(e) => setInterestedPlan(e.target.value)}
                     className="w-full mt-1 p-2 bg-[#0C0E17] border border-slate-700 rounded-xl text-xs text-white focus:border-rose-500 focus:outline-none"
                   >
-                    <option value="Starter Boutique (₹24,999)">Starter Boutique (₹24,999 + ₹2,000/mo server)</option>
-                    <option value="Professional Scale (₹49,999)">Professional Scale (₹49,999 + ₹4,000/mo server - Recommended)</option>
-                    <option value="Enterprise Global (₹1,39,999)">Enterprise Global (₹1,39,999 + ₹8,000/mo dedicated cluster)</option>
+                    <option value="Starter Boutique (₹24,999 + ₹2,000/mo server)">
+                      Starter Boutique (₹24,999 + ₹2,000/mo server)
+                    </option>
+                    <option value="Professional Scale (₹49,999 + ₹4,000/mo server - Recommended)">
+                      Professional Scale (₹49,999 + ₹4,000/mo server - Recommended)
+                    </option>
+                    <option value="Enterprise Custom (₹99,999 + ₹8,000/mo server)">
+                      Enterprise Custom (₹99,999 + ₹8,000/mo server)
+                    </option>
                   </select>
                 </div>
 
-                <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-3">
+                <div className="pt-2 flex items-center justify-end gap-2.5">
                   <button
                     type="button"
                     onClick={resetDemoForm}
-                    className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white"
+                    className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white rounded-xl"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-6 py-2.5 bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-950/50 transition-all flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-5 py-2.5 bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-1.5 disabled:opacity-50 transition-all hover:scale-105"
                   >
                     {isSubmitting ? (
-                      <span>Sending Email to ammar.tanwar.dev...</span>
+                      <span>Sending Email...</span>
                     ) : (
                       <>
                         <span>Submit Demo Request</span>
@@ -423,25 +421,16 @@ export function PlatformNavbar() {
                 <div className="space-y-1">
                   <h4 className="text-base font-bold text-white">Demo Request Received!</h4>
                   <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                    Thank you {fullName}! Your request has been dispatched directly to <strong>ammar.tanwar.dev@gmail.com</strong>. Our solutions team will contact you within 2 hours.
+                    Thank you {fullName}! Your request has been dispatched directly to <strong>ammar.tanwar.dev@gmail.com</strong>. Our team will email you within 2 hours with your sandbox demo invite.
                   </p>
                 </div>
 
-                <div className="pt-3 flex justify-center gap-3">
-                  <a
-                    href={`https://wa.me/918239019096?text=Hi%20Ammar%2C%20I%20just%20submitted%20a%20demo%20request%20for%20${encodeURIComponent(brandName || 'my brand')}.`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>WhatsApp +91 82390 19096</span>
-                  </a>
+                <div className="pt-3 flex justify-center">
                   <button
                     onClick={resetDemoForm}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700"
+                    className="px-6 py-2.5 bg-gradient-to-r from-rose-600 to-amber-500 text-white text-xs font-bold rounded-xl shadow-lg hover:scale-105 transition-all"
                   >
-                    Done
+                    Back to Platform
                   </button>
                 </div>
               </div>
