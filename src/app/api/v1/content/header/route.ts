@@ -37,44 +37,46 @@ export async function GET(request: NextRequest) {
         ],
       });
 
-      if (doc?.config) {
-        const raw = doc.config;
+      if (doc && (doc.config || doc.navigationMenu || doc.mainHeader || doc.announcementBar)) {
+        const raw = doc.config || doc;
         const mergedConfig: HeaderConfig = {
           ...base,
           ...raw,
           tenantSlug: tenantSlug,
+          preset: raw.preset || doc.preset || base.preset,
+          theme: raw.theme || doc.theme || base.theme,
           announcementBar: {
             ...base.announcementBar,
-            ...(raw.announcementBar || {}),
+            ...(raw.announcementBar || doc.announcementBar || {}),
             styles: {
               ...base.announcementBar.styles,
-              ...(raw.announcementBar?.styles || {}),
+              ...(raw.announcementBar?.styles || doc.announcementBar?.styles || {}),
             },
-            blocks: Array.isArray(raw.announcementBar?.blocks)
-              ? raw.announcementBar.blocks
+            blocks: Array.isArray(raw.announcementBar?.blocks || doc.announcementBar?.blocks)
+              ? (raw.announcementBar?.blocks || doc.announcementBar?.blocks)
               : base.announcementBar.blocks,
           },
           mainHeader: {
             ...base.mainHeader,
-            ...(raw.mainHeader || {}),
+            ...(raw.mainHeader || doc.mainHeader || {}),
             styles: {
               ...base.mainHeader.styles,
-              ...(raw.mainHeader?.styles || {}),
+              ...(raw.mainHeader?.styles || doc.mainHeader?.styles || {}),
             },
-            blocks: Array.isArray(raw.mainHeader?.blocks)
-              ? raw.mainHeader.blocks
+            blocks: Array.isArray(raw.mainHeader?.blocks || doc.mainHeader?.blocks)
+              ? (raw.mainHeader?.blocks || doc.mainHeader?.blocks)
               : base.mainHeader.blocks,
           },
           sticky: {
             ...base.sticky,
-            ...(raw.sticky || {}),
+            ...(raw.sticky || doc.sticky || {}),
           },
           mobile: {
             ...base.mobile,
-            ...(raw.mobile || {}),
+            ...(raw.mobile || doc.mobile || {}),
           },
-          navigationMenu: Array.isArray(raw.navigationMenu)
-            ? raw.navigationMenu
+          navigationMenu: Array.isArray(raw.navigationMenu || doc.navigationMenu)
+            ? (raw.navigationMenu || doc.navigationMenu)
             : base.navigationMenu,
         };
 
@@ -135,7 +137,7 @@ async function handleSave(request: NextRequest) {
         type: 'header',
       });
 
-      const base = existing?.config || getDefaultHeaderConfig(tenantSlug);
+      const base = existing?.config || existing || getDefaultHeaderConfig(tenantSlug);
       const nextVersion = (existing?.version || 0) + 1;
 
       const fullConfig: HeaderConfig = {
@@ -180,14 +182,23 @@ async function handleSave(request: NextRequest) {
         navigationMenu:
           incoming.navigationMenu !== undefined
             ? incoming.navigationMenu
-            : base.navigationMenu,
+            : (base.navigationMenu || []),
       };
 
+      // Save directly at ROOT of the MongoDB document to match the exact schema of cms_pages
       const recordToSave = {
         tenantSlug: tenantSlug,
         type: 'header',
         version: nextVersion,
         status: fullConfig.status,
+        preset: fullConfig.preset || 'luxury',
+        theme: fullConfig.theme || 'luxury-light',
+        announcementBar: fullConfig.announcementBar,
+        mainHeader: fullConfig.mainHeader,
+        navigationMenu: fullConfig.navigationMenu,
+        sticky: fullConfig.sticky,
+        transparent: fullConfig.transparent,
+        mobile: fullConfig.mobile,
         config: fullConfig,
         updatedAt: new Date().toISOString(),
         publishedAt: new Date().toISOString(),
