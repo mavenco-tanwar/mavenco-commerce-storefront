@@ -21,9 +21,13 @@ export default async function StorePage({ params, searchParams }: StorePageProps
   const tenantSlug = (resolvedParams.slug || 'demo').toLowerCase().trim();
 
   // Verify that the requested tenant exists and is active in MongoDB Atlas or registry
-  const { isValid, isSuspended } = await checkTenantValidityDb(tenantSlug);
-  if (!isValid || isSuspended) {
-    return <StoreUnavailableView tenantSlug={tenantSlug} isSuspended={isSuspended} />;
+  try {
+    const { isValid, isSuspended } = await checkTenantValidityDb(tenantSlug);
+    if (!isValid || isSuspended) {
+      return <StoreUnavailableView tenantSlug={tenantSlug} isSuspended={isSuspended} />;
+    }
+  } catch (err) {
+    console.warn('Tenant check warning:', err);
   }
 
   // 1. Direct MongoDB Atlas Fetch (Instant SSR)
@@ -42,12 +46,16 @@ export default async function StorePage({ params, searchParams }: StorePageProps
       }
     }
   } catch (err) {
-    console.error('Direct MongoDB store homepage error:', err);
+    console.warn('Direct MongoDB store homepage warning:', err);
   }
 
   // 2. Fallback
   if (!sections) {
-    sections = await CmsApiService.getHomepageSections(isPreview, tenantSlug);
+    try {
+      sections = await CmsApiService.getHomepageSections(isPreview, tenantSlug);
+    } catch (err) {
+      sections = [];
+    }
   }
 
   return (
