@@ -46,6 +46,21 @@ export function ProductListingView({
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [gridColumns, setGridColumns] = useState<3 | 4>(4);
+  const [plpConfig, setPlpConfig] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/v1/content/pages?type=collection-page')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.data?.config) {
+          setPlpConfig(json.data.config);
+          if (json.data.config.gridColumns === 3 || json.data.config.gridColumns === 4) {
+            setGridColumns(json.data.config.gridColumns);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const [sort, setSort] = useState<SortOption>(urlSort);
   const [filters, setFilters] = useState<FilterState>({
