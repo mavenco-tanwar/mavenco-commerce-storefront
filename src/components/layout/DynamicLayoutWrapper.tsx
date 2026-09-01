@@ -2,20 +2,18 @@
 
 import React from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { AnnouncementBar } from './AnnouncementBar';
-import { Header } from './Header';
+import { DynamicHeader } from '@/components/header/DynamicHeader';
 import { Footer } from './Footer';
 import { PlatformNavbar } from './PlatformNavbar';
 import { PlatformFooter } from './PlatformFooter';
 import { ToastContainer } from './ToastContainer';
-import { checkTenantValidity } from '@/lib/tenant-config';
 
 export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
   const tenantQuery = searchParams.get('tenant');
 
-  // Check if this is a store route (e.g. /stores/restore or ?tenant=restore)
+  // Check if this is a store route (e.g. /stores/lumina or ?tenant=lumina)
   const isStoreRoute = pathname.startsWith('/stores/') || pathname.startsWith('/tenant/') || !!tenantQuery;
 
   // Platform marketing routes (SaaS landing, /cms, /features, /docs, /pricing)
@@ -43,11 +41,10 @@ export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }
     );
   }
 
-  // Otherwise, render the active merchant store layout (with AnnouncementBar, Store Header & Footer)
+  // Otherwise, render the dynamic merchant store header and layout
   return (
     <div className="min-h-screen flex flex-col bg-[#FFFDFC] text-[#111111] antialiased">
-      <AnnouncementBar />
-      <Header />
+      <DynamicHeader />
       <main className="flex-1">{children}</main>
       <Footer />
       <ToastContainer />
