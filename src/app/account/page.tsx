@@ -960,6 +960,90 @@ function AccountDashboardContent() {
                   </span>
                 </div>
 
+                {/* My Active Gift Cards */}
+                <div className="p-6 bg-gradient-to-r from-slate-950 to-slate-900 text-white rounded-2xl space-y-4 shadow-md">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div>
+                      <h3 className="text-base font-serif font-bold text-white">Active Digital Gift Cards</h3>
+                      <p className="text-xs text-slate-400">Gift vouchers assigned to your customer profile.</p>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-mono font-bold text-xs">
+                      1 Active Card
+                    </span>
+                  </div>
+
+                  <div className="p-4 bg-slate-900/80 rounded-xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm font-bold text-amber-400">GC-9821-4402-9182</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300">
+                          Active
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300">"Complimentary Haute Couture shopping voucher."</p>
+                      <span className="text-[10px] text-slate-400 font-mono block">Expires: Dec 31, 2026</span>
+                    </div>
+
+                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2">
+                      <div className="text-lg font-bold font-mono text-white">$500.00</div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard?.writeText('GC-9821-4402-9182');
+                          showToast('Gift card code copied to clipboard!', 'success');
+                        }}
+                        className="px-3 py-1 bg-white text-slate-950 hover:bg-rose-500 hover:text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        Copy Code
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Available Digital Vouchers */}
+                <div className="p-6 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl space-y-4 shadow-xs">
+                  <div className="pb-3 border-b border-[#EFE8E2]">
+                    <h3 className="text-base font-serif font-bold text-slate-900">Available Digital Vouchers</h3>
+                    <p className="text-xs text-slate-500">Apply these voucher codes during checkout for instant reductions.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-4 bg-white border border-[#EFE8E2] rounded-xl flex items-center justify-between">
+                      <div>
+                        <strong className="text-slate-900 font-mono font-bold text-sm block">WELCOME50</strong>
+                        <span className="text-slate-500 text-[11px]">$50 off first order over $250</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard?.writeText('WELCOME50');
+                          showToast('Voucher WELCOME50 copied!', 'success');
+                        }}
+                        className="px-3 py-1.5 bg-slate-950 text-white rounded-lg font-bold text-xs hover:bg-rose-600 transition-colors cursor-pointer"
+                      >
+                        Copy
+                      </button>
+                    </div>
+
+                    <div className="p-4 bg-white border border-[#EFE8E2] rounded-xl flex items-center justify-between">
+                      <div>
+                        <strong className="text-slate-900 font-mono font-bold text-sm block">VIPRUNWAY15</strong>
+                        <span className="text-slate-500 text-[11px]">15% off bridal &amp; banquet items</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard?.writeText('VIPRUNWAY15');
+                          showToast('Voucher VIPRUNWAY15 copied!', 'success');
+                        }}
+                        className="px-3 py-1.5 bg-slate-950 text-white rounded-lg font-bold text-xs hover:bg-rose-600 transition-colors cursor-pointer"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Gift Card Balance Checker */}
                 <div className="p-6 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl space-y-4 shadow-xs">
                   <div className="pb-3 border-b border-[#EFE8E2]">
