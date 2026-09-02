@@ -128,6 +128,8 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
           case 'trending':
           case 'product-grid':
           case 'products':
+          case 'products_grid':
+          case 'featured_products':
             return (
               <TrendingSection
                 key={section.id}
@@ -135,13 +137,15 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customLimit={sData.limit || 8}
-                customCtaText={sData.ctaText || sData.primaryCtaText || 'Explore All Trending'}
-                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || '/women'}
+                customCtaText={sData.ctaText || sData.primaryCtaText || 'Explore All'}
+                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
               />
             );
 
           case 'womens-editorial':
           case 'collection-banner':
+          case 'image_text':
+          case 'editorial':
             return (
               <WomensEditorial
                 key={section.id}
@@ -149,13 +153,14 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customImage={sData.desktopImage || sData.bannerImage || sData.image}
-                customCtaText={sData.ctaText || sData.primaryCtaText}
-                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl}
+                customCtaText={sData.ctaText || sData.primaryCtaText || sData.btnText}
+                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || sData.btnLink}
               />
             );
 
           case 'new-arrivals':
           case 'product-carousel':
+          case 'product_carousel':
           case 'carousel':
             return (
               <NewArrivalsStudio
@@ -198,13 +203,14 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customReviews={sData.testimonials || sData.items}
+                customReviews={sData.testimonials || sData.testimonialsList || sData.items}
               />
             );
 
           case 'instagram-feed':
           case 'instagram':
           case 'social':
+          case 'social_grid':
             return (
               <InstagramFeed
                 key={section.id}
@@ -230,15 +236,32 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
           case 'promo-banner':
           case 'promotional-banner':
           case 'promotional_banner':
+          case 'countdown':
             return (
               <PromotionalBanner
                 key={section.id}
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customPrimaryCtaText={sData.ctaText || sData.primaryCtaText}
-                customPrimaryCtaUrl={sData.ctaUrl || sData.primaryCtaUrl}
+                customPrimaryCtaText={sData.ctaText || sData.primaryCtaText || sData.btnText}
+                customPrimaryCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || sData.btnLink}
               />
+            );
+
+          case 'spacer':
+            return (
+              <div
+                key={section.id}
+                className="w-full"
+                style={{ height: sData.heightDesktop || '48px' }}
+              />
+            );
+
+          case 'divider':
+            return (
+              <div key={section.id} className="max-w-7xl mx-auto px-6 py-4">
+                <hr className="border-t border-slate-200 dark:border-white/10" />
+              </div>
             );
 
           default:
