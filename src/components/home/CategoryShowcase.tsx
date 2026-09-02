@@ -91,47 +91,55 @@ export function CategoryShowcase({
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((cat, idx) => (
-            <Link
-              key={cat.id || idx}
-              href={cat.href || '/women'}
-              className="group relative aspect-3/4 overflow-hidden bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow flex flex-col justify-end p-6"
-            >
-              {/* Background Image */}
-              <Image
-                src={cat.imageUrl || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop'}
-                alt={cat.title}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
-              />
+          {categories.map((cat: any, idx) => {
+            const title = cat.title || cat.label || `Category ${idx + 1}`;
+            const image = cat.imageUrl || cat.image || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop';
+            const tagline = cat.tagline || cat.count || 'Explore Collection';
+            const href = cat.href || cat.link || '/women';
+            const btnText = cat.buttonText || 'Explore';
 
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent transition-opacity duration-300" />
+            return (
+              <Link
+                key={cat.id || idx}
+                href={href}
+                className="group relative aspect-3/4 overflow-hidden bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow flex flex-col justify-end p-6"
+              >
+                {/* Background Image */}
+                <Image
+                  src={image}
+                  alt={title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+                />
 
-              {/* Content Overlay */}
-              <div className="relative z-10 text-white space-y-1.5 transform transition-transform duration-300 group-hover:-translate-y-1">
-                {cat.badge && (
-                  <span className="inline-block text-[10px] font-bold uppercase tracking-widest text-[#E8B8B5] bg-black/40 px-2 py-0.5 border border-[#B77A68]/40 mb-1">
-                    {cat.badge}
-                  </span>
-                )}
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent transition-opacity duration-300" />
 
-                <h3 className="text-2xl font-serif font-bold tracking-tight text-white">
-                  {cat.title}
-                </h3>
+                {/* Content Overlay */}
+                <div className="relative z-10 text-white space-y-1.5 transform transition-transform duration-300 group-hover:-translate-y-1">
+                  {cat.badge && (
+                    <span className="inline-block text-[10px] font-bold uppercase tracking-widest text-[#E8B8B5] bg-black/40 px-2 py-0.5 border border-[#B77A68]/40 mb-1">
+                      {cat.badge}
+                    </span>
+                  )}
 
-                <p className="text-xs text-[#E8DED8] line-clamp-2 font-sans font-normal">
-                  {cat.tagline}
-                </p>
+                  <h3 className="text-2xl font-serif font-bold tracking-tight text-white">
+                    {title}
+                  </h3>
 
-                <div className="pt-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#FFFDFC] group-hover:text-[#E8B8B5] transition-colors">
-                  <span>{cat.buttonText || 'Explore'}</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  <p className="text-xs text-[#E8DED8] line-clamp-2 font-sans font-normal">
+                    {tagline}
+                  </p>
+
+                  <div className="pt-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#FFFDFC] group-hover:text-[#E8B8B5] transition-colors">
+                    <span>{btnText}</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

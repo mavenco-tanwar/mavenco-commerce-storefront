@@ -67,10 +67,10 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
 
   const now = new Date();
 
-  // Filter visible and scheduled sections, sorted by displayOrder
+  // Filter visible and scheduled sections, sorted by displayOrder / order
   const activeSections = liveSections
-    .filter((sec) => {
-      if (sec.isVisible === false) return false;
+    .filter((sec: any) => {
+      if (sec.enabled === false || sec.isVisible === false) return false;
 
       // Check scheduled visibility window if set
       if (sec.startDate && new Date(sec.startDate) > now) {
@@ -82,16 +82,16 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
 
       return true;
     })
-    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+    .sort((a: any, b: any) => (a.order ?? a.displayOrder ?? 0) - (b.order ?? b.displayOrder ?? 0));
 
   return (
     <>
-      {activeSections.map((section) => {
-        const rawSec = section as any;
-        const sData = rawSec.data || rawSec.settings || {};
-        const title = sData.title || sData.heading || rawSec.title || rawSec.name;
-        const subtitle = sData.subtitle || sData.description || rawSec.subtitle;
-        const badge = sData.badge || sData.tagline || sData.badgeText || rawSec.badge || rawSec.tagline;
+      {activeSections.map((section: any) => {
+        const sData = section.data || section.settings || {};
+        const title = sData.heading || sData.title || section.name || section.title;
+        const subtitle = sData.subheading || sData.subtitle || sData.description || section.subtitle;
+        const badge = sData.tagline || sData.badge || sData.badgeText || section.badge || section.tagline;
+        const image = sData.bgImage || sData.desktopImage || sData.image || sData.bannerImage;
 
         switch (section.type) {
           case 'hero':
@@ -102,13 +102,13 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customSettings={{
                   tagline: badge,
-                  primaryBtnText: sData.primaryCtaText || sData.primaryBtnText || sData.ctaText || 'Shop Women',
-                  primaryBtnLink: sData.primaryCtaUrl || sData.primaryBtnLink || sData.ctaUrl || '/women',
-                  secondaryBtnText: sData.secondaryCtaText || sData.secondaryBtnText || 'Shop Kids',
-                  secondaryBtnLink: sData.secondaryCtaUrl || sData.secondaryBtnLink || '/kids',
-                  desktopImage: sData.desktopImage || sData.image,
-                  mobileImage: sData.mobileImage,
-                  overlayOpacity: sData.overlayOpacity,
+                  primaryBtnText: sData.primaryBtnText || sData.primaryCtaText || sData.ctaText || 'Shop The Collection',
+                  primaryBtnLink: sData.primaryBtnLink || sData.primaryCtaUrl || sData.ctaUrl || '/collections',
+                  secondaryBtnText: sData.secondaryBtnText || sData.secondaryCtaText || 'Explore Lookbook',
+                  secondaryBtnLink: sData.secondaryBtnLink || sData.secondaryCtaUrl || '/about',
+                  desktopImage: image,
+                  mobileImage: sData.mobileImage || image,
+                  overlayOpacity: typeof sData.overlayOpacity === 'number' ? (sData.overlayOpacity <= 1 ? sData.overlayOpacity * 100 : sData.overlayOpacity) : 40,
                 }}
               />
             );
@@ -121,7 +121,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customCategories={sData.categories || sData.items}
+                customCategories={sData.categoriesList || sData.categories || sData.items}
               />
             );
 
@@ -137,8 +137,8 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customLimit={sData.limit || 8}
-                customCtaText={sData.ctaText || sData.primaryCtaText || 'Explore All'}
-                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
+                customCtaText={sData.primaryBtnText || sData.ctaText || sData.primaryCtaText || 'Explore All'}
+                customCtaUrl={sData.primaryBtnLink || sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
               />
             );
 
@@ -152,9 +152,9 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customImage={sData.desktopImage || sData.bannerImage || sData.image}
-                customCtaText={sData.ctaText || sData.primaryCtaText || sData.btnText}
-                customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || sData.btnLink}
+                customImage={image}
+                customCtaText={sData.btnText || sData.ctaText || sData.primaryCtaText || 'Read Our Story'}
+                customCtaUrl={sData.btnLink || sData.ctaUrl || sData.primaryCtaUrl || '/about'}
               />
             );
 
@@ -203,7 +203,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customReviews={sData.testimonials || sData.testimonialsList || sData.items}
+                customReviews={sData.testimonialsList || sData.testimonials || sData.items}
               />
             );
 
@@ -229,7 +229,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customCouponPromo={sData.discountText}
+                customCouponPromo={sData.discountText || sData.description}
               />
             );
 
@@ -243,8 +243,8 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customPrimaryCtaText={sData.ctaText || sData.primaryCtaText || sData.btnText}
-                customPrimaryCtaUrl={sData.ctaUrl || sData.primaryCtaUrl || sData.btnLink}
+                customPrimaryCtaText={sData.btnText || sData.ctaText || sData.primaryCtaText || 'Claim Privilege'}
+                customPrimaryCtaUrl={sData.btnLink || sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
               />
             );
 
