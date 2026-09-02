@@ -22,6 +22,11 @@ import {
   RefreshCw,
   AlertTriangle,
   ArrowRight,
+  Crown,
+  Gift,
+  CreditCard,
+  Mail,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -75,13 +80,21 @@ interface OrderRecord {
 
 function AccountDashboardContent() {
   const searchParams = useSearchParams();
-  const initialTab = (searchParams.get('tab') as 'orders' | 'returns' | 'addresses' | 'profile' | 'preferences') || 'orders';
+  const initialTab = (searchParams.get('tab') as 'orders' | 'returns' | 'addresses' | 'profile' | 'loyalty' | 'giftcards' | 'preferences') || 'orders';
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'returns' | 'addresses' | 'profile' | 'preferences'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'orders' | 'returns' | 'addresses' | 'profile' | 'loyalty' | 'giftcards' | 'preferences'>(initialTab);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [returns, setReturns] = useState<ReturnRequest[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<OrderRecord | null>(null);
+
+  // Loyalty State
+  const [pointsBalance, setPointsBalance] = useState(1450);
+  const [redeemedCoupon, setRedeemedCoupon] = useState<string | null>(null);
+
+  // Gift Card State
+  const [giftCardCodeInput, setGiftCardCodeInput] = useState('');
+  const [checkedBalance, setCheckedBalance] = useState<number | null>(null);
 
   // Marketing Preferences State
   const [emailMarketing, setEmailMarketing] = useState(true);
@@ -394,6 +407,30 @@ function AccountDashboardContent() {
             </button>
 
             <button
+              onClick={() => setActiveTab('loyalty')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-left rounded-xl transition-all cursor-pointer ${
+                activeTab === 'loyalty'
+                  ? 'bg-slate-950 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+              }`}
+            >
+              <Crown className="w-4 h-4 text-amber-500" />
+              <span>VIP Loyalty &amp; Rewards</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('giftcards')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-left rounded-xl transition-all cursor-pointer ${
+                activeTab === 'giftcards'
+                  ? 'bg-slate-950 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+              }`}
+            >
+              <Gift className="w-4 h-4 text-rose-500" />
+              <span>Gift Cards &amp; Credit</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('preferences')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-left rounded-xl transition-all cursor-pointer ${
                 activeTab === 'preferences'
@@ -691,6 +728,199 @@ function AccountDashboardContent() {
                 >
                   Save Profile Changes
                 </button>
+              </div>
+            )}
+
+            {/* TAB: VIP LOYALTY CLUB & REWARDS */}
+            {activeTab === 'loyalty' && (
+              <div className="space-y-6">
+                {/* Hero Loyalty Card */}
+                <div className="p-6 sm:p-8 bg-gradient-to-br from-slate-950 via-slate-900 to-rose-950 text-white rounded-3xl border border-rose-900/30 shadow-xl relative overflow-hidden">
+                  <div className="relative z-10 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-5 h-5 text-amber-400" />
+                        <span className="text-xs font-bold uppercase tracking-widest text-amber-300">
+                          Gold Couture VIP Tier
+                        </span>
+                      </div>
+                      <span className="font-mono text-xs px-3 py-1 rounded-full bg-white/10 text-rose-200 border border-white/20">
+                        1.5x Points Multiplier Active
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+                      <div>
+                        <span className="text-xs text-slate-400 block">Available Balance</span>
+                        <div className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-mono flex items-center gap-2">
+                          <span>{pointsBalance.toLocaleString()}</span>
+                          <span className="text-xs font-normal text-rose-300 uppercase tracking-widest">Couture Coins</span>
+                        </div>
+                      </div>
+                      <div className="text-xs text-slate-300">
+                        Worth <strong className="text-emerald-400 font-mono text-sm">${(pointsBalance / 20).toFixed(2)}</strong> at checkout
+                      </div>
+                    </div>
+
+                    {/* Progress to Platinum */}
+                    <div className="space-y-1.5 pt-2">
+                      <div className="flex justify-between text-[11px] text-slate-300 font-mono">
+                        <span>Progress to Platinum Haute Royale</span>
+                        <span>$6,420 / $10,000 (64%)</span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-amber-400 to-rose-500 rounded-full" style={{ width: '64%' }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Redeemable Rewards Catalog */}
+                <div className="p-6 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#EFE8E2]">
+                    <div>
+                      <h3 className="text-base font-serif font-bold text-slate-900">Exchange Coins for Vouchers</h3>
+                      <p className="text-xs text-slate-500">Redeem points for instant checkout coupon discounts.</p>
+                    </div>
+                  </div>
+
+                  {redeemedCoupon && (
+                    <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-xl text-xs text-emerald-900 flex items-center justify-between">
+                      <div>
+                        <strong className="block text-emerald-800">Reward Voucher Claimed!</strong>
+                        <span>Your promo code: <strong className="font-mono text-sm">{redeemedCoupon}</strong></span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(redeemedCoupon);
+                          showToast('Voucher code copied to clipboard!', 'info');
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-700 text-white font-bold text-xs"
+                      >
+                        Copy Code
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                    <div className="p-4 bg-white border border-[#EFE8E2] rounded-xl flex flex-col justify-between space-y-3">
+                      <div>
+                        <strong className="block text-slate-900 font-bold">$25 Boutique Voucher</strong>
+                        <span className="text-[11px] text-slate-500">Cost: 500 Couture Coins</span>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={pointsBalance < 500}
+                        onClick={async () => {
+                          const code = `REW25-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+                          setPointsBalance(pointsBalance - 500);
+                          setRedeemedCoupon(code);
+                          showToast('Redeemed 500 points for $25 voucher!', 'success');
+                        }}
+                        className="w-full py-2 rounded-xl bg-slate-950 text-white font-bold hover:bg-rose-600 transition-colors disabled:opacity-40 cursor-pointer"
+                      >
+                        Redeem (500 pts)
+                      </button>
+                    </div>
+
+                    <div className="p-4 bg-white border border-[#EFE8E2] rounded-xl flex flex-col justify-between space-y-3">
+                      <div>
+                        <strong className="block text-slate-900 font-bold">$50 Luxury Voucher</strong>
+                        <span className="text-[11px] text-slate-500">Cost: 1,000 Couture Coins</span>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={pointsBalance < 1000}
+                        onClick={async () => {
+                          const code = `REW50-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+                          setPointsBalance(pointsBalance - 1000);
+                          setRedeemedCoupon(code);
+                          showToast('Redeemed 1000 points for $50 voucher!', 'success');
+                        }}
+                        className="w-full py-2 rounded-xl bg-slate-950 text-white font-bold hover:bg-rose-600 transition-colors disabled:opacity-40 cursor-pointer"
+                      >
+                        Redeem (1,000 pts)
+                      </button>
+                    </div>
+
+                    <div className="p-4 bg-white border border-[#EFE8E2] rounded-xl flex flex-col justify-between space-y-3">
+                      <div>
+                        <strong className="block text-slate-900 font-bold">Free Express Courier</strong>
+                        <span className="text-[11px] text-slate-500">Cost: 300 Couture Coins</span>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={pointsBalance < 300}
+                        onClick={async () => {
+                          const code = `FREESHIP-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+                          setPointsBalance(pointsBalance - 300);
+                          setRedeemedCoupon(code);
+                          showToast('Redeemed 300 points for Free Shipping voucher!', 'success');
+                        }}
+                        className="w-full py-2 rounded-xl bg-slate-950 text-white font-bold hover:bg-rose-600 transition-colors disabled:opacity-40 cursor-pointer"
+                      >
+                        Redeem (300 pts)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: GIFT CARDS & STORE CREDIT */}
+            {activeTab === 'giftcards' && (
+              <div className="space-y-6">
+                {/* Store Credit Balance Banner */}
+                <div className="p-6 bg-white border border-[#EFE8E2] rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Available Store Credit</span>
+                    <div className="text-3xl font-extrabold font-mono text-slate-900">$200.00</div>
+                    <p className="text-xs text-slate-500">Automatically applied as tender discount at checkout.</p>
+                  </div>
+                  <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold font-mono">
+                    ✓ Ready to Use
+                  </span>
+                </div>
+
+                {/* Gift Card Balance Checker */}
+                <div className="p-6 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl space-y-4 shadow-xs">
+                  <div className="pb-3 border-b border-[#EFE8E2]">
+                    <h3 className="text-base font-serif font-bold text-slate-900">Check Gift Card Balance</h3>
+                    <p className="text-xs text-slate-500">Enter your 16-character digital gift voucher code.</p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-3 max-w-lg">
+                    <input
+                      type="text"
+                      value={giftCardCodeInput}
+                      onChange={(e) => setGiftCardCodeInput(e.target.value.toUpperCase())}
+                      placeholder="e.g. GIFT-9X28-74KL"
+                      className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-[#EFE8E2] text-slate-900 font-mono text-xs uppercase"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!giftCardCodeInput) {
+                          showToast('Please enter a gift card code', 'info');
+                          return;
+                        }
+                        setCheckedBalance(500);
+                        showToast(`Gift Card is ACTIVE with $500.00 balance!`, 'success');
+                      }}
+                      className="px-5 py-2.5 rounded-xl bg-slate-950 text-white text-xs font-bold uppercase tracking-wider hover:bg-rose-600 transition-colors cursor-pointer"
+                    >
+                      Check Balance
+                    </button>
+                  </div>
+
+                  {checkedBalance !== null && (
+                    <div className="p-4 bg-white border border-emerald-300 rounded-xl text-xs space-y-1 font-mono">
+                      <div className="text-slate-500">Gift Card: <strong>{giftCardCodeInput}</strong></div>
+                      <div className="text-sm font-bold text-emerald-600">Remaining Balance: ${checkedBalance.toFixed(2)} USD</div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
