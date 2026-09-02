@@ -434,6 +434,18 @@ function AccountDashboardContent() {
             </button>
 
             <button
+              onClick={() => setActiveTab('payments')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-left rounded-xl transition-all cursor-pointer ${
+                activeTab === 'payments'
+                  ? 'bg-slate-950 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+              }`}
+            >
+              <CreditCard className="w-4 h-4 text-emerald-500" />
+              <span>Payment History</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('reviews')}
               className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-left rounded-xl transition-all cursor-pointer ${
                 activeTab === 'reviews'
@@ -1331,6 +1343,64 @@ function AccountDashboardContent() {
                   >
                     Save Preferences
                   </button>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: PAYMENT HISTORY */}
+            {activeTab === 'payments' && (
+              <div className="bg-white border border-[#EFE8E2] rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between border-b border-[#EFE8E2] pb-4">
+                  <div>
+                    <h2 className="text-xl font-serif font-black text-slate-900">Payment &amp; Transaction History</h2>
+                    <p className="text-xs text-slate-500 font-sans mt-0.5">
+                      Verified payment transactions, online gateways, and refund receipts.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold font-mono">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>PCI-DSS Secured</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="p-4 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <strong className="text-sm font-bold text-slate-900">Bespoke Handwoven Kanjivaram Silk Saree</strong>
+                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md text-[10px] font-bold uppercase">
+                          Captured
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 font-mono">
+                        Order #LUM-100234 • Ref: <strong>pay_rzp_8839201</strong> (Razorpay Card)
+                      </div>
+                      <span className="text-[11px] text-slate-400">Paid on {new Date(Date.now() - 86400000 * 2).toLocaleDateString()}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-base font-bold font-mono text-slate-900">$500.00 USD</div>
+                      <span className="text-[11px] text-emerald-600 font-bold">Paid in Full</span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <strong className="text-sm font-bold text-slate-900">Pure Georgette Embroidered Kurta Set</strong>
+                        <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-md text-[10px] font-bold uppercase">
+                          Refunded
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 font-mono">
+                        Order #LUM-100189 • Ref: <strong>pay_rzp_7749202</strong> (UPI Payment)
+                      </div>
+                      <span className="text-[11px] text-slate-400">Processed on {new Date(Date.now() - 86400000 * 5).toLocaleDateString()}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-base font-bold font-mono text-rose-600">-$150.00 USD</div>
+                      <span className="text-[11px] text-slate-500 font-bold">Reversed to Source UPI</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
