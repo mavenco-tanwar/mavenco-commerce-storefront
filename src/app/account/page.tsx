@@ -19,6 +19,9 @@ import {
   ShieldCheck,
   Eye,
   ShoppingBag,
+  RefreshCw,
+  AlertTriangle,
+  ArrowRight,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -26,6 +29,7 @@ import { useToast } from '@/context/ToastContext';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useCart } from '@/context/CartContext';
+import { ReturnRequest } from '@/types/returns-commerce.types';
 
 interface OrderItem {
   id: string;
@@ -71,35 +75,49 @@ interface OrderRecord {
 
 function AccountDashboardContent() {
   const searchParams = useSearchParams();
-  const initialTab = (searchParams.get('tab') as 'orders' | 'addresses' | 'profile') || 'orders';
+  const initialTab = (searchParams.get('tab') as 'orders' | 'returns' | 'addresses' | 'profile') || 'orders';
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'addresses' | 'profile'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'orders' | 'returns' | 'addresses' | 'profile'>(initialTab);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
+  const [returns, setReturns] = useState<ReturnRequest[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<OrderRecord | null>(null);
+
+  // Return Request Modal State
+  const [returnOrder, setReturnOrder] = useState<OrderRecord | null>(null);
+  const [returnType, setReturnType] = useState<'refund' | 'exchange' | 'store_credit'>('exchange');
+  const [returnReason, setReturnReason] = useState('wrong_size');
+  const [exchangeSize, setExchangeSize] = useState('L');
+  const [customerNotes, setCustomerNotes] = useState('');
+  const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
 
   const { user, logout } = useAuth();
   const { wishlistCount } = useWishlist();
   const { showToast } = useToast();
   const { addItem } = useCart();
 
-  // Load customer orders from server
-  useEffect(() => {
-    async function loadOrders() {
-      try {
-        const email = user?.email || 'aanya.kapoor@example.com';
-        const res = await fetch(`/api/v1/customer/orders?tenant=lumina&email=${encodeURIComponent(email)}`);
-        const json = await res.json();
-        if (json.success && json.data) {
-          setOrders(json.data);
-        }
-      } catch (err) {
-        console.error('Failed to load orders:', err);
-      } finally {
-        setIsLoadingOrders(false);
-      }
+  const loadData = async () => {
+    setIsLoadingOrders(true);
+    try {
+      const email = user?.email || 'aanya.kapoor@example.com';
+      // Load orders
+      const res = await fetch(`/api/v1/customer/orders?tenant=lumina&email=${encodeURIComponent(email)}`);
+      const json = await res.json();
+      if (json.success && json.data) setOrders(json.data);
+
+      // Load returns
+      const retRes = await fetch(`/api/v1/customer/returns?tenant=lumina&email=${encodeURIComponent(email)}`);
+      const retJson = await retRes.json();
+      if (retJson.success && retJson.data) setReturns(retJson.data);
+    } catch (err) {
+      console.error('Failed to load customer data:', err);
+    } finally {
+      setIsLoadingOrders(false);
     }
-    loadOrders();
+  };
+
+  useEffect(() => {
+    loadData();
   }, [user?.email]);
 
   const handlePrintInvoice = (order: OrderRecord) => {
@@ -221,6 +239,63 @@ function AccountDashboardContent() {
     showToast(`Items from Order ${order.orderNumber} added to your bag!`, 'success');
   };
 
+  // Submit Return Request
+  const handleSubmitReturnRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!returnOrder) return;
+
+    setIsSubmittingReturn(true);
+    try {
+      const it = returnOrder.items[0];
+      const res = await fetch('/api/v1/customer/returns', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenant: 'lumina',
+          orderNumber: returnOrder.orderNumber,
+          orderId: returnOrder.id,
+          customerName: user?.name || returnOrder.shippingAddress?.fullName || 'Customer',
+          customerEmail: user?.email || returnOrder.email,
+          customerPhone: returnOrder.phone,
+          type: returnType,
+          reason: returnReason === 'wrong_size' ? `Size Exchange to ${exchangeSize}` : returnReason,
+          customerNote: customerNotes,
+          items: [
+            {
+              orderItemId: it.id,
+              productId: it.productId,
+              variantId: `${it.productId}_${exchangeSize}`,
+              sku: `${it.productSnapshot?.sku || 'SKU'}-${exchangeSize}`,
+              title: it.productSnapshot?.title || 'Luxury Garment',
+              image: it.productSnapshot?.image,
+              unitPrice: it.unitPrice,
+              quantityOrdered: it.quantity,
+              quantityRequested: 1,
+              reason: returnReason,
+              customerNotes,
+              refundAmount: returnType === 'refund' ? it.unitPrice : 0,
+              exchangeVariantTitle: returnType === 'exchange' ? `Rose / Size ${exchangeSize}` : undefined,
+            },
+          ],
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        showToast(json.message || 'Return request registered!', 'success');
+        setReturnOrder(null);
+        setActiveTab('returns');
+        loadData();
+      } else {
+        showToast(json.error || 'Failed to submit return', 'error');
+      }
+    } catch {
+      showToast('Error submitting request', 'error');
+    } finally {
+      setIsSubmittingReturn(false);
+    }
+  };
+
   return (
     <div className="bg-[#FFFDFC] py-8 sm:py-12 select-none min-h-screen text-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
@@ -275,6 +350,18 @@ function AccountDashboardContent() {
             >
               <Package className="w-4 h-4 text-rose-500" />
               <span>My Orders ({orders.length})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('returns')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-left rounded-xl transition-all cursor-pointer ${
+                activeTab === 'returns'
+                  ? 'bg-slate-950 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+              }`}
+            >
+              <RotateCcw className="w-4 h-4 text-amber-500" />
+              <span>Returns &amp; Exchanges ({returns.length})</span>
             </button>
 
             <button
@@ -356,7 +443,7 @@ function AccountDashboardContent() {
                             <span className="text-xs text-slate-500 font-medium">Placed on {dateFormatted}</span>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <button
                               type="button"
                               onClick={() => setSelectedOrder(order)}
@@ -364,6 +451,15 @@ function AccountDashboardContent() {
                             >
                               <Eye className="w-3.5 h-3.5 text-slate-500" />
                               <span>View Details</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setReturnOrder(order)}
+                              className="px-3.5 py-2 rounded-xl bg-white border border-amber-300 text-xs font-bold text-amber-800 hover:bg-amber-50 flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Return / Exchange</span>
                             </button>
 
                             <button
@@ -431,7 +527,79 @@ function AccountDashboardContent() {
               </div>
             )}
 
-            {/* TAB 2: ADDRESSES */}
+            {/* TAB 2: RETURNS & EXCHANGES */}
+            {activeTab === 'returns' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#EFE8E2]">
+                  <h2 className="text-xl font-serif font-bold text-slate-900">
+                    Returns &amp; Exchange Requests
+                  </h2>
+                  <span className="text-xs text-slate-500 font-mono">
+                    {returns.length} active requests
+                  </span>
+                </div>
+
+                {returns.length === 0 ? (
+                  <div className="p-8 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl text-center space-y-3">
+                    <RotateCcw className="w-10 h-10 text-slate-400 mx-auto" />
+                    <h3 className="text-sm font-bold text-slate-900">No Return or Exchange Requests</h3>
+                    <p className="text-xs text-slate-500">Need to exchange a garment for another size? Click &quot;Return / Exchange&quot; on any order.</p>
+                  </div>
+                ) : (
+                  returns.map((ret) => (
+                    <div
+                      key={ret.id}
+                      className="p-5 sm:p-6 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl space-y-4 shadow-xs"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#EFE8E2]">
+                        <div>
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-mono font-black text-sm text-slate-900">{ret.returnNumber}</span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-50 text-amber-700 border border-amber-200">
+                              {ret.status.replace('_', ' ').toUpperCase()}
+                            </span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-indigo-50 text-indigo-700 border border-indigo-200">
+                              {ret.type.toUpperCase()}
+                            </span>
+                          </div>
+                          <span className="text-xs text-slate-500 font-medium">Original Order: {ret.orderNumber}</span>
+                        </div>
+                      </div>
+
+                      {/* Return Items */}
+                      <div className="space-y-2">
+                        {ret.items?.map((it, idx) => (
+                          <div key={idx} className="flex justify-between items-center text-xs">
+                            <div>
+                              <strong className="block text-slate-900">{it.title}</strong>
+                              <span className="text-[11px] text-slate-500">
+                                Reason: {it.reason} {it.exchangeVariantTitle && `• Exchange for: ${it.exchangeVariantTitle}`}
+                              </span>
+                            </div>
+                            <span className="font-mono font-bold text-slate-900">
+                              {ret.type === 'refund' ? `$${it.unitPrice}` : 'Exchange'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Pickup Info */}
+                      {ret.pickupTrackingNumber && (
+                        <div className="p-3.5 rounded-xl bg-white border border-[#EFE8E2] text-xs space-y-1">
+                          <strong className="text-slate-900 font-bold block">📦 Reverse Pickup Scheduled:</strong>
+                          <p className="text-slate-600">
+                            Carrier: <strong>{ret.pickupCarrier}</strong> • Tracking: <strong className="font-mono text-rose-600">{ret.pickupTrackingNumber}</strong>
+                          </p>
+                          <p className="text-[11px] text-slate-500">{ret.pickupScheduledDate}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* TAB 3: ADDRESSES */}
             {activeTab === 'addresses' && (
               <div className="p-6 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl space-y-4 shadow-xs">
                 <div className="flex items-center justify-between pb-3 border-b border-[#EFE8E2]">
@@ -463,7 +631,7 @@ function AccountDashboardContent() {
               </div>
             )}
 
-            {/* TAB 3: PROFILE */}
+            {/* TAB 4: PROFILE */}
             {activeTab === 'profile' && (
               <div className="p-6 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl space-y-6 shadow-xs">
                 <h3 className="text-base font-serif font-bold text-slate-900 pb-3 border-b border-[#EFE8E2]">
@@ -511,6 +679,149 @@ function AccountDashboardContent() {
           </div>
         </div>
       </div>
+
+      {/* REQUEST RETURN / EXCHANGE MODAL */}
+      {returnOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-[#FFFDFC] text-slate-900 rounded-3xl border border-[#EFE8E2] shadow-2xl p-6 space-y-6 overflow-hidden">
+            <div className="flex items-center justify-between border-b border-[#EFE8E2] pb-3">
+              <div>
+                <h3 className="text-base font-serif font-black text-slate-900">Request Return or Exchange</h3>
+                <p className="text-xs text-slate-500">Order: <strong className="font-mono text-slate-900">{returnOrder.orderNumber}</strong></p>
+              </div>
+              <button onClick={() => setReturnOrder(null)} className="text-slate-400 hover:text-slate-900">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitReturnRequest} className="space-y-4 text-xs">
+              {/* Item selection snapshot */}
+              <div className="p-3.5 rounded-xl bg-[#FAF7F5] border border-[#EFE8E2] flex items-center gap-3">
+                <div className="w-12 h-14 bg-slate-200 rounded-lg overflow-hidden shrink-0 border border-slate-300">
+                  {returnOrder.items[0]?.productSnapshot?.image && (
+                    <img
+                      src={returnOrder.items[0].productSnapshot.image}
+                      alt={returnOrder.items[0].productSnapshot.title}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+                <div>
+                  <strong className="block text-slate-900">{returnOrder.items[0]?.productSnapshot?.title}</strong>
+                  <span className="text-[11px] text-slate-500">
+                    Ordered: Qty 1 • ${returnOrder.items[0]?.unitPrice}
+                  </span>
+                </div>
+              </div>
+
+              {/* Resolution Type */}
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Select Resolution</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setReturnType('exchange')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                      returnType === 'exchange'
+                        ? 'border-rose-600 bg-rose-50 text-rose-700 shadow-2xs'
+                        : 'border-slate-300 bg-white text-slate-700'
+                    }`}
+                  >
+                    Size Exchange
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setReturnType('refund')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                      returnType === 'refund'
+                        ? 'border-rose-600 bg-rose-50 text-rose-700 shadow-2xs'
+                        : 'border-slate-300 bg-white text-slate-700'
+                    }`}
+                  >
+                    Original Refund
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setReturnType('store_credit')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                      returnType === 'store_credit'
+                        ? 'border-rose-600 bg-rose-50 text-rose-700 shadow-2xs'
+                        : 'border-slate-300 bg-white text-slate-700'
+                    }`}
+                  >
+                    Store Credit
+                  </button>
+                </div>
+              </div>
+
+              {/* Exchange Size Selection */}
+              {returnType === 'exchange' && (
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Exchange for Size</label>
+                  <select
+                    value={exchangeSize}
+                    onChange={(e) => setExchangeSize(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900 font-bold"
+                  >
+                    <option value="XS">Size XS (Bust 32&quot;)</option>
+                    <option value="S">Size S (Bust 34&quot;)</option>
+                    <option value="M">Size M (Bust 36&quot;)</option>
+                    <option value="L">Size L (Bust 38&quot;)</option>
+                    <option value="XL">Size XL (Bust 40&quot;)</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Reason */}
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Reason for Return</label>
+                <select
+                  value={returnReason}
+                  onChange={(e) => setReturnReason(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-900"
+                >
+                  <option value="wrong_size">Size does not fit comfortably</option>
+                  <option value="color_mismatch">Color shade differs from website photo</option>
+                  <option value="fabric_feel">Fabric drape / feel not as expected</option>
+                  <option value="defective">Flaw / loose button / stitching issue</option>
+                  <option value="changed_mind">Changed styling preference</option>
+                </select>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Additional Notes for Atelier Concierge</label>
+                <textarea
+                  value={customerNotes}
+                  onChange={(e) => setCustomerNotes(e.target.value)}
+                  rows={2}
+                  placeholder="Tell us more about the fit or reason..."
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-slate-900"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setReturnOrder(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingReturn}
+                  className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold disabled:opacity-50"
+                >
+                  {isSubmittingReturn ? 'Submitting...' : 'Submit Request'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ORDER DETAILS MODAL WITH LIVE TIMELINE */}
       {selectedOrder && (
