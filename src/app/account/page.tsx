@@ -890,6 +890,57 @@ function AccountDashboardContent() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Points Ledger & Activity History */}
+                  <div className="pt-4 border-t border-[#EFE8E2] space-y-3">
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Points Ledger Activity</h4>
+                    <div className="space-y-2 text-xs">
+                      <div className="p-3 bg-white border border-[#EFE8E2] rounded-xl flex items-center justify-between">
+                        <div>
+                          <strong className="text-slate-900 block font-bold">Gold VIP 1.5x Order Reward</strong>
+                          <span className="text-slate-500 text-[10px]">Order #LUM-100234 • 10 days ago</span>
+                        </div>
+                        <span className="font-mono font-bold text-emerald-600">+750 pts</span>
+                      </div>
+
+                      <div className="p-3 bg-white border border-[#EFE8E2] rounded-xl flex items-center justify-between">
+                        <div>
+                          <strong className="text-slate-900 block font-bold">Verified Photo Review Reward</strong>
+                          <span className="text-slate-500 text-[10px]">Pure Mulberry Silk Banarasi Saree • 4 days ago</span>
+                        </div>
+                        <span className="font-mono font-bold text-emerald-600">+100 pts</span>
+                      </div>
+
+                      <div className="p-3 bg-white border border-[#EFE8E2] rounded-xl flex items-center justify-between">
+                        <div>
+                          <strong className="text-slate-900 block font-bold">VIP Referral Qualification</strong>
+                          <span className="text-slate-500 text-[10px]">Invited Priya Sharma • 1 day ago</span>
+                        </div>
+                        <span className="font-mono font-bold text-emerald-600">+600 pts</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Refer a Friend & Viral Growth */}
+                  <div className="p-4 bg-gradient-to-r from-amber-50 to-rose-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <strong className="text-slate-900 text-xs font-bold block">✨ Refer Friends &amp; Earn 600 Couture Coins</strong>
+                      <p className="text-[11px] text-slate-600">
+                        Give your friends $25 off their first order and receive 600 Couture Coins when they complete their purchase.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText('AANYA-VIP50');
+                        showToast('Referral code AANYA-VIP50 copied to clipboard!', 'success');
+                      }}
+                      className="px-4 py-2 bg-slate-950 text-white rounded-xl font-bold font-mono text-xs hover:bg-rose-600 transition-colors shrink-0 cursor-pointer"
+                    >
+                      Copy: AANYA-VIP50
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -946,6 +997,32 @@ function AccountDashboardContent() {
                       <div className="text-sm font-bold text-emerald-600">Remaining Balance: ${checkedBalance.toFixed(2)} USD</div>
                     </div>
                   )}
+                </div>
+
+                {/* Customer Store Credit Ledger */}
+                <div className="p-6 bg-white border border-[#EFE8E2] rounded-2xl space-y-4 shadow-xs">
+                  <div className="pb-3 border-b border-[#EFE8E2]">
+                    <h3 className="text-base font-serif font-bold text-slate-900">Wallet Transaction History</h3>
+                    <p className="text-xs text-slate-500">Immutable record of refund credits, promotional grants, and order tender.</p>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="p-3.5 bg-[#FAF7F5] border border-[#EFE8E2] rounded-xl flex items-center justify-between">
+                      <div>
+                        <strong className="text-slate-900 block font-bold">Instant Refund Credit</strong>
+                        <span className="text-slate-500 text-[10px]">Return #RET-1002 • 5 days ago</span>
+                      </div>
+                      <span className="font-mono font-bold text-emerald-600">+$150.00 USD</span>
+                    </div>
+
+                    <div className="p-3.5 bg-[#FAF7F5] border border-[#EFE8E2] rounded-xl flex items-center justify-between">
+                      <div>
+                        <strong className="text-slate-900 block font-bold">Gold VIP Annual Couture Credit</strong>
+                        <span className="text-slate-500 text-[10px]">VIP Tier Perk • 2 days ago</span>
+                      </div>
+                      <span className="font-mono font-bold text-emerald-600">+$50.00 USD</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
