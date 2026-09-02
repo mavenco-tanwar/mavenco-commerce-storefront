@@ -1653,6 +1653,22 @@ function AccountDashboardContent() {
                 ))}
               </div>
 
+                {/* Tax & GST Breakdown */}
+                <div className="p-3.5 bg-[#FAF7F5] border border-[#EFE8E2] rounded-xl space-y-1.5 text-xs font-mono">
+                  <div className="flex justify-between text-slate-500">
+                    <span>Taxable Subtotal:</span>
+                    <span className="font-bold text-slate-700">${selectedOrder.totalAmount ? (selectedOrder.totalAmount * 0.82).toFixed(2) : '0.00'}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-500">
+                    <span>CGST (9%) + SGST (9%):</span>
+                    <span className="font-bold text-slate-700">${selectedOrder.totalAmount ? (selectedOrder.totalAmount * 0.18).toFixed(2) : '0.00'}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-900 font-bold border-t border-[#EFE8E2] pt-1">
+                    <span>Total Amount Paid (Tax Incl.):</span>
+                    <span className="text-emerald-600">${selectedOrder.totalAmount?.toLocaleString()}</span>
+                  </div>
+                </div>
+
               {/* Modal Footer Actions */}
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
