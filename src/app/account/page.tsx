@@ -28,6 +28,7 @@ import {
   Mail,
   Sparkles,
   Star,
+  Bell,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -81,9 +82,9 @@ interface OrderRecord {
 
 function AccountDashboardContent() {
   const searchParams = useSearchParams();
-  const initialTab = (searchParams.get('tab') as 'orders' | 'returns' | 'addresses' | 'profile' | 'loyalty' | 'giftcards' | 'reviews' | 'preferences') || 'orders';
+  const initialTab = (searchParams.get('tab') as 'orders' | 'returns' | 'addresses' | 'profile' | 'loyalty' | 'giftcards' | 'reviews' | 'inbox' | 'preferences') || 'orders';
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'returns' | 'addresses' | 'profile' | 'loyalty' | 'giftcards' | 'reviews' | 'preferences'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'orders' | 'returns' | 'addresses' | 'profile' | 'loyalty' | 'giftcards' | 'reviews' | 'inbox' | 'preferences'>(initialTab);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [returns, setReturns] = useState<ReturnRequest[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
@@ -441,6 +442,18 @@ function AccountDashboardContent() {
             >
               <Star className="w-4 h-4 text-amber-500" />
               <span>My Reviews &amp; Q&amp;A</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('inbox')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-left rounded-xl transition-all cursor-pointer ${
+                activeTab === 'inbox'
+                  ? 'bg-slate-950 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+              }`}
+            >
+              <Bell className="w-4 h-4 text-rose-500" />
+              <span>Inbox &amp; Alerts (2)</span>
             </button>
 
             <button
@@ -978,6 +991,70 @@ function AccountDashboardContent() {
                       <strong className="text-slate-900 block font-bold mb-0.5">Official Response from Lumina Concierge:</strong>
                       Thank you immensely, Aanya! Our master weavers in Varanasi spend over 120 hours on each saree.
                     </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: INBOX & REAL-TIME ALERTS */}
+            {activeTab === 'inbox' && (
+              <div className="p-6 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl space-y-6 shadow-xs">
+                <div className="flex items-center justify-between pb-3 border-b border-[#EFE8E2]">
+                  <div>
+                    <h3 className="text-base font-serif font-bold text-slate-900">
+                      Notifications &amp; Atelier Communications
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Real-time updates regarding order dispatches, concierge replies, and VIP perks.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => showToast('All notifications marked as read!', 'success')}
+                    className="text-xs font-bold text-rose-600 hover:text-rose-700 cursor-pointer"
+                  >
+                    Mark All as Read
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  {/* Notification 1 */}
+                  <div className="p-4 bg-white border-l-4 border-rose-600 rounded-r-xl border-y border-r border-[#EFE8E2] space-y-1 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900 text-xs">
+                        🚚 Order LUM-100234 Shipped via BlueDart Express
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">1 hour ago</span>
+                    </div>
+                    <p className="text-slate-600 text-[11px]">
+                      Your Pure Mulberry Silk Banarasi Saree has been dispatched from our Mumbai Atelier with tracking code <strong>BD-8839201</strong>.
+                    </p>
+                  </div>
+
+                  {/* Notification 2 */}
+                  <div className="p-4 bg-white border-l-4 border-amber-500 rounded-r-xl border-y border-r border-[#EFE8E2] space-y-1 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900 text-xs">
+                        👑 You Achieved Gold Couture VIP Tier!
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">2 days ago</span>
+                    </div>
+                    <p className="text-slate-600 text-[11px]">
+                      Congratulations! You now earn 1.5x Couture Coins on all purchases and enjoy complimentary express courier shipping.
+                    </p>
+                  </div>
+
+                  {/* Notification 3 */}
+                  <div className="p-4 bg-white border-l-4 border-slate-300 rounded-r-xl border-y border-r border-[#EFE8E2] space-y-1 opacity-75">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-700 text-xs">
+                        💵 Instant $150.00 Store Credit Issued
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-mono">5 days ago</span>
+                    </div>
+                    <p className="text-slate-500 text-[11px]">
+                      Your store credit refund for return RET-1002 is now active in your wallet and ready to be used at checkout.
+                    </p>
                   </div>
                 </div>
               </div>
