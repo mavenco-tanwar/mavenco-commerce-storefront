@@ -279,6 +279,7 @@ export function FooterBlockRenderer({
 
   // 8. Copyright Block
   if (type === 'copyright') {
+    const year = new Date().getFullYear();
     const storeLabel = content.storeName || (tenantSlug ? tenantSlug.toUpperCase() : 'STOREFRONT');
     const text = (content.template || '© {{year}} {{store.name}}')
       .replace('{{year}}', String(year))

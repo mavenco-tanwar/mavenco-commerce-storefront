@@ -14,13 +14,14 @@ export function DynamicFooter({ initialConfig }: DynamicFooterProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const [mounted, setMounted] = useState(false);
   const [tenantSlug, setTenantSlug] = useState<string>('jqtrends');
   const [config, setConfig] = useState<FooterConfig>(() => {
-    const t = resolveTenant();
-    return initialConfig || getDefaultFooterConfig(t.slug, t.name);
+    return initialConfig || getDefaultFooterConfig('jqtrends', 'STOREFRONT');
   });
 
   useEffect(() => {
+    setMounted(true);
     const t = resolveTenant();
     const slug = (t.slug || 'jqtrends').toLowerCase().trim();
     setTenantSlug(slug);
@@ -48,6 +49,7 @@ export function DynamicFooter({ initialConfig }: DynamicFooterProps) {
 
   return (
     <footer
+      suppressHydrationWarning
       style={{
         backgroundColor: theme?.backgroundColor || '#07090E',
         color: theme?.textColor || '#F8FAFC',
