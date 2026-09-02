@@ -8,10 +8,7 @@ import {
   Mail,
   MapPin,
   MessageCircle,
-  Instagram,
-  Facebook,
-  Twitter,
-  Linkedin,
+  Share2,
 } from 'lucide-react';
 
 interface FooterBlockRendererProps {
