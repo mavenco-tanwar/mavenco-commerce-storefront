@@ -123,8 +123,8 @@ export function DynamicMainHeader({
             </button>
           </div>
 
-          {/* Left Zone (Logo / Brand) */}
-          <div className="flex items-center gap-6 shrink-0">
+          {/* Left Zone */}
+          <div className="flex-1 flex items-center justify-start gap-4 sm:gap-6 min-w-0">
             {leftBlocks.map((block) => (
               <HeaderBlockRenderer
                 key={block.id}
@@ -139,8 +139,8 @@ export function DynamicMainHeader({
             ))}
           </div>
 
-          {/* Center Zone (Navigation) */}
-          <div className="hidden md:flex flex-1 items-center justify-center px-4">
+          {/* Center Zone */}
+          <div className="flex items-center justify-center px-2 sm:px-4 shrink-0">
             {centerBlocks.map((block) => (
               <HeaderBlockRenderer
                 key={block.id}
@@ -155,8 +155,8 @@ export function DynamicMainHeader({
             ))}
           </div>
 
-          {/* Right Zone (Search, Wishlist, Cart, Account, Currency, CTAs) */}
-          <div className="flex items-center gap-4 sm:gap-6 shrink-0">
+          {/* Right Zone */}
+          <div className="flex-1 flex items-center justify-end gap-3 sm:gap-6 min-w-0">
             {rightBlocks.map((block) => (
               <HeaderBlockRenderer
                 key={block.id}

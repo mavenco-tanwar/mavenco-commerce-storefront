@@ -26,6 +26,16 @@ export function NavigationBlock({
     .filter((item) => item.enabled !== false)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
+  const splitSide = s.splitSide || 'all'; // 'all' | 'first-half' | 'second-half' | 'left' | 'right'
+  let displayedItems = activeItems;
+  if (splitSide === 'first-half' || splitSide === 'left') {
+    const half = Math.ceil(activeItems.length / 2);
+    displayedItems = activeItems.slice(0, half);
+  } else if (splitSide === 'second-half' || splitSide === 'right') {
+    const half = Math.ceil(activeItems.length / 2);
+    displayedItems = activeItems.slice(half);
+  }
+
   const fontFamily = s.fontFamily || block.styles?.fontFamily || 'inherit';
   const fontSize = s.fontSize || block.styles?.fontSize || '12px';
   const letterSpacing = s.letterSpacing || block.styles?.letterSpacing || '0.12em';
@@ -35,10 +45,10 @@ export function NavigationBlock({
   return (
     <nav
       aria-label="Primary Navigation"
-      className="flex items-center justify-center gap-6 lg:gap-8 select-none relative"
+      className="flex items-center justify-center gap-4 lg:gap-6 select-none relative"
       onMouseLeave={() => setActiveMenuId(null)}
     >
-      {activeItems.map((item) => {
+      {displayedItems.map((item) => {
         const hasMegaMenu = !!item.megaMenu?.enabled;
         const hasChildren = !!(item.children && item.children.length > 0);
         const isHovered = activeMenuId === item.id;
