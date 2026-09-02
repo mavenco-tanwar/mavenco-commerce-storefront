@@ -75,13 +75,18 @@ interface OrderRecord {
 
 function AccountDashboardContent() {
   const searchParams = useSearchParams();
-  const initialTab = (searchParams.get('tab') as 'orders' | 'returns' | 'addresses' | 'profile') || 'orders';
+  const initialTab = (searchParams.get('tab') as 'orders' | 'returns' | 'addresses' | 'profile' | 'preferences') || 'orders';
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'returns' | 'addresses' | 'profile'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'orders' | 'returns' | 'addresses' | 'profile' | 'preferences'>(initialTab);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [returns, setReturns] = useState<ReturnRequest[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<OrderRecord | null>(null);
+
+  // Marketing Preferences State
+  const [emailMarketing, setEmailMarketing] = useState(true);
+  const [smsMarketing, setSmsMarketing] = useState(true);
+  const [whatsappMarketing, setWhatsappMarketing] = useState(false);
 
   // Return Request Modal State
   const [returnOrder, setReturnOrder] = useState<OrderRecord | null>(null);
@@ -387,6 +392,18 @@ function AccountDashboardContent() {
               <User className="w-4 h-4 text-rose-500" />
               <span>Profile Settings</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('preferences')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-left rounded-xl transition-all cursor-pointer ${
+                activeTab === 'preferences'
+                  ? 'bg-slate-950 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+              }`}
+            >
+              <Mail className="w-4 h-4 text-rose-500" />
+              <span>Marketing &amp; Privacy</span>
+            </button>
           </div>
 
           {/* Main Content Area (9 cols) */}
@@ -674,6 +691,110 @@ function AccountDashboardContent() {
                 >
                   Save Profile Changes
                 </button>
+              </div>
+            )}
+
+            {/* TAB 5: COMMUNICATION PREFERENCES */}
+            {activeTab === 'preferences' && (
+              <div className="p-6 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl space-y-6 shadow-xs">
+                <div className="pb-3 border-b border-[#EFE8E2]">
+                  <h3 className="text-base font-serif font-bold text-slate-900">
+                    Communication Preferences &amp; Marketing Consent
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Control how Lumina Haute Couture sends you bespoke collection drops, flash sales, and private invitations.
+                  </p>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                  {/* Email Preference */}
+                  <div className="p-4 bg-white border border-[#EFE8E2] rounded-xl flex items-center justify-between">
+                    <div>
+                      <strong className="block text-slate-900 text-xs font-bold">Email Newsletters &amp; Private Runway Drops</strong>
+                      <span className="text-[11px] text-slate-500">Receive seasonal lookbooks, early access to festive sales, and personalized recommendations.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEmailMarketing(!emailMarketing)}
+                      className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                        emailMarketing ? 'bg-rose-600' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${
+                          emailMarketing ? 'left-6' : 'left-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* SMS Preference */}
+                  <div className="p-4 bg-white border border-[#EFE8E2] rounded-xl flex items-center justify-between">
+                    <div>
+                      <strong className="block text-slate-900 text-xs font-bold">SMS Flash Alerts &amp; Order Updates</strong>
+                      <span className="text-[11px] text-slate-500">Instant SMS notifications for time-sensitive flash discount codes and dispatch notices.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSmsMarketing(!smsMarketing)}
+                      className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                        smsMarketing ? 'bg-rose-600' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${
+                          smsMarketing ? 'left-6' : 'left-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* WhatsApp Preference */}
+                  <div className="p-4 bg-white border border-[#EFE8E2] rounded-xl flex items-center justify-between">
+                    <div>
+                      <strong className="block text-slate-900 text-xs font-bold">WhatsApp Concierge Updates</strong>
+                      <span className="text-[11px] text-slate-500">Direct styling advice, bespoke fitting assistance, and VIP priority concierge support.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setWhatsappMarketing(!whatsappMarketing)}
+                      className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                        whatsappMarketing ? 'bg-rose-600' : 'bg-slate-300'
+                      }`}
+                    >
+                      <span
+                        className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-transform ${
+                          whatsappMarketing ? 'left-6' : 'left-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await fetch('/api/v1/customer/preferences', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            emailMarketing,
+                            smsMarketing,
+                            whatsappMarketing,
+                          }),
+                        });
+                        showToast('Communication preferences updated!', 'success');
+                      } catch {
+                        showToast('Failed to save preferences', 'error');
+                      }
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-slate-950 text-white text-xs font-bold uppercase tracking-wider hover:bg-rose-600 transition-colors cursor-pointer"
+                  >
+                    Save Preferences
+                  </button>
+                </div>
               </div>
             )}
           </div>
