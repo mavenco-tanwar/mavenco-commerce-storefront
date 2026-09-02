@@ -57,16 +57,16 @@ export function FooterBlockRenderer({
       <Link
         href={targetUrl}
         style={{
-          fontSize: styles.fontSize || '20px',
+          fontSize: styles.fontSize || '18px',
           fontFamily: styles.fontFamily,
           fontWeight: styles.fontWeight || '800',
-          letterSpacing: styles.letterSpacing || '0.15em',
+          letterSpacing: styles.letterSpacing || '0.12em',
           color: styles.textColor || '#FFFFFF',
           textAlign: styles.textAlign || 'left',
         }}
-        className="block font-serif font-black uppercase tracking-widest hover:opacity-90 transition-opacity"
+        className="block font-serif font-black uppercase tracking-widest hover:opacity-90 transition-opacity break-words leading-tight max-w-full"
       >
-        {text || 'STOREFRONT'}
+        {text || tenantSlug.toUpperCase() || 'STOREFRONT'}
       </Link>
     );
   }
@@ -279,10 +279,10 @@ export function FooterBlockRenderer({
 
   // 8. Copyright Block
   if (type === 'copyright') {
-    const year = new Date().getFullYear();
+    const storeLabel = content.storeName || (tenantSlug ? tenantSlug.toUpperCase() : 'STOREFRONT');
     const text = (content.template || '© {{year}} {{store.name}}')
       .replace('{{year}}', String(year))
-      .replace('{{store.name}}', content.storeName || 'MAVENCO LUXURY');
+      .replace('{{store.name}}', storeLabel);
 
     return (
       <div

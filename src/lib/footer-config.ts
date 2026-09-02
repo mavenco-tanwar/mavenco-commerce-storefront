@@ -84,7 +84,9 @@ export interface FooterConfig {
   publishedAt?: string;
 }
 
-export function getDefaultFooterConfig(tenantSlug: string = 'jqtrends', storeName: string = 'JQ TRENDS'): FooterConfig {
+export function getDefaultFooterConfig(tenantSlug: string = 'storefront', storeName: string = 'STOREFRONT'): FooterConfig {
+  const dynamicName = storeName || tenantSlug.toUpperCase();
+
   return {
     id: `footer_${tenantSlug}`,
     tenantSlug,
@@ -136,14 +138,14 @@ export function getDefaultFooterConfig(tenantSlug: string = 'jqtrends', storeNam
             columnSpan: 1,
             content: {
               logoType: 'text',
-              text: storeName.toUpperCase(),
+              text: dynamicName,
               linkUrl: '/',
               width: 180,
             },
             styles: {
-              fontSize: '20px',
+              fontSize: '18px',
               fontWeight: '800',
-              letterSpacing: '0.15em',
+              letterSpacing: '0.12em',
               textColor: '#FFFFFF',
             },
           },
@@ -158,11 +160,11 @@ export function getDefaultFooterConfig(tenantSlug: string = 'jqtrends', storeNam
               heading: 'SHOP',
               menuCode: 'footer-menu-shop',
               items: [
+                { label: 'New Arrivals', href: '/new-arrivals' },
                 { label: 'Women', href: '/women' },
                 { label: 'Men', href: '/men' },
-                { label: 'Kids', href: '/kids' },
-                { label: 'New Arrivals', href: '/new-arrivals' },
-                { label: 'Private Sale', href: '/sale' },
+                { label: 'Collections', href: '/collections' },
+                { label: 'Sale', href: '/sale' },
               ],
             },
           },
@@ -177,10 +179,10 @@ export function getDefaultFooterConfig(tenantSlug: string = 'jqtrends', storeNam
               heading: 'CUSTOMER CARE',
               menuCode: 'footer-menu-care',
               items: [
-                { label: 'Contact & Concierge', href: '/contact' },
-                { label: 'Worldwide Shipping', href: '/shipping' },
+                { label: 'Contact Us', href: '/contact' },
+                { label: 'Shipping & Delivery', href: '/shipping' },
                 { label: 'Returns & Exchanges', href: '/returns' },
-                { label: 'Atelier FAQ', href: '/faq' },
+                { label: 'FAQ', href: '/faq' },
                 { label: 'Privacy & Terms', href: '/privacy' },
               ],
             },
@@ -280,8 +282,8 @@ export function getDefaultFooterConfig(tenantSlug: string = 'jqtrends', storeNam
             order: 1,
             columnSpan: 1,
             content: {
-              template: '© {{year}} {{store.name}}. All rights reserved. Powered by Mavenco Commerce.',
-              storeName: storeName,
+              template: '© {{year}} {{store.name}}. All rights reserved.',
+              storeName: dynamicName,
             },
             styles: {
               textColor: '#64748B',
