@@ -20,6 +20,13 @@ interface DynamicAnnouncementBarProps {
   rotationInterval?: number;
   pauseOnHover?: boolean;
   tenantSlug: string;
+  hideOnMobile?: boolean;
+  hideOnTablet?: boolean;
+  responsive?: {
+    desktop?: boolean;
+    tablet?: boolean;
+    mobile?: boolean;
+  };
 }
 
 export function DynamicAnnouncementBar({
@@ -29,6 +36,9 @@ export function DynamicAnnouncementBar({
   rotationInterval = 5,
   pauseOnHover = true,
   tenantSlug,
+  hideOnMobile = false,
+  hideOnTablet = false,
+  responsive,
 }: DynamicAnnouncementBarProps) {
   const [isPaused, setIsPaused] = useState(false);
 
@@ -60,12 +70,34 @@ export function DynamicAnnouncementBar({
 
   if (blocks.length === 0) return null;
 
+  // Calculate Responsive Bar Visibility
+  const isDesktop = responsive?.desktop !== false;
+  const isTablet = !hideOnTablet && responsive?.tablet !== false;
+  const isMobile = !hideOnMobile && responsive?.mobile !== false;
+
+  if (!isDesktop && !isTablet && !isMobile) return null;
+
+  let responsiveClass = 'w-full text-xs py-2 px-4 border-b select-none relative z-40 transition-colors duration-300';
+  if (isDesktop && isTablet && !isMobile) {
+    responsiveClass += ' hidden md:block';
+  } else if (isDesktop && !isTablet && !isMobile) {
+    responsiveClass += ' hidden lg:block';
+  } else if (!isDesktop && isTablet && !isMobile) {
+    responsiveClass += ' hidden md:block lg:hidden';
+  } else if (!isDesktop && !isTablet && isMobile) {
+    responsiveClass += ' block md:hidden';
+  } else if (!isDesktop && isTablet && isMobile) {
+    responsiveClass += ' block lg:hidden';
+  } else if (isDesktop && !isTablet && isMobile) {
+    responsiveClass += ' block md:hidden lg:block';
+  }
+
   return (
     <aside
       aria-label="Announcement & Utility Bar"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className="w-full text-xs py-2 px-4 border-b select-none relative z-40 transition-colors duration-300"
+      className={responsiveClass}
       style={{
         backgroundColor: styles?.backgroundColor || '#1E1B4B',
         color: styles?.textColor || '#FFFFFF',

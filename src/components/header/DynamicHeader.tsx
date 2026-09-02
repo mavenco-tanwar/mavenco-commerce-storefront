@@ -121,6 +121,9 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
             rotationInterval={config.announcementBar.rotationInterval}
             pauseOnHover={config.announcementBar.pauseOnHover}
             tenantSlug={activeTenantSlug}
+            hideOnMobile={config.announcementBar.hideOnMobile}
+            hideOnTablet={config.announcementBar.hideOnTablet}
+            responsive={config.announcementBar.responsive}
           />
         )}
 

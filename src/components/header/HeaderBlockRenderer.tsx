@@ -30,6 +30,28 @@ interface HeaderBlockRendererProps {
   onOpenCart?: () => void;
 }
 
+export function getResponsiveVisibilityClass(responsive?: {
+  desktop?: { visible?: boolean };
+  tablet?: { visible?: boolean };
+  mobile?: { visible?: boolean };
+}): string {
+  if (!responsive) return '';
+
+  const d = responsive.desktop?.visible !== false;
+  const t = responsive.tablet?.visible !== false;
+  const m = responsive.mobile?.visible !== false;
+
+  if (d && t && m) return '';
+  if (!d && !t && !m) return 'hidden';
+  if (d && t && !m) return 'hidden md:inline-flex';
+  if (d && !t && !m) return 'hidden lg:inline-flex';
+  if (!d && t && !m) return 'hidden md:inline-flex lg:hidden';
+  if (!d && !t && m) return 'inline-flex md:hidden';
+  if (!d && t && m) return 'inline-flex lg:hidden';
+  if (d && !t && m) return 'inline-flex md:hidden lg:inline-flex';
+  return '';
+}
+
 export function HeaderBlockRenderer({
   block,
   tenantSlug,
@@ -52,76 +74,90 @@ export function HeaderBlockRenderer({
     }
   }
 
-  switch (block.type) {
-    case 'logo':
-      return <LogoBlock block={block} tenantSlug={tenantSlug} isScrolled={isScrolled} />;
+  const responsiveClass = getResponsiveVisibilityClass(block.responsive);
+  if (responsiveClass === 'hidden') return null;
 
-    case 'brand':
-      return <BrandBlock block={block} tenantSlug={tenantSlug} />;
+  const renderContent = () => {
+    switch (block.type) {
+      case 'logo':
+        return <LogoBlock block={block} tenantSlug={tenantSlug} isScrolled={isScrolled} />;
 
-    case 'navigation':
-      return (
-        <NavigationBlock
-          block={block}
-          navigationMenu={navigationMenu}
-          accentColor={accentColor}
-          tenantSlug={tenantSlug}
-        />
-      );
+      case 'brand':
+        return <BrandBlock block={block} tenantSlug={tenantSlug} />;
 
-    case 'search':
-      return <SearchBlock block={block} accentColor={accentColor} onOpenSearch={onOpenSearch} />;
+      case 'navigation':
+        return (
+          <NavigationBlock
+            block={block}
+            navigationMenu={navigationMenu}
+            accentColor={accentColor}
+            tenantSlug={tenantSlug}
+          />
+        );
 
-    case 'wishlist':
-      return <WishlistBlock block={block} accentColor={accentColor} />;
+      case 'search':
+        return <SearchBlock block={block} accentColor={accentColor} onOpenSearch={onOpenSearch} />;
 
-    case 'cart':
-      return <CartBlock block={block} accentColor={accentColor} onOpenCart={onOpenCart} />;
+      case 'wishlist':
+        return <WishlistBlock block={block} accentColor={accentColor} />;
 
-    case 'account':
-      return <AccountBlock block={block} accentColor={accentColor} />;
+      case 'cart':
+        return <CartBlock block={block} accentColor={accentColor} onOpenCart={onOpenCart} />;
 
-    case 'currency':
-      return <CurrencyBlock block={block} accentColor={accentColor} />;
+      case 'account':
+        return <AccountBlock block={block} accentColor={accentColor} />;
 
-    case 'whatsapp':
-      return <WhatsAppBlock block={block} />;
+      case 'currency':
+        return <CurrencyBlock block={block} accentColor={accentColor} />;
 
-    case 'phone':
-      return <PhoneBlock block={block} />;
+      case 'whatsapp':
+        return <WhatsAppBlock block={block} />;
 
-    case 'text':
-      return <TextBlock block={block} />;
+      case 'phone':
+        return <PhoneBlock block={block} />;
 
-    case 'icon':
-      return <IconBlock block={block} />;
+      case 'text':
+        return <TextBlock block={block} />;
 
-    case 'cta':
-      return <CTAButtonBlock block={block} />;
+      case 'icon':
+        return <IconBlock block={block} />;
 
-    case 'tagline': {
-      const taglineVal = block.settings?.text || block.settings?.tagline || block.settings?.badgeText || block.settings?.label || '';
-      if (!taglineVal) return null;
-      return (
-        <span
-          className="text-[10px] sm:text-[11px] uppercase tracking-widest font-semibold opacity-70 leading-none"
-          style={{
-            fontFamily: block.styles?.fontFamily,
-            color: block.styles?.textColor,
-          }}
-        >
-          {taglineVal}
-        </span>
-      );
+      case 'cta':
+        return <CTAButtonBlock block={block} />;
+
+      case 'tagline': {
+        const taglineVal = block.settings?.text || block.settings?.tagline || block.settings?.badgeText || block.settings?.label || '';
+        if (!taglineVal) return null;
+        return (
+          <span
+            className="text-[10px] sm:text-[11px] uppercase tracking-widest font-semibold opacity-70 leading-none"
+            style={{
+              fontFamily: block.styles?.fontFamily,
+              color: block.styles?.textColor,
+            }}
+          >
+            {taglineVal}
+          </span>
+        );
+      }
+
+      case 'divider':
+        return <DividerBlock block={block} />;
+
+      case 'spacer':
+        return <SpacerBlock block={block} />;
+
+      default:
+        return null;
     }
+  };
 
-    case 'divider':
-      return <DividerBlock block={block} />;
+  const content = renderContent();
+  if (!content) return null;
 
-    case 'spacer':
-      return <SpacerBlock block={block} />;
-
-    default:
-      return null;
+  if (responsiveClass) {
+    return <div className={`inline-flex items-center ${responsiveClass}`}>{content}</div>;
   }
+
+  return content;
 }
