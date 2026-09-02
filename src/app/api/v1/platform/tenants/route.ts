@@ -5,7 +5,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, x-api-key, X-API-Key, X-Store-ID',
   };
 }
 
