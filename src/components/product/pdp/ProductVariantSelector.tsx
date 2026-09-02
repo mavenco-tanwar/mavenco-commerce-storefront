@@ -43,14 +43,14 @@ export function ProductVariantSelector({
   };
 
   return (
-    <div className="space-y-5 select-none">
+    <div className="space-y-4 select-none">
       {/* 1. Color Selector */}
       {colors.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
-              Color:{' '}
-              <span className="font-normal text-slate-600 dark:text-slate-400 capitalize">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-900">
+              COLOR:{' '}
+              <span className="font-normal text-slate-500 uppercase">
                 {selectedColor || colors[0]?.name}
               </span>
             </span>
@@ -61,35 +61,18 @@ export function ProductVariantSelector({
               const isSelected = selectedColor.toLowerCase() === c.name.toLowerCase();
               const isAvailable = isCombinationAvailable(c.name, selectedSize);
 
-              if (colorDisplayType === 'chips') {
-                return (
-                  <button
-                    key={c.name}
-                    type="button"
-                    onClick={() => onColorChange(c.name)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                      isSelected
-                        ? 'border-slate-950 bg-slate-950 text-white dark:border-white dark:bg-white dark:text-black shadow-xs'
-                        : 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-400'
-                    } ${!isAvailable ? 'opacity-40 line-through' : ''}`}
-                  >
-                    {c.name}
-                  </button>
-                );
-              }
-
               return (
                 <button
                   key={c.name}
                   type="button"
                   onClick={() => onColorChange(c.name)}
-                  className={`relative w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 flex items-center justify-center transition-all ${
-                    isSelected ? 'ring-2 ring-rose-500 scale-110' : 'hover:scale-105 opacity-90'
+                  className={`relative w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center transition-all cursor-pointer ${
+                    isSelected ? 'ring-2 ring-rose-500 ring-offset-2 scale-110 shadow-xs' : 'hover:scale-105 opacity-90'
                   } ${!isAvailable ? 'opacity-30' : ''}`}
                   style={{ backgroundColor: c.hex || '#0A0A0B' }}
                   title={c.name}
                 >
-                  {isSelected && <Check className="w-4 h-4 text-white drop-shadow-md" />}
+                  {isSelected && <Check className="w-4 h-4 text-white drop-shadow-sm" />}
                   {!isAvailable && (
                     <span className="absolute inset-0 flex items-center justify-center">
                       <div className="w-full h-0.5 bg-rose-500 rotate-45" />
@@ -106,9 +89,9 @@ export function ProductVariantSelector({
       {sizes.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
-              Size:{' '}
-              <span className="font-normal text-slate-600 dark:text-slate-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-900">
+              SIZE:{' '}
+              <span className="font-normal text-slate-500 uppercase">
                 {selectedSize || sizes[0]?.size}
               </span>
             </span>
@@ -136,12 +119,12 @@ export function ProductVariantSelector({
                   type="button"
                   disabled={!isAvailable}
                   onClick={() => onSizeChange(s.size)}
-                  className={`py-2.5 rounded-xl text-xs font-bold border transition-all text-center relative ${
+                  className={`py-2.5 rounded-xl text-xs font-bold border transition-all text-center relative cursor-pointer ${
                     isSelected
-                      ? 'border-rose-600 bg-rose-600 text-white shadow-md'
+                      ? 'border-rose-600 bg-rose-600 text-white shadow-xs'
                       : isAvailable
-                      ? 'border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:border-slate-400 bg-white dark:bg-slate-900'
-                      : 'border-slate-200 dark:border-slate-800 text-slate-400 bg-slate-50 dark:bg-slate-900/50 cursor-not-allowed opacity-50'
+                      ? 'border-slate-200 bg-white text-slate-800 hover:border-slate-400 shadow-2xs'
+                      : 'border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed opacity-40'
                   }`}
                 >
                   <span>{s.size}</span>
