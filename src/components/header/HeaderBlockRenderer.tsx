@@ -99,6 +99,22 @@ export function HeaderBlockRenderer({
     case 'cta':
       return <CTAButtonBlock block={block} />;
 
+    case 'tagline': {
+      const taglineVal = block.settings?.text || block.settings?.tagline || block.settings?.badgeText || block.settings?.label || '';
+      if (!taglineVal) return null;
+      return (
+        <span
+          className="text-[10px] sm:text-[11px] uppercase tracking-widest font-semibold opacity-70 leading-none"
+          style={{
+            fontFamily: block.styles?.fontFamily,
+            color: block.styles?.textColor,
+          }}
+        >
+          {taglineVal}
+        </span>
+      );
+    }
+
     case 'divider':
       return <DividerBlock block={block} />;
 

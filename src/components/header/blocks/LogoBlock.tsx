@@ -12,8 +12,8 @@ interface LogoBlockProps {
 
 export function LogoBlock({ block, tenantSlug }: LogoBlockProps) {
   const s = block.settings || {};
-  const logoText = s.logoText || (tenantSlug === 'lumina' ? 'LUMINA ATELIER' : tenantSlug.toUpperCase());
-  const badgeText = s.badgeText || (tenantSlug === 'lumina' ? 'CONTEMPORARY ARTISANAL LIGHTING & OBJECTS' : 'CURATED COMMERCE');
+  const logoText = s.logoText || s.text || (tenantSlug === 'lumina' ? 'Lumina Atelier' : tenantSlug.toUpperCase());
+  const badgeText = s.badgeText !== undefined ? s.badgeText : s.tagline !== undefined ? s.tagline : '';
   const logoUrl = s.logoUrl;
   const link = s.link || `/stores/${tenantSlug}`;
   const width = s.width || '180px';
