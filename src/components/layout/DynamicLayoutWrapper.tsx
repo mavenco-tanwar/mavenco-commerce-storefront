@@ -7,6 +7,7 @@ import { Footer } from './Footer';
 import { PlatformNavbar } from './PlatformNavbar';
 import { PlatformFooter } from './PlatformFooter';
 import { ToastContainer } from './ToastContainer';
+import { MiniCartDrawer } from '@/components/cart/MiniCartDrawer';
 
 export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
@@ -47,6 +48,7 @@ export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }
       <DynamicHeader />
       <main className="flex-1">{children}</main>
       <Footer />
+      <MiniCartDrawer />
       <ToastContainer />
     </div>
   );

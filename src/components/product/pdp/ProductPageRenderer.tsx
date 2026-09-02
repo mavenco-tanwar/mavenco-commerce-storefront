@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { SizeGuideModal } from '@/components/product/SizeGuideModal';
@@ -17,6 +18,7 @@ import {
 import { getDefaultPdpConfig } from '@/lib/pdp-presets';
 import { resolveTenant } from '@/lib/tenant-config';
 import { Product } from '@/types/product';
+import { useCart } from '@/context/CartContext';
 
 export interface ProductPageRendererProps {
   product: NormalizedProduct;
@@ -32,6 +34,8 @@ export function ProductPageRenderer({
   recommendedProducts = [],
 }: ProductPageRendererProps) {
   const activeTenant = resolveTenant();
+  const { addItem } = useCart();
+  const router = useRouter();
 
   // Load Active PDP Configuration (Fallback to preset or template override)
   const [config, setConfig] = useState<ProductPageConfig>(() => ({
@@ -84,6 +88,25 @@ export function ProductPageRenderer({
   // Gallery Width CSS Split Calculation
   const galleryWidthPercent = config.gallery.galleryWidthPercent || 55;
 
+  const handleAddToCart = async (qty: number = 1) => {
+    const cartProduct: any = {
+      id: product.id,
+      name: product.title,
+      slug: product.slug,
+      price: product.price,
+      compareAtPrice: product.compareAtPrice,
+      images: product.media.map((m) => m.url),
+      sku: product.sku,
+      category: product.category,
+    };
+    await addItem(cartProduct, selectedColor, selectedSize, qty);
+  };
+
+  const handleBuyNow = async (qty: number = 1) => {
+    await handleAddToCart(qty);
+    router.push('/checkout');
+  };
+
   return (
     <div className="min-h-screen bg-[#FFFDFC] text-slate-900 pb-28 space-y-10">
       {/* 1. Breadcrumbs Trail */}
@@ -134,6 +157,8 @@ export function ProductPageRenderer({
               onColorChange={setSelectedColor}
               onSizeChange={setSelectedSize}
               onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+              onAddToCart={handleAddToCart}
+              onBuyNow={handleBuyNow}
               isWishlisted={isWishlisted}
               onToggleWishlist={() => setIsWishlisted(!isWishlisted)}
             />
@@ -187,8 +212,8 @@ export function ProductPageRenderer({
         product={product}
         selectedColor={selectedColor}
         selectedSize={selectedSize}
-        onAddToCart={() => alert(`Added ${product.title} to bag`)}
-        onBuyNow={() => alert(`Proceeding to checkout for ${product.title}`)}
+        onAddToCart={() => handleAddToCart(1)}
+        onBuyNow={() => handleBuyNow(1)}
         enabled={config.purchasePanel.mobileStickyBar}
       />
 
