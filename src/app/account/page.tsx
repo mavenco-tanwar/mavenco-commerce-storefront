@@ -27,6 +27,7 @@ import {
   CreditCard,
   Mail,
   Sparkles,
+  Star,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -80,9 +81,9 @@ interface OrderRecord {
 
 function AccountDashboardContent() {
   const searchParams = useSearchParams();
-  const initialTab = (searchParams.get('tab') as 'orders' | 'returns' | 'addresses' | 'profile' | 'loyalty' | 'giftcards' | 'preferences') || 'orders';
+  const initialTab = (searchParams.get('tab') as 'orders' | 'returns' | 'addresses' | 'profile' | 'loyalty' | 'giftcards' | 'reviews' | 'preferences') || 'orders';
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'returns' | 'addresses' | 'profile' | 'loyalty' | 'giftcards' | 'preferences'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'orders' | 'returns' | 'addresses' | 'profile' | 'loyalty' | 'giftcards' | 'reviews' | 'preferences'>(initialTab);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
   const [returns, setReturns] = useState<ReturnRequest[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
@@ -428,6 +429,18 @@ function AccountDashboardContent() {
             >
               <Gift className="w-4 h-4 text-rose-500" />
               <span>Gift Cards &amp; Credit</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-wider text-left rounded-xl transition-all cursor-pointer ${
+                activeTab === 'reviews'
+                  ? 'bg-slate-950 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white'
+              }`}
+            >
+              <Star className="w-4 h-4 text-amber-500" />
+              <span>My Reviews &amp; Q&amp;A</span>
             </button>
 
             <button
@@ -920,6 +933,52 @@ function AccountDashboardContent() {
                       <div className="text-sm font-bold text-emerald-600">Remaining Balance: ${checkedBalance.toFixed(2)} USD</div>
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: MY REVIEWS & Q&A */}
+            {activeTab === 'reviews' && (
+              <div className="p-6 bg-[#FAF7F5] border border-[#EFE8E2] rounded-2xl space-y-6 shadow-xs">
+                <div className="pb-3 border-b border-[#EFE8E2]">
+                  <h3 className="text-base font-serif font-bold text-slate-900">
+                    My Product Reviews &amp; Questions
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Track the status of your submitted feedback, merchant responses, and community helpful votes.
+                  </p>
+                </div>
+
+                <div className="space-y-4 text-xs">
+                  <div className="p-5 bg-white border border-[#EFE8E2] rounded-2xl space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <strong className="block text-slate-900 text-sm font-bold">Pure Mulberry Silk Banarasi Saree</strong>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex text-amber-400">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                            ))}
+                          </div>
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold uppercase">
+                            Verified Buyer
+                          </span>
+                        </div>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-800 font-bold uppercase text-[10px]">
+                        Published
+                      </span>
+                    </div>
+
+                    <p className="text-slate-600 text-xs">
+                      "The gold zari weave is astonishingly supple and lightweight. Wore it to a high-society wedding and received non-stop compliments all evening."
+                    </p>
+
+                    <div className="p-3 bg-[#FAF7F5] rounded-xl border border-[#EFE8E2] text-[11px] text-slate-600">
+                      <strong className="text-slate-900 block font-bold mb-0.5">Official Response from Lumina Concierge:</strong>
+                      Thank you immensely, Aanya! Our master weavers in Varanasi spend over 120 hours on each saree.
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

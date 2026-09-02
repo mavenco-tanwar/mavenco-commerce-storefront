@@ -55,6 +55,8 @@ export async function generateMetadata({ params }: ProductPageProps) {
   };
 }
 
+import { ProductReviewsAndQA } from '@/components/pdp/ProductReviewsAndQA';
+
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const resolved = await params;
   const activeTenant = resolveTenant();
@@ -86,6 +88,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         product={normalized}
         templateConfig={pdpConfig}
         relatedProducts={relatedRes.data}
+      />
+
+      {/* Social Proof, Verified Ratings & Product Q&A */}
+      <ProductReviewsAndQA
+        productId={rawProduct.id}
+        productTitle={rawProduct.name}
       />
     </>
   );
