@@ -141,6 +141,9 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
             maxWidth={config.mainHeader.maxWidth}
             height={config.mainHeader.height}
             scrolledHeight={config.sticky.scrolledHeight}
+            hideOnMobile={config.mainHeader.hideOnMobile}
+            hideOnTablet={config.mainHeader.hideOnTablet}
+            responsive={config.mainHeader.responsive}
           />
         )}
       </header>

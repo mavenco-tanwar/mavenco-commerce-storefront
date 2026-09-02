@@ -27,6 +27,13 @@ interface DynamicMainHeaderProps {
   maxWidth?: number;
   height?: number;
   scrolledHeight?: number;
+  hideOnMobile?: boolean;
+  hideOnTablet?: boolean;
+  responsive?: {
+    desktop?: boolean;
+    tablet?: boolean;
+    mobile?: boolean;
+  };
 }
 
 export function DynamicMainHeader({
@@ -42,6 +49,9 @@ export function DynamicMainHeader({
   maxWidth = 1400,
   height = 80,
   scrolledHeight = 68,
+  hideOnMobile = false,
+  hideOnTablet = false,
+  responsive,
 }: DynamicMainHeaderProps) {
   const leftBlocks = blocks
     .filter((b) => b.zone === 'main.left' && b.enabled !== false)
@@ -57,6 +67,28 @@ export function DynamicMainHeader({
 
   const currentHeight = isScrolled ? scrolledHeight : height;
 
+  // Calculate Responsive Main Header Visibility
+  const isDesktop = responsive?.desktop !== false;
+  const isTablet = !hideOnTablet && responsive?.tablet !== false;
+  const isMobile = !hideOnMobile && responsive?.mobile !== false;
+
+  if (!isDesktop && !isTablet && !isMobile) return null;
+
+  let responsiveHeaderClass = 'w-full border-b transition-all duration-300 relative z-30';
+  if (isDesktop && isTablet && !isMobile) {
+    responsiveHeaderClass += ' hidden md:block';
+  } else if (isDesktop && !isTablet && !isMobile) {
+    responsiveHeaderClass += ' hidden lg:block';
+  } else if (!isDesktop && isTablet && !isMobile) {
+    responsiveHeaderClass += ' hidden md:block lg:hidden';
+  } else if (!isDesktop && !isTablet && isMobile) {
+    responsiveHeaderClass += ' block md:hidden';
+  } else if (!isDesktop && isTablet && isMobile) {
+    responsiveHeaderClass += ' block lg:hidden';
+  } else if (isDesktop && !isTablet && isMobile) {
+    responsiveHeaderClass += ' block md:hidden lg:block';
+  }
+
   const containerClasses =
     containerWidth === 'full'
       ? 'w-full px-4 sm:px-6 lg:px-10'
@@ -65,7 +97,7 @@ export function DynamicMainHeader({
   return (
     <div
       role="banner"
-      className="w-full border-b transition-all duration-300 relative z-30"
+      className={responsiveHeaderClass}
       style={{
         backgroundColor: styles?.backgroundColor || '#FFFDFC',
         color: styles?.textColor || '#111111',
