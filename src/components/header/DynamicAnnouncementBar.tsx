@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { HeaderBlock } from '@/lib/header-config';
-import { HeaderBlockRenderer } from './HeaderBlockRenderer';
+import { HeaderBlockRenderer, getResponsiveVisibilityClass } from './HeaderBlockRenderer';
 
 interface DynamicAnnouncementBarProps {
   blocks: HeaderBlock[];
@@ -58,16 +58,25 @@ export function DynamicAnnouncementBar({
     isExpired: false,
   });
 
+  const isBlockVisible = (b: HeaderBlock) => {
+    if (b.enabled === false) return false;
+    const d = b.responsive?.desktop?.visible !== false;
+    const t = b.responsive?.tablet?.visible !== false;
+    const m = b.responsive?.mobile?.visible !== false;
+    if (!d && !t && !m) return false;
+    return true;
+  };
+
   const leftBlocks = blocks
-    .filter((b) => b.zone === 'announcement.left' && b.enabled !== false)
+    .filter((b) => b.zone === 'announcement.left' && isBlockVisible(b))
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   const centerBlocks = blocks
-    .filter((b) => b.zone === 'announcement.center' && b.enabled !== false)
+    .filter((b) => b.zone === 'announcement.center' && isBlockVisible(b))
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   const rightBlocks = blocks
-    .filter((b) => b.zone === 'announcement.right' && b.enabled !== false)
+    .filter((b) => b.zone === 'announcement.right' && isBlockVisible(b))
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   const [activeCenterIdx, setActiveCenterIdx] = useState(0);
@@ -218,6 +227,10 @@ export function DynamicAnnouncementBar({
             </div>
           ) : (
             centerBlocks.map((block, idx) => {
+              if (block.enabled === false) return null;
+              const respClass = getResponsiveVisibilityClass(block.responsive);
+              if (respClass === 'hidden') return null;
+
               const isRotate = mode === 'rotate' || rotationEnabled;
               if (isRotate && idx !== activeCenterIdx) return null;
 
@@ -229,7 +242,7 @@ export function DynamicAnnouncementBar({
               return (
                 <div
                   key={block.id}
-                  className="flex items-center justify-center gap-2 flex-wrap transition-opacity duration-300 animate-in fade-in"
+                  className={`flex items-center justify-center gap-2 flex-wrap transition-opacity duration-300 animate-in fade-in ${respClass}`}
                 >
                   <span>{text}</span>
                   {ctaText && (
