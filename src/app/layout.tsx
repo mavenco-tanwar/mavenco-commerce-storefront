@@ -43,6 +43,8 @@ import { Suspense } from 'react';
 import { DynamicLayoutWrapper } from '@/components/layout/DynamicLayoutWrapper';
 import { FloatingWhatsAppWidget } from '@/components/ui/FloatingWhatsAppWidget';
 import { CurrencyProvider } from '@/lib/currency-context';
+import { TopLoadingProgressBar } from '@/components/ui/TopLoadingProgressBar';
+import Loading from './loading';
 
 export default function RootLayout({
   children,
@@ -58,7 +60,8 @@ export default function RootLayout({
               <WishlistProvider>
                 <CartProvider>
                   <CurrencyProvider>
-                    <Suspense fallback={<div className="min-h-screen bg-[#0A0C10]" />}>
+                    <Suspense fallback={<Loading />}>
+                      <TopLoadingProgressBar />
                       <DynamicLayoutWrapper>{children}</DynamicLayoutWrapper>
                     </Suspense>
                     <FloatingWhatsAppWidget />
