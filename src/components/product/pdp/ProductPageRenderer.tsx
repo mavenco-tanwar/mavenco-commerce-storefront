@@ -83,10 +83,9 @@ export function ProductPageRenderer({
 
   // Gallery Width CSS Split Calculation
   const galleryWidthPercent = config.gallery.galleryWidthPercent || 55;
-  const purchaseWidthPercent = 100 - galleryWidthPercent;
 
   return (
-    <div className="min-h-screen bg-[#FFFDFC] text-slate-900 pb-28 space-y-12">
+    <div className="min-h-screen bg-[#FFFDFC] text-slate-900 pb-28 space-y-10">
       {/* 1. Breadcrumbs Trail */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <Breadcrumbs
@@ -145,12 +144,12 @@ export function ProductPageRenderer({
       {/* 3. Below-the-fold Configurable PDP Sections */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Accordions / Tabs */}
-        <section className="border-t border-[#E8DED8] dark:border-slate-800 pt-12">
+        <section className="border-t border-[#EFE8E2] pt-12">
           <ProductAccordions product={product} />
         </section>
 
         {/* Customer Reviews Section */}
-        <section className="border-t border-[#E8DED8] dark:border-slate-800 pt-12">
+        <section className="border-t border-[#EFE8E2] pt-12">
           <ProductReviews
             productId={product.id}
             rating={product.rating || 4.9}
@@ -160,13 +159,13 @@ export function ProductPageRenderer({
 
         {/* Related Products Section */}
         {relatedProducts.length > 0 && (
-          <section className="border-t border-[#E8DED8] dark:border-slate-800 pt-12 space-y-6">
+          <section className="border-t border-[#EFE8E2] pt-12 space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-rose-600 block">
                   Complete the Look
                 </span>
-                <h3 className="text-xl sm:text-2xl font-serif font-black text-slate-900 dark:text-white">
+                <h3 className="text-xl sm:text-2xl font-serif font-black text-slate-900">
                   Related Creations
                 </h3>
               </div>
