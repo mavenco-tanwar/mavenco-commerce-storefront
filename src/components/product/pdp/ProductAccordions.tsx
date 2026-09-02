@@ -21,15 +21,15 @@ export function ProductAccordions({ product, className = '' }: ProductAccordions
   };
 
   return (
-    <div className={`space-y-3 select-none ${className}`}>
+    <div className={`space-y-4 select-none ${className}`}>
       {/* 1. Description */}
-      <div className="rounded-2xl border border-[#E8DED8] dark:border-slate-800 bg-white dark:bg-slate-900/40 overflow-hidden">
+      <div className="rounded-2xl border border-[#E7E1DA] dark:border-slate-800 bg-[#FAF7F5] dark:bg-[#12151F] overflow-hidden shadow-2xs">
         <button
           type="button"
           onClick={() => toggleSection('desc')}
-          className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+          className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-black/2 dark:hover:bg-white/2 transition-colors cursor-pointer"
         >
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2.5">
             <FileText className="w-4 h-4 text-rose-600" />
             <span>Product Overview &amp; Silhouette</span>
           </span>
@@ -37,12 +37,12 @@ export function ProductAccordions({ product, className = '' }: ProductAccordions
         </button>
 
         {openSections.desc && (
-          <div className="px-5 pb-5 text-xs text-slate-600 dark:text-slate-300 space-y-3 border-t border-slate-100 dark:border-slate-800/60 pt-3">
+          <div className="px-6 pb-6 text-xs text-slate-600 dark:text-slate-300 space-y-3 border-t border-[#E7E1DA] dark:border-slate-800/80 pt-4">
             <p className="leading-relaxed">{product.description}</p>
             {product.features && product.features.length > 0 && (
-              <ul className="space-y-1.5 pt-2">
+              <ul className="space-y-2 pt-2">
                 {product.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2">
+                  <li key={i} className="flex items-start gap-2.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                     <span>{f}</span>
                   </li>
@@ -54,13 +54,13 @@ export function ProductAccordions({ product, className = '' }: ProductAccordions
       </div>
 
       {/* 2. Specifications Matrix */}
-      <div className="rounded-2xl border border-[#E8DED8] dark:border-slate-800 bg-white dark:bg-slate-900/40 overflow-hidden">
+      <div className="rounded-2xl border border-[#E7E1DA] dark:border-slate-800 bg-[#FAF7F5] dark:bg-[#12151F] overflow-hidden shadow-2xs">
         <button
           type="button"
           onClick={() => toggleSection('spec')}
-          className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+          className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-black/2 dark:hover:bg-white/2 transition-colors cursor-pointer"
         >
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-amber-500" />
             <span>Garment Specifications</span>
           </span>
@@ -68,37 +68,37 @@ export function ProductAccordions({ product, className = '' }: ProductAccordions
         </button>
 
         {openSections.spec && (
-          <div className="px-5 pb-5 text-xs border-t border-slate-100 dark:border-slate-800/60 pt-3">
-            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
-              <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                <dt className="text-slate-400">Category</dt>
+          <div className="px-6 pb-6 text-xs border-t border-[#E7E1DA] dark:border-slate-800/80 pt-4">
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+              <div className="flex justify-between py-1.5 border-b border-slate-200 dark:border-slate-800">
+                <dt className="text-slate-500 dark:text-slate-400">Category</dt>
                 <dd className="font-bold text-slate-900 dark:text-white">{product.categoryName || product.category || 'Atelier Wear'}</dd>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                <dt className="text-slate-400">Fabric Composition</dt>
+              <div className="flex justify-between py-1.5 border-b border-slate-200 dark:border-slate-800">
+                <dt className="text-slate-500 dark:text-slate-400">Fabric Composition</dt>
                 <dd className="font-bold text-slate-900 dark:text-white">{product.fabric || 'Pure Georgette & Soft Crepe'}</dd>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                <dt className="text-slate-400">SKU Code</dt>
+              <div className="flex justify-between py-1.5 border-b border-slate-200 dark:border-slate-800">
+                <dt className="text-slate-500 dark:text-slate-400">SKU Code</dt>
                 <dd className="font-mono font-bold text-slate-900 dark:text-white">{product.sku}</dd>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-100 dark:border-slate-800">
-                <dt className="text-slate-400">Origin / Handcrafting</dt>
-                <dd className="font-bold text-slate-900 dark:text-white">{product.origin || 'India'}</dd>
+              <div className="flex justify-between py-1.5 border-b border-slate-200 dark:border-slate-800">
+                <dt className="text-slate-500 dark:text-slate-400">Origin / Handcrafting</dt>
+                <dd className="font-bold text-slate-900 dark:text-white">{product.origin || 'Handcrafted in India'}</dd>
               </div>
             </dl>
           </div>
         )}
       </div>
 
-      {/* 3. Care & Artisan Provenance */}
-      <div className="rounded-2xl border border-[#E8DED8] dark:border-slate-800 bg-white dark:bg-slate-900/40 overflow-hidden">
+      {/* 3. Care & Maintenance */}
+      <div className="rounded-2xl border border-[#E7E1DA] dark:border-slate-800 bg-[#FAF7F5] dark:bg-[#12151F] overflow-hidden shadow-2xs">
         <button
           type="button"
           onClick={() => toggleSection('fabric')}
-          className="w-full px-5 py-4 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+          className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-black/2 dark:hover:bg-white/2 transition-colors cursor-pointer"
         >
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2.5">
             <Shield className="w-4 h-4 text-sky-500" />
             <span>Fabric Care &amp; Maintenance</span>
           </span>
@@ -106,9 +106,9 @@ export function ProductAccordions({ product, className = '' }: ProductAccordions
         </button>
 
         {openSections.fabric && (
-          <div className="px-5 pb-5 text-xs text-slate-600 dark:text-slate-300 space-y-2 border-t border-slate-100 dark:border-slate-800/60 pt-3">
+          <div className="px-6 pb-6 text-xs text-slate-600 dark:text-slate-300 space-y-2 border-t border-[#E7E1DA] dark:border-slate-800/80 pt-4">
             {product.careInstructions && product.careInstructions.length > 0 ? (
-              <ul className="list-disc list-inside space-y-1">
+              <ul className="list-disc list-inside space-y-1.5">
                 {product.careInstructions.map((c, i) => (
                   <li key={i}>{c}</li>
                 ))}

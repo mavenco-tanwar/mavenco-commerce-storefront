@@ -8,7 +8,6 @@ import {
   Maximize2,
   Play,
   X,
-  ZoomIn,
 } from 'lucide-react';
 import { GalleryConfig, NormalizedProductMedia } from '@/types/pdp-template.types';
 
@@ -32,7 +31,6 @@ export function ProductGallery({
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
 
-  // Use active variant image if it matches one of the media items, or use media list
   const activeMedia = media.length > 0
     ? media[activeIndex] || media[0]
     : { type: 'image' as const, url: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=1200' };
@@ -70,15 +68,46 @@ export function ProductGallery({
   };
 
   return (
-    <div className={`space-y-4 select-none ${className}`}>
+    <div className={`select-none ${className}`}>
       <div
         className={`flex ${
-          config.layout === 'left-thumbs' ? 'flex-row-reverse gap-4' : 'flex-col gap-4'
+          config.layout === 'left-thumbs' ? 'flex-row gap-4 items-start' : 'flex-col gap-4'
         }`}
       >
+        {/* Thumbnail Navigation (Left Placement) */}
+        {config.layout === 'left-thumbs' && config.thumbnailsPosition !== 'hidden' && media.length > 1 && (
+          <div className="hidden sm:flex flex-col gap-3 shrink-0 w-20 max-h-[640px] overflow-y-auto scrollbar-none py-0.5">
+            {media.map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setActiveIndex(idx)}
+                className={`relative w-20 h-26 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer shadow-2xs ${
+                  idx === activeIndex
+                    ? 'border-rose-600 ring-2 ring-rose-500/20 opacity-100 scale-[1.02]'
+                    : 'border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100'
+                }`}
+              >
+                <Image
+                  src={item.thumbnail || item.url}
+                  alt={item.alt || `Thumbnail ${idx + 1}`}
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                />
+                {item.type === 'video' && (
+                  <span className="absolute inset-0 bg-black/40 flex items-center justify-center text-white">
+                    <Play className="w-3.5 h-3.5 fill-white" />
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Main Stage Viewport */}
         <div
-          className={`relative flex-1 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-[#E8DED8] dark:border-slate-800 ${getAspectClass()} group`}
+          className={`relative flex-1 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-[#E8DED8] dark:border-slate-800 shadow-sm ${getAspectClass()} group`}
           onMouseMove={handleMouseMove}
           onMouseEnter={() => config.zoomMode === 'hover' && setIsZoomed(true)}
           onMouseLeave={() => config.zoomMode === 'hover' && setIsZoomed(false)}
@@ -133,7 +162,7 @@ export function ProductGallery({
               e.stopPropagation();
               setIsFullscreen(true);
             }}
-            className="absolute top-3 right-3 p-2 rounded-xl bg-white/80 dark:bg-black/60 backdrop-blur-md text-slate-800 dark:text-white hover:scale-105 transition-all shadow-md opacity-0 group-hover:opacity-100"
+            className="absolute top-3 right-3 p-2 rounded-xl bg-white/80 dark:bg-black/60 backdrop-blur-md text-slate-800 dark:text-white hover:scale-105 transition-all shadow-md opacity-0 group-hover:opacity-100 cursor-pointer"
             title="Fullscreen Lightbox"
           >
             <Maximize2 className="w-4 h-4" />
@@ -161,7 +190,7 @@ export function ProductGallery({
             </>
           )}
 
-          {/* Mobile Carousel Indicators */}
+          {/* Mobile Indicators */}
           {media.length > 1 && (
             <div className="sm:hidden absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-xs">
               {media.map((_, idx) => (
@@ -176,15 +205,9 @@ export function ProductGallery({
           )}
         </div>
 
-        {/* Thumbnail Navigation (Left or Bottom) */}
-        {config.thumbnailsPosition !== 'hidden' && media.length > 1 && (
-          <div
-            className={`hidden sm:flex ${
-              config.layout === 'left-thumbs'
-                ? 'flex-col gap-2.5 max-h-[560px] overflow-y-auto shrink-0 w-20 scrollbar-none'
-                : 'flex-row gap-3 overflow-x-auto shrink-0 py-1'
-            }`}
-          >
+        {/* Thumbnail Navigation (Bottom Placement) */}
+        {config.layout !== 'left-thumbs' && config.thumbnailsPosition !== 'hidden' && media.length > 1 && (
+          <div className="hidden sm:flex flex-row gap-3 overflow-x-auto shrink-0 py-1 scrollbar-none">
             {media.map((item, idx) => (
               <button
                 key={idx}
@@ -192,8 +215,8 @@ export function ProductGallery({
                 onClick={() => setActiveIndex(idx)}
                 className={`relative w-18 h-22 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
                   idx === activeIndex
-                    ? 'border-rose-600 ring-2 ring-rose-500/30'
-                    : 'border-transparent opacity-70 hover:opacity-100'
+                    ? 'border-rose-600 ring-2 ring-rose-500/30 opacity-100'
+                    : 'border-slate-200 dark:border-slate-800 opacity-60 hover:opacity-100'
                 }`}
               >
                 <Image
@@ -251,14 +274,14 @@ export function ProductGallery({
               <button
                 type="button"
                 onClick={handlePrev}
-                className="absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                className="absolute left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
               <button
                 type="button"
                 onClick={handleNext}
-                className="absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                className="absolute right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
               >
                 <ChevronRight className="w-6 h-6" />
               </button>

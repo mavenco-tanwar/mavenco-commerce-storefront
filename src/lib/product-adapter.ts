@@ -39,6 +39,13 @@ export function normalizeProduct(raw: Product): NormalizedProduct {
     typeof s === 'string' ? { size: s, inStock: true } : s
   );
 
+  // Curated badges (Limit to 2 elegant badges)
+  const badges: string[] = [];
+  if (raw.discountPercent && raw.discountPercent > 0) {
+    badges.push(`${raw.discountPercent}% OFF`);
+  }
+  badges.push('Handcrafted Atelier');
+
   return {
     id: raw.id,
     slug: raw.slug,
@@ -47,7 +54,7 @@ export function normalizeProduct(raw: Product): NormalizedProduct {
     description: raw.description,
     shortDescription: raw.shortDescription,
     brand: {
-      name: (raw as any).brand || 'Atelier Collection',
+      name: (raw as any).brand || 'Lumina Atelier',
       href: '/collections',
     },
     category: raw.category,
@@ -59,7 +66,7 @@ export function normalizeProduct(raw: Product): NormalizedProduct {
     sku: raw.sku,
     rating: raw.rating || 4.9,
     reviewCount: raw.reviewCount || 42,
-    badges: raw.tags || (raw.discountPercent ? [`${raw.discountPercent}% OFF`, 'Handcrafted'] : ['Atelier Exclusive']),
+    badges: badges,
     media: media.length > 0 ? media : [
       { type: 'image', url: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=1200', alt: raw.name }
     ],
@@ -73,9 +80,10 @@ export function normalizeProduct(raw: Product): NormalizedProduct {
       { size: 'XL', inStock: false },
     ],
     features: raw.features || [
-      'Hand-finished luxury fabric',
-      'Breathable comfortable lining',
-      'Bespoke artisanal construction',
+      'Tailored single-breasted relaxed blazer with bespoke buttons',
+      'High-waisted wide-leg trousers with functional pockets',
+      'Breathable, pre-shrunk premium linen-cotton fabric',
+      'Artisanal hand-finished tailoring',
     ],
     fabric: raw.fabric || 'Pure Georgette & Butter Crepe',
     careInstructions: raw.careInstructions || ['Dry clean recommended', 'Steam iron gently on low heat'],
