@@ -31,6 +31,25 @@ interface DynamicMobileDrawerProps {
     accentColor?: string;
     showSocialIcons?: boolean;
     showCurrency?: boolean;
+    promoCard?: {
+      enabled: boolean;
+      image: string;
+      heading: string;
+      description: string;
+      ctaText: string;
+      ctaUrl: string;
+    };
+    socialLinks?: {
+      instagram?: string;
+      tiktok?: string;
+      whatsapp?: string;
+      facebook?: string;
+    };
+    quickActions?: {
+      showPhone: boolean;
+      showWhatsApp: boolean;
+      showStoreLocator: boolean;
+    };
   };
   onOpenSearch?: () => void;
 }
@@ -194,9 +213,41 @@ export function DynamicMobileDrawer({
                 </div>
               );
             })}
+
+          {/* Featured Promo Card inside Mobile Drawer */}
+          {drawerSettings?.promoCard?.enabled !== false && drawerSettings?.promoCard?.heading && (
+            <div className="mt-4 p-3 rounded-2xl bg-black/5 border border-black/10 space-y-2">
+              {drawerSettings.promoCard.image && (
+                <div className="relative h-28 w-full rounded-xl overflow-hidden">
+                  <img
+                    src={drawerSettings.promoCard.image}
+                    alt={drawerSettings.promoCard.heading}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 block">Featured Drop</span>
+                <h4 className="text-xs font-bold leading-snug">{drawerSettings.promoCard.heading}</h4>
+                {drawerSettings.promoCard.description && (
+                  <p className="text-[11px] opacity-70 line-clamp-2">{drawerSettings.promoCard.description}</p>
+                )}
+                {drawerSettings.promoCard.ctaText && (
+                  <Link
+                    href={drawerSettings.promoCard.ctaUrl || '/women'}
+                    onClick={onClose}
+                    className="inline-block mt-1 text-xs font-bold underline uppercase tracking-wider hover:opacity-80"
+                    style={{ color: accentColor }}
+                  >
+                    {drawerSettings.promoCard.ctaText} →
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Bottom Utility Menu */}
+        {/* Bottom Utility & Social Menu */}
         <div className="p-4 border-t space-y-3" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
           <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
             <Link
@@ -217,7 +268,28 @@ export function DynamicMobileDrawer({
             </Link>
           </div>
 
-          <div className="pt-2 flex items-center justify-between text-xs">
+          {/* Social Links inside Mobile Drawer */}
+          {drawerSettings?.socialLinks && Object.values(drawerSettings.socialLinks).some(Boolean) && (
+            <div className="pt-2 flex items-center justify-center gap-4 text-xs opacity-75">
+              {drawerSettings.socialLinks.instagram && (
+                <a href={drawerSettings.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="hover:opacity-100">
+                  Instagram
+                </a>
+              )}
+              {drawerSettings.socialLinks.tiktok && (
+                <a href={drawerSettings.socialLinks.tiktok} target="_blank" rel="noopener noreferrer" className="hover:opacity-100">
+                  TikTok
+                </a>
+              )}
+              {drawerSettings.socialLinks.whatsapp && (
+                <a href={`https://wa.me/${drawerSettings.socialLinks.whatsapp}`} target="_blank" rel="noopener noreferrer" className="hover:opacity-100 text-emerald-600 font-bold">
+                  WhatsApp
+                </a>
+              )}
+            </div>
+          )}
+
+          <div className="pt-2 flex items-center justify-between text-xs border-t border-black/5">
             {isAuthenticated ? (
               <div className="flex items-center justify-between w-full">
                 <span className="font-bold truncate">{user?.name || 'Customer'}</span>
@@ -227,7 +299,7 @@ export function DynamicMobileDrawer({
                     onClose();
                     logout();
                   }}
-                  className="text-rose-600 font-bold hover:underline"
+                  className="text-rose-600 font-bold hover:underline cursor-pointer"
                 >
                   Sign Out
                 </button>

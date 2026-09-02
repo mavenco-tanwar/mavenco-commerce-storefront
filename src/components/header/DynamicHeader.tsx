@@ -117,6 +117,8 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
           <DynamicAnnouncementBar
             blocks={config.announcementBar.blocks}
             styles={config.announcementBar.styles}
+            mode={config.announcementBar.mode}
+            countdown={config.announcementBar.countdown}
             rotationEnabled={config.announcementBar.rotationEnabled}
             rotationInterval={config.announcementBar.rotationInterval}
             pauseOnHover={config.announcementBar.pauseOnHover}

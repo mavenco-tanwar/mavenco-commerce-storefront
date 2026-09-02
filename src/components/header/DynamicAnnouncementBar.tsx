@@ -16,6 +16,13 @@ interface DynamicAnnouncementBarProps {
     fontFamily: string;
     letterSpacing: string;
   };
+  mode?: 'static' | 'rotate' | 'marquee' | 'countdown';
+  marqueeSpeed?: number;
+  countdown?: {
+    targetDate: string;
+    label: string;
+    expiredText?: string;
+  };
   rotationEnabled?: boolean;
   rotationInterval?: number;
   pauseOnHover?: boolean;
@@ -32,6 +39,8 @@ interface DynamicAnnouncementBarProps {
 export function DynamicAnnouncementBar({
   blocks = [],
   styles,
+  mode = 'static',
+  countdown,
   rotationEnabled = false,
   rotationInterval = 5,
   pauseOnHover = true,
@@ -41,6 +50,13 @@ export function DynamicAnnouncementBar({
   responsive,
 }: DynamicAnnouncementBarProps) {
   const [isPaused, setIsPaused] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number; isExpired: boolean }>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    isExpired: false,
+  });
 
   const leftBlocks = blocks
     .filter((b) => b.zone === 'announcement.left' && b.enabled !== false)
@@ -56,8 +72,10 @@ export function DynamicAnnouncementBar({
 
   const [activeCenterIdx, setActiveCenterIdx] = useState(0);
 
+  // Rotation Timer
   useEffect(() => {
-    if (!rotationEnabled || centerBlocks.length <= 1 || (pauseOnHover && isPaused)) {
+    const isRotate = mode === 'rotate' || rotationEnabled;
+    if (!isRotate || centerBlocks.length <= 1 || (pauseOnHover && isPaused)) {
       return;
     }
 
@@ -66,9 +84,36 @@ export function DynamicAnnouncementBar({
     }, (rotationInterval || 5) * 1000);
 
     return () => clearInterval(timer);
-  }, [rotationEnabled, rotationInterval, centerBlocks.length, pauseOnHover, isPaused]);
+  }, [mode, rotationEnabled, rotationInterval, centerBlocks.length, pauseOnHover, isPaused]);
 
-  if (blocks.length === 0) return null;
+  // Countdown Timer
+  useEffect(() => {
+    if (mode !== 'countdown' || !countdown?.targetDate) return;
+
+    const calcTime = () => {
+      const target = new Date(countdown.targetDate).getTime();
+      const now = new Date().getTime();
+      const diff = target - now;
+
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isExpired: true });
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft({ days, hours, minutes, seconds, isExpired: false });
+    };
+
+    calcTime();
+    const interval = setInterval(calcTime, 1000);
+    return () => clearInterval(interval);
+  }, [mode, countdown?.targetDate]);
+
+  if (blocks.length === 0 && mode !== 'countdown') return null;
 
   // Calculate Responsive Bar Visibility
   const isDesktop = responsive?.desktop !== false;
@@ -90,6 +135,35 @@ export function DynamicAnnouncementBar({
     responsiveClass += ' block lg:hidden';
   } else if (isDesktop && !isTablet && isMobile) {
     responsiveClass += ' block md:hidden lg:block';
+  }
+
+  // Marquee Mode Render
+  if (mode === 'marquee') {
+    const marqueeText = centerBlocks.map((b) => b.settings?.text).filter(Boolean).join('   ✦   ') ||
+      'COMPLIMENTARY WORLDWIDE EXPRESS DELIVERY • EXCLUSIVE ATELIER LUXURY PACKAGING • DEDICATED BESPOKE CLIENT CONCIERGE';
+
+    return (
+      <aside
+        aria-label="Announcement Marquee"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        className={`${responsiveClass} overflow-hidden whitespace-nowrap`}
+        style={{
+          backgroundColor: styles?.backgroundColor || '#1E1B4B',
+          color: styles?.textColor || '#FFFFFF',
+          borderColor: styles?.borderColor || 'rgba(255,255,255,0.1)',
+          fontSize: styles?.fontSize || '11px',
+          fontFamily: styles?.fontFamily,
+          letterSpacing: styles?.letterSpacing || '0.08em',
+        }}
+      >
+        <div className="flex w-max items-center animate-marquee hover:[animation-play-state:paused]">
+          <span className="px-6 font-semibold uppercase tracking-wider">{marqueeText}</span>
+          <span className="px-6 font-semibold uppercase tracking-wider">{marqueeText}</span>
+          <span className="px-6 font-semibold uppercase tracking-wider">{marqueeText}</span>
+        </div>
+      </aside>
+    );
   }
 
   return (
@@ -122,32 +196,55 @@ export function DynamicAnnouncementBar({
 
         {/* Center Zone */}
         <div className="flex-1 flex items-center justify-center text-center font-medium overflow-hidden px-2">
-          {centerBlocks.map((block, idx) => {
-            if (rotationEnabled && idx !== activeCenterIdx) return null;
+          {mode === 'countdown' ? (
+            <div className="flex items-center justify-center gap-3 font-mono font-bold flex-wrap">
+              <span className="font-sans font-semibold tracking-wider text-xs uppercase">
+                {countdown?.label || 'LIMITED TIME FLASH SALE'}
+              </span>
+              {!timeLeft.isExpired ? (
+                <div className="flex items-center gap-1 text-[11px] bg-black/20 px-2.5 py-0.5 rounded-full border border-white/10">
+                  {timeLeft.days > 0 && <span>{timeLeft.days}d</span>}
+                  <span>{String(timeLeft.hours).padStart(2, '0')}h</span>
+                  <span>:</span>
+                  <span>{String(timeLeft.minutes).padStart(2, '0')}m</span>
+                  <span>:</span>
+                  <span className="text-amber-300">{String(timeLeft.seconds).padStart(2, '0')}s</span>
+                </div>
+              ) : (
+                <span className="text-amber-300 uppercase tracking-widest text-[11px]">
+                  {countdown?.expiredText || 'EVENT CONCLUDED'}
+                </span>
+              )}
+            </div>
+          ) : (
+            centerBlocks.map((block, idx) => {
+              const isRotate = mode === 'rotate' || rotationEnabled;
+              if (isRotate && idx !== activeCenterIdx) return null;
 
-            const s = block.settings || {};
-            const text = s.text || '';
-            const ctaText = s.ctaText;
-            const ctaUrl = s.ctaUrl || '/sale';
+              const s = block.settings || {};
+              const text = s.text || '';
+              const ctaText = s.ctaText;
+              const ctaUrl = s.ctaUrl || '/sale';
 
-            return (
-              <div
-                key={block.id}
-                className="flex items-center justify-center gap-2 flex-wrap transition-opacity duration-300 animate-in fade-in"
-              >
-                <span>{text}</span>
-                {ctaText && (
-                  <Link
-                    href={ctaUrl}
-                    className="font-bold underline uppercase tracking-widest hover:opacity-80 transition-opacity ml-1"
-                    style={{ color: styles?.accentColor || '#F59E0B' }}
-                  >
-                    {ctaText}
-                  </Link>
-                )}
-              </div>
-            );
-          })}
+              return (
+                <div
+                  key={block.id}
+                  className="flex items-center justify-center gap-2 flex-wrap transition-opacity duration-300 animate-in fade-in"
+                >
+                  <span>{text}</span>
+                  {ctaText && (
+                    <Link
+                      href={ctaUrl}
+                      className="font-bold underline uppercase tracking-widest hover:opacity-80 transition-opacity ml-1"
+                      style={{ color: styles?.accentColor || '#F59E0B' }}
+                    >
+                      {ctaText}
+                    </Link>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Right Zone */}
