@@ -25,11 +25,9 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name || '');
   const [showQuickSizes, setShowQuickSizes] = useState(false);
   const activeTenant = resolveTenant();
-  const productUrl = `/products/${product.slug}${
-    activeTenant.slug && activeTenant.slug !== 'demo'
-      ? `?tenant=${activeTenant.slug}`
-      : ''
-  }`;
+  const productUrl = activeTenant.slug
+    ? `/stores/${activeTenant.slug}/products/${product.slug}`
+    : `/products/${product.slug}`;
 
   const cfg: ProductCardConfig = {
     ...getDefaultProductCardConfig(activeTenant.slug || 'lumina'),

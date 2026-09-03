@@ -503,6 +503,7 @@ export function formatStoreDisplayName(slug: string): string {
 
 export function createDefaultDemoSections(slug: string): CmsHomepageSection[] {
   const storeName = formatStoreDisplayName(slug);
+  const prefix = slug ? `/stores/${slug}` : '';
 
   return [
     {
@@ -515,9 +516,9 @@ export function createDefaultDemoSections(slug: string): CmsHomepageSection[] {
       settings: {
         tagline: 'Spring / Summer 2026 Collection',
         primaryBtnText: 'Explore New In',
-        primaryBtnLink: '/new-arrivals',
+        primaryBtnLink: `${prefix}/new-arrivals`,
         secondaryBtnText: 'View Collections',
-        secondaryBtnLink: '/collections/festive',
+        secondaryBtnLink: `${prefix}/collections/festive`,
         image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&auto=format&fit=crop&q=80',
         bannerImage: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&auto=format&fit=crop&q=80',
         overlayOpacity: 35,

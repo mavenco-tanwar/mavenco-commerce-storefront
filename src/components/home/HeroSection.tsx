@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface HeroSectionProps {
   customTitle?: string;
@@ -79,7 +80,7 @@ export function HeroSection({
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
-              <Link href={primaryBtnLink} className="w-full sm:w-auto">
+              <Link href={formatTenantHref(primaryBtnLink)} className="w-full sm:w-auto">
                 <Button
                   variant="primary"
                   size="lg"
@@ -90,7 +91,7 @@ export function HeroSection({
                 </Button>
               </Link>
 
-              <Link href={secondaryBtnLink} className="w-full sm:w-auto">
+              <Link href={formatTenantHref(secondaryBtnLink)} className="w-full sm:w-auto">
                 <Button
                   variant="secondary"
                   size="lg"
@@ -149,7 +150,7 @@ export function HeroSection({
                 </div>
 
                 <Link
-                  href="/women"
+                  href={formatTenantHref("/women")}
                   className="px-3 py-1.5 bg-[#111111] text-[#FFFDFC] text-[11px] font-bold uppercase tracking-wider hover:bg-[#B77A68] transition-colors shrink-0"
                 >
                   View

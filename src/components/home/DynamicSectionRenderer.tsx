@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CmsHomepageSection } from '@/services/api/cms';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { HeroSection } from './HeroSection';
 import { CategoryShowcase } from './CategoryShowcase';
 import { TrendingSection } from './TrendingSection';
@@ -103,9 +104,9 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSettings={{
                   tagline: badge,
                   primaryBtnText: sData.primaryBtnText || sData.primaryCtaText || sData.ctaText || 'Shop The Collection',
-                  primaryBtnLink: sData.primaryBtnLink || sData.primaryCtaUrl || sData.ctaUrl || '/collections',
+                  primaryBtnLink: formatTenantHref(sData.primaryBtnLink || sData.primaryCtaUrl || sData.ctaUrl || '/collections', tenantSlug),
                   secondaryBtnText: sData.secondaryBtnText || sData.secondaryCtaText || 'Explore Lookbook',
-                  secondaryBtnLink: sData.secondaryBtnLink || sData.secondaryCtaUrl || '/about',
+                  secondaryBtnLink: formatTenantHref(sData.secondaryBtnLink || sData.secondaryCtaUrl || '/about', tenantSlug),
                   desktopImage: image,
                   mobileImage: sData.mobileImage || image,
                   overlayOpacity: typeof sData.overlayOpacity === 'number' ? (sData.overlayOpacity <= 1 ? sData.overlayOpacity * 100 : sData.overlayOpacity) : 40,

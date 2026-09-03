@@ -22,6 +22,7 @@ import { CategoryService } from '@/services/categories';
 import { Category, Collection } from '@/types/category';
 import { useAuth } from '@/context/AuthContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { formatTenantHref, resolveTenant } from '@/lib/tenant-config';
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -106,7 +107,7 @@ export function MobileNavigation({ isOpen, onClose, onOpenSearch }: MobileNaviga
               {openAccordions[cat.id] && (
                 <div className="pl-3 py-1 space-y-2 text-xs border-l-2 border-[#E8B8B5] mt-1 ml-1 animate-in fade-in duration-200">
                   <Link
-                    href={`/collections/${cat.slug}`}
+                    href={formatTenantHref(`/collections/${cat.slug}`)}
                     onClick={onClose}
                     className="block font-semibold text-[#B77A68] hover:underline"
                   >
@@ -115,7 +116,7 @@ export function MobileNavigation({ isOpen, onClose, onOpenSearch }: MobileNaviga
                   {(cat.subcategories || []).map((sub) => (
                     <Link
                       key={sub.id}
-                      href={`/collections/${sub.slug}`}
+                      href={formatTenantHref(`/collections/${sub.slug}`)}
                       onClick={onClose}
                       className="block text-[#777777] hover:text-[#111111] transition-colors py-0.5"
                     >

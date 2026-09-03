@@ -419,3 +419,58 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
 
   return getTenantConfig('demo');
 }
+
+/**
+ * Automatically scopes internal storefront links to the active tenant store
+ * (e.g. /collections/festive -> /stores/demo/collections/festive)
+ */
+export function formatTenantHref(href?: string, explicitTenant?: string): string {
+  if (!href) return '/';
+  if (
+    href.startsWith('http://') ||
+    href.startsWith('https://') ||
+    href.startsWith('mailto:') ||
+    href.startsWith('tel:') ||
+    href.startsWith('#') ||
+    href.startsWith('javascript:')
+  ) {
+    return href;
+  }
+
+  // Determine active tenant slug
+  let tenant = (explicitTenant || '').toLowerCase().trim();
+  if (!tenant && typeof window !== 'undefined') {
+    const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+    if (pathMatch) {
+      tenant = pathMatch[2].toLowerCase().trim();
+    } else {
+      const qTenant = new URLSearchParams(window.location.search).get('tenant');
+      if (qTenant) tenant = qTenant.toLowerCase().trim();
+    }
+  }
+
+  if (!tenant) return href;
+
+  // Don't prefix external or already-prefixed store paths
+  if (href.startsWith('/stores/') || href.startsWith('/tenant/')) {
+    return href;
+  }
+
+  // SaaS administrative & billing paths that shouldn't be prefixed
+  if (
+    href.startsWith('/api/') ||
+    href.startsWith('/pricing') ||
+    href.startsWith('/admin') ||
+    href.startsWith('/superadmin') ||
+    href.startsWith('/cms')
+  ) {
+    return href;
+  }
+
+  if (href === '/' || href === '') {
+    return `/stores/${tenant}`;
+  }
+
+  const cleanPath = href.startsWith('/') ? href : `/${href}`;
+  return `/stores/${tenant}${cleanPath}`;
+}

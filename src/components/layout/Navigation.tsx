@@ -9,7 +9,7 @@ import { CategoryService } from '@/services/categories';
 import { CmsApiService, CmsMenuItem } from '@/services/api/cms';
 import { Category, Collection } from '@/types/category';
 
-import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
+import { resolveTenant, TenantBrandConfig, formatTenantHref } from '@/lib/tenant-config';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -53,7 +53,7 @@ export function Navigation() {
         {tenant.navLinks.map((link) => (
           <Link
             key={link.label}
-            href={link.href}
+            href={formatTenantHref(link.href, tenant?.slug)}
             suppressHydrationWarning
             className="hover:opacity-75 transition-opacity flex items-center gap-1.5"
             style={{ color: tenant.theme.primaryColor }}
@@ -95,7 +95,7 @@ export function Navigation() {
               onMouseEnter={() => setActiveMenu('women')}
             >
               <Link
-                href={url}
+                href={formatTenantHref(url, tenant?.slug)}
                 className={`transition-colors flex items-center gap-1 ${
                   activeMenu === 'women' ? 'text-[#B77A68]' : 'hover:text-[#B77A68]'
                 }`}
@@ -177,7 +177,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          href="/women"
+                          {formatTenantHref("/women", tenant?.slug)}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Resort &amp; Vacation Wear
@@ -204,7 +204,7 @@ export function Navigation() {
                         Summer Linen &amp; Florals
                       </h5>
                       <Link
-                        href="/women"
+                        {formatTenantHref("/women", tenant?.slug)}
                         className="text-[10px] uppercase tracking-wider text-white font-bold inline-flex items-center gap-1 hover:underline pt-1"
                       >
                         Shop Now &rarr;
@@ -319,7 +319,7 @@ export function Navigation() {
                         Partywear &amp; Occasion Sets
                       </h5>
                       <Link
-                        href="/kids"
+                        {formatTenantHref("/kids", tenant?.slug)}
                         className="text-[10px] uppercase tracking-wider text-white font-bold inline-flex items-center gap-1 hover:underline pt-1"
                       >
                         Explore Kids &rarr;

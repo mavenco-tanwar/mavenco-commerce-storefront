@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Phone, Sparkles, Globe } from 'lucide-react';
-import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
+import { resolveTenant, TenantBrandConfig, formatTenantHref } from '@/lib/tenant-config';
 
 export function AnnouncementBar() {
   const pathname = usePathname();
@@ -62,7 +62,7 @@ export function AnnouncementBar() {
         <div className="flex-1 flex items-center justify-center gap-2 text-center" suppressHydrationWarning>
           <div className="font-medium tracking-wide text-xs">
             <Link
-              href={ann.link || '/sale'}
+              href={formatTenantHref(ann.link || '/sale', tenant?.slug)}
               className="hover:underline inline-flex items-center gap-1.5"
             >
               <span suppressHydrationWarning>{ann.mainText}</span>
