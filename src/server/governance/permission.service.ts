@@ -183,17 +183,20 @@ export class PermissionService {
     userId: string = 'usr_tenant_owner'
   ): Promise<TenantCapabilitiesResponse> {
     const safeTenantId = tenantId.toLowerCase().trim();
+    const platformModules = await ModuleCatalogService.getPlatformModules();
     const entitlements = await ModuleCatalogService.getTenantEntitlements(safeTenantId, storeId);
-
     const modules: Record<string, boolean> = {};
+    for (const mod of platformModules) {
+      modules[mod.key] = false;
+    }
     for (const ent of entitlements) {
       modules[ent.moduleKey] = ent.status === 'enabled';
     }
 
     // Ensure core modules are marked enabled if entitled
-    if (modules['dashboard'] === undefined) modules['dashboard'] = true;
-    if (modules['storefront'] === undefined) modules['storefront'] = true;
-    if (modules['products'] === undefined) modules['products'] = true;
+    if (modules['dashboard'] === undefined || entitlements.length === 0) modules['dashboard'] = true;
+    if (modules['storefront'] === undefined || entitlements.length === 0) modules['storefront'] = true;
+    if (modules['products'] === undefined || entitlements.length === 0) modules['products'] = true;
 
     // Filter permissions only for modules that are actually enabled
     const activePermissions = SYSTEM_PERMISSIONS.filter((p) => modules[p.moduleKey] === true).map(

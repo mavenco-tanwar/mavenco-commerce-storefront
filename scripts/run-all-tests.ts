@@ -16,6 +16,7 @@ import { runModule36TestSuite } from '../src/server/governance/__tests__/module-
 import { runTenantIsolationSecurityTests } from '../tests/security/tenant-isolation.test';
 import { runStorefrontApiIntegrationTests } from '../tests/integration/storefront-api.test';
 import { runSuperadminApiIntegrationTests } from '../tests/integration/superadmin-api.test';
+import { runTenantAdminApiIntegrationTests } from '../tests/integration/admin-api.test';
 import { runDbSyncTestSuite } from '../src/server/db/__tests__/db-sync.test';
 import { runStaticDataAudit } from './audit-static-data';
 
@@ -46,6 +47,7 @@ async function runQualityGate() {
     { name: 'Multi-Tenant Isolation & Security Boundary', category: 'Security', fn: runTenantIsolationSecurityTests },
     { name: 'Storefront Route Handlers Integration', category: 'Integration', fn: runStorefrontApiIntegrationTests },
     { name: 'Superadmin Route Handlers Integration', category: 'Integration', fn: runSuperadminApiIntegrationTests },
+    { name: 'Tenant Admin Route Handlers Integration', category: 'Integration', fn: runTenantAdminApiIntegrationTests },
     { name: 'Database-First Synchronization Contract', category: 'Quality Gate', fn: runDbSyncTestSuite },
     { name: 'Zero Static Business Data Scanner', category: 'Quality Gate', fn: () => runStaticDataAudit() },
   ];
