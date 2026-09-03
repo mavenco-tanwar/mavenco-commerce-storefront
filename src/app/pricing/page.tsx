@@ -24,6 +24,7 @@ import { RoiSavingsCalculator } from '@/components/home/RoiSavingsCalculator';
 import { ArchitectureConfigurator } from '@/components/home/ArchitectureConfigurator';
 import { PlatformComparisonMatrix } from '@/components/home/PlatformComparisonMatrix';
 import { PlatformFaqAccordion } from '@/components/home/PlatformFaqAccordion';
+import { AllPlatformModulesPricingMatrix } from '@/components/pricing/AllPlatformModulesPricingMatrix';
 
 export default function PricingPage() {
   const [billingCurrency, setBillingCurrency] = useState<'INR' | 'USD'>('INR');
@@ -54,6 +55,13 @@ export default function PricingPage() {
 
           {/* Quick Value Badges */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <a
+              href="#all-modules"
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/20 to-amber-500/20 border border-rose-500/40 text-xs text-rose-300 font-bold flex items-center gap-1.5 hover:border-rose-400 hover:scale-105 transition-all shadow-lg"
+            >
+              <Layers className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+              <span>Explore All 48 Modules Breakdown ↓</span>
+            </a>
             <span className="px-3.5 py-1.5 rounded-xl bg-[#121522] border border-slate-800 text-xs text-slate-300 flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-emerald-400" />
               <span>0% Commission on GMV</span>
@@ -129,6 +137,10 @@ export default function PricingPage() {
 
               {/* Quotas & Limits */}
               <div className="space-y-2.5 pt-2 border-t border-slate-800 text-xs">
+                <div className="flex items-center gap-2 p-2 bg-rose-500/10 rounded-xl border border-rose-500/20 text-xs font-bold text-rose-300">
+                  <Check className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>22 Essential Modules Active</span>
+                </div>
                 <div className="flex items-center gap-2 text-slate-300">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>Up to <strong>250 Products</strong> &amp; 1,000 Orders/mo</span>
@@ -198,6 +210,10 @@ export default function PricingPage() {
 
               {/* Quotas & Limits */}
               <div className="space-y-2.5 pt-2 border-t border-slate-800 text-xs">
+                <div className="flex items-center gap-2 p-2 bg-amber-500/10 rounded-xl border border-amber-500/20 text-xs font-bold text-amber-300">
+                  <Check className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>33 Pro Growth Modules Active</span>
+                </div>
                 <div className="flex items-center gap-2 text-slate-200">
                   <Check className="w-4 h-4 text-rose-400 shrink-0" />
                   <span>Up to <strong>2,500 Products</strong> &amp; 10,000 Orders/mo</span>
@@ -271,6 +287,10 @@ export default function PricingPage() {
 
               {/* Quotas & Limits */}
               <div className="space-y-2.5 pt-2 border-t border-slate-800 text-xs">
+                <div className="flex items-center gap-2 p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-xs font-bold text-emerald-300">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>All 48 Enterprise Modules Included</span>
+                </div>
                 <div className="flex items-center gap-2 text-slate-300">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>Up to <strong>50,000 Products</strong> &amp; 250,000 Orders/mo</span>
@@ -306,6 +326,9 @@ export default function PricingPage() {
             </a>
           </div>
         </div>
+
+        {/* ─── All 48 Enterprise Modules Breakdown Matrix ─────────────────── */}
+        <AllPlatformModulesPricingMatrix />
 
         {/* ─── Interactive Architecture Configurator ──────────────────────── */}
         <ArchitectureConfigurator />
