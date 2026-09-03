@@ -6,6 +6,39 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
   const tenantParam = url.searchParams.get('tenant');
 
+  // ── Global CORS handling for all API routes ──
+  const isApiRoute = url.pathname.startsWith('/api/');
+  if (isApiRoute) {
+    const corsHeaders: Record<string, string> = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers':
+        'Content-Type, Authorization, x-tenant-slug, X-API-Key, X-Store-ID, x-channel-code, x-market-code, x-currency, x-locale, x-session-id',
+      'Access-Control-Max-Age': '86400',
+    };
+
+    // Handle preflight OPTIONS requests immediately
+    if (request.method === 'OPTIONS') {
+      return new NextResponse(null, { status: 204, headers: corsHeaders });
+    }
+
+    // For non-preflight API requests, continue but attach CORS headers
+    const response = NextResponse.next();
+    for (const [key, value] of Object.entries(corsHeaders)) {
+      response.headers.set(key, value);
+    }
+    // Still set tenant header for API routes
+    let apiTenantSlug = tenantParam?.toLowerCase() || '';
+    if (!apiTenantSlug) {
+      if (hostname.includes('auraliving')) apiTenantSlug = 'auraliving';
+      else if (hostname.includes('apexathletics')) apiTenantSlug = 'apexathletics';
+      else if (hostname.includes('jqtrends')) apiTenantSlug = 'jqtrends';
+    }
+    response.headers.set('x-tenant-slug', apiTenantSlug);
+    return response;
+  }
+
+  // ── Tenant resolution for non-API routes ──
   let tenantSlug = '';
 
   // 1. Path-based tenant resolution: /stores/[slug] or /tenant/[slug]
