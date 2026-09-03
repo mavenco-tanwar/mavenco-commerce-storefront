@@ -93,29 +93,15 @@ export async function GET(request: NextRequest) {
     console.error('MongoDB tenant fetch error:', err);
   }
 
-  const validity = checkTenantValidity(clean);
-  if (!validity.isValid) {
-    return NextResponse.json(
-      {
-        data: null,
-        tenant: clean,
-        status: 'inactive',
-        error: `Store "${clean}" is not found or inactive`,
-      },
-      { status: 404, headers: corsHeaders() }
-    );
-  }
-
-  const config = getTenantConfig(clean);
+  // When store is deleted or not found in MongoDB, strictly return 404
   return NextResponse.json(
     {
-      data: config,
+      data: null,
       tenant: clean,
-      source: 'registry',
-      status: 'success',
-      timestamp: new Date().toISOString(),
+      status: 'inactive',
+      error: `Store "${clean}" is not found or inactive`,
     },
-    { headers: corsHeaders() }
+    { status: 404, headers: corsHeaders() }
   );
 }
 

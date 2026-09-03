@@ -41,70 +41,33 @@ export function StoreUnavailableView({ tenantSlug, isSuspended = false }: StoreU
             </p>
           </div>
 
-          {/* Active Platform Storefronts to Explore */}
+          {/* Status Diagnostic Card */}
           <div className="p-6 rounded-2xl bg-[#12141D] border border-slate-800 space-y-4 text-left shadow-2xl">
             <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
               <span className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-rose-400" />
-                Active Platform Storefronts
+                Storefront Access Governance
               </span>
-              <span className="text-[10px] text-emerald-400 font-mono">Live &amp; Verified</span>
+              <span className="text-[10px] text-amber-400 font-mono font-bold">
+                {isSuspended ? 'SUSPENDED STATUS' : 'DECOMMISSIONED'}
+              </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Link
-                href="/stores/demo"
-                className="p-3.5 rounded-xl bg-[#181B26] hover:bg-slate-800 border border-slate-700/80 transition-all flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-indigo-600/30 text-indigo-300 font-bold flex items-center justify-center text-xs">
-                    DEMO
-                  </div>
-                  <div>
-                    <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors">
-                      Demo Store
-                    </div>
-                    <div className="text-[10px] text-slate-400">Curated Modern Lifestyle</div>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all" />
-              </Link>
-
-              <Link
-                href="/stores/auraliving"
-                className="p-3.5 rounded-xl bg-[#181B26] hover:bg-slate-800 border border-slate-700/80 transition-all flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-emerald-600/30 text-emerald-300 font-bold flex items-center justify-center text-xs">
-                    AURA
-                  </div>
-                  <div>
-                    <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors">
-                      Aura Living
-                    </div>
-                    <div className="text-[10px] text-slate-400">Nordic Sanctuary Decor</div>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all" />
-              </Link>
-
-              <Link
-                href="/stores/apexathletics"
-                className="p-3.5 rounded-xl bg-[#181B26] hover:bg-slate-800 border border-slate-700/80 transition-all flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-teal-600/30 text-teal-300 font-bold flex items-center justify-center text-xs">
-                    APEX
-                  </div>
-                  <div>
-                    <div className="font-bold text-white text-xs group-hover:text-rose-400 transition-colors">
-                      Apex Athletics
-                    </div>
-                    <div className="text-[10px] text-slate-400">Pro High-Performance Gear</div>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all" />
-              </Link>
+            <div className="p-4 bg-[#0A0C10] rounded-xl border border-slate-800/80 text-xs text-slate-300 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Requested Store Slug:</span>
+                <span className="font-mono text-rose-400 font-bold">{tenantSlug}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Cloud Partition Status:</span>
+                <span className="font-mono text-amber-300">
+                  {isSuspended ? 'Temporarily Locked by Platform Administrator' : 'Decommissioned / Deleted from Database'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500">Storefront Protection:</span>
+                <span className="text-emerald-400 font-semibold">Active (0 Data Leakage)</span>
+              </div>
             </div>
           </div>
 
