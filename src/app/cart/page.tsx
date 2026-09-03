@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { CartItemList } from '@/components/cart/CartItemList';
 import { CartSummary } from '@/components/cart/CartSummary';
 import { FreeShippingBar } from '@/components/cart/FreeShippingBar';
@@ -46,7 +47,7 @@ export default function CartPage() {
               title="Your Bag is Waiting for Something Beautiful"
               description="Explore our latest summer arrivals, festive ethnic wear, and adorable kids collections."
               actionText="Explore New Arrivals"
-              actionHref="/new-arrivals"
+              actionHref={formatTenantHref('/new-arrivals')}
             />
           </div>
         ) : (

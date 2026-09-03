@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Trash2, Heart } from 'lucide-react';
 import { CartItem } from '@/types/cart';
 import { PriceDisplay } from '@/components/ui/PriceDisplay';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { QuantitySelector } from '@/components/ui/QuantitySelector';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -25,7 +26,7 @@ export function CartItemList({ items }: { items: CartItem[] }) {
         <div key={item.id} className="py-6 flex flex-col sm:flex-row gap-4 sm:gap-6 group">
           {/* Thumbnail */}
           <Link
-            href={`/products/${item.product.slug}`}
+            href={formatTenantHref(`/products/${item.product.slug}`)}
             className="relative w-24 sm:w-28 aspect-3/4 bg-[#FAF6F2] border border-[#E8DED8] overflow-hidden shrink-0"
           >
             {item.product.images[0] && (
@@ -48,7 +49,7 @@ export function CartItemList({ items }: { items: CartItem[] }) {
                     {item.product.categoryName}
                   </span>
                   <Link
-                    href={`/products/${item.product.slug}`}
+                    href={formatTenantHref(`/products/${item.product.slug}`)}
                     className="block text-sm sm:text-base font-serif font-bold text-[#111111] hover:text-[#B77A68] transition-colors mt-0.5"
                   >
                     {item.product.name}

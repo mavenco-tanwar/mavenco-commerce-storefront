@@ -13,6 +13,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { FreeShippingProgress } from './FreeShippingProgress';
 
 export function MiniCartDrawer() {
@@ -278,7 +279,7 @@ export function MiniCartDrawer() {
               {/* CTA Buttons */}
               <div className="space-y-2 pt-1">
                 <Link
-                  href="/checkout"
+                  href={formatTenantHref('/checkout')}
                   onClick={closeDrawer}
                   className="w-full py-3.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
                 >
@@ -287,7 +288,7 @@ export function MiniCartDrawer() {
                 </Link>
 
                 <Link
-                  href="/cart"
+                  href={formatTenantHref('/cart')}
                   onClick={closeDrawer}
                   className="w-full py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
                 >

@@ -31,6 +31,7 @@ import {
   Bell,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { useWishlist } from '@/context/WishlistContext';
 import { useToast } from '@/context/ToastContext';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
@@ -340,7 +341,7 @@ function AccountDashboardContent() {
 
           <div className="flex items-center gap-3 self-start sm:self-auto">
             <Link
-              href="/wishlist"
+              href={formatTenantHref('/wishlist')}
               className="text-xs px-4 py-2.5 bg-white border border-[#EFE8E2] text-slate-900 font-bold rounded-xl flex items-center gap-1.5 hover:border-rose-300 transition-colors shadow-2xs"
             >
               <Heart className="w-4 h-4 text-rose-600" />
@@ -504,7 +505,7 @@ function AccountDashboardContent() {
                     <h3 className="text-sm font-bold text-slate-900">No Orders Placed Yet</h3>
                     <p className="text-xs text-slate-500">Explore our luxury fashion collections to place your first order.</p>
                     <Link
-                      href="/collections"
+                      href={formatTenantHref('/collections')}
                       className="inline-block px-5 py-2.5 rounded-xl bg-slate-950 text-white text-xs font-bold uppercase tracking-wider hover:bg-rose-600 transition-colors"
                     >
                       Start Shopping

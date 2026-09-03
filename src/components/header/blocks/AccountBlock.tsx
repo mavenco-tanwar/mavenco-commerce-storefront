@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { User, LogOut, Package, ChevronDown } from 'lucide-react';
 import { HeaderBlock } from '@/lib/header-config';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { useAuth } from '@/context/AuthContext';
 
 interface AccountBlockProps {
@@ -22,7 +23,7 @@ export function AccountBlock({ block, accentColor = '#E11D48' }: AccountBlockPro
   if (!isAuthenticated) {
     return (
       <Link
-        href="/login"
+        href={formatTenantHref('/login')}
         aria-label="Sign In"
         className="flex items-center gap-1.5 hover:opacity-75 transition-opacity text-xs font-semibold tracking-wider uppercase select-none group"
         style={{ color: block.styles?.textColor || 'inherit' }}
@@ -60,7 +61,7 @@ export function AccountBlock({ block, accentColor = '#E11D48' }: AccountBlockPro
             <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
           </div>
           <Link
-            href="/account"
+            href={formatTenantHref('/account')}
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
           >

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, Sparkles, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -112,7 +113,7 @@ export default function LoginPage() {
 
         <div className="pt-4 border-t border-[#E8DED8] text-center text-xs text-[#777777]">
           <span>Don&apos;t have an account yet? </span>
-          <Link href="/register" className="font-bold text-[#111111] hover:text-[#B77A68] underline underline-offset-2">
+          <Link href={formatTenantHref('/register')} className="font-bold text-[#111111] hover:text-[#B77A68] underline underline-offset-2">
             Create an Account
           </Link>
         </div>

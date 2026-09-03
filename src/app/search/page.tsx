@@ -366,7 +366,7 @@ function SearchPageContent() {
                           <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">
                             {p.category}
                           </span>
-                          <Link href={`/products/${p.slug || p.id}`}>
+                          <Link href={formatTenantHref(`/products/${p.slug || p.id}`)}>
                             <h4 className="text-sm font-bold text-slate-900 hover:text-rose-600 transition-colors line-clamp-1">
                               {p.name}
                             </h4>

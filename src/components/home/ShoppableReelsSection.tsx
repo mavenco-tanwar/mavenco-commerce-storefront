@@ -116,7 +116,7 @@ export function ShoppableReelsSection() {
         </div>
 
         <Link
-          href="/stores/demo"
+          href={formatTenantHref('/stores/demo')}
           className="text-xs font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 self-start sm:self-auto"
         >
           <span>Explore All Video Drops</span>

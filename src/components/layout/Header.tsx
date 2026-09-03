@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { BrandLogo } from '@/components/ui/BrandLogo';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { Navigation } from './Navigation';
 import { MobileNavigation } from './MobileNavigation';
 import { SearchOverlay } from './SearchOverlay';
@@ -135,7 +136,7 @@ export function Header() {
 
               {/* Wishlist Link */}
               <Link
-                href="/wishlist"
+                href={formatTenantHref('/wishlist')}
                 className="relative p-2 text-[#111111] hover:text-[#B77A68] hover:bg-[#F8F1EA] transition-colors rounded-none"
                 aria-label="Saved items wishlist"
               >
@@ -190,7 +191,7 @@ export function Header() {
 
                         <div className="py-1 text-xs">
                           <Link
-                            href="/account"
+                            href={formatTenantHref('/account')}
                             onClick={() => setIsUserMenuOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2 text-[#111111] hover:bg-[#F8F1EA] transition-colors"
                           >
@@ -199,7 +200,7 @@ export function Header() {
                           </Link>
 
                           <Link
-                            href="/account?tab=addresses"
+                            href={formatTenantHref('/account?tab=addresses')}
                             onClick={() => setIsUserMenuOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2 text-[#111111] hover:bg-[#F8F1EA] transition-colors"
                           >
@@ -234,7 +235,7 @@ export function Header() {
                   </div>
                 ) : (
                   <Link
-                    href="/login"
+                    href={formatTenantHref('/login')}
                     className="p-2 text-[#111111] hover:text-[#B77A68] hover:bg-[#F8F1EA] transition-colors rounded-none flex items-center gap-1.5"
                     aria-label="Sign in"
                   >

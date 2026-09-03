@@ -65,7 +65,7 @@ export function CartDrawer() {
           title="Your Bag is Empty"
           description="Looks like you haven't added any beautiful pieces yet. Discover our new arrivals and trending collections."
           actionText="Explore New Arrivals"
-          actionHref="/new-arrivals"
+          actionHref={formatTenantHref('/new-arrivals')}
           onActionClick={closeDrawer}
         />
       ) : (
@@ -231,14 +231,14 @@ export function CartDrawer() {
 
             {/* Checkout & View Bag CTAs */}
             <div className="space-y-2 pt-1">
-              <Link href="/checkout" onClick={closeDrawer} className="block w-full">
+              <Link href={formatTenantHref('/checkout')} onClick={closeDrawer} className="block w-full">
                 <Button variant="luxury-gold" size="lg" className="w-full justify-between group">
                   <span>Proceed to Checkout</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
 
-              <Link href="/cart" onClick={closeDrawer} className="block w-full">
+              <Link href={formatTenantHref('/cart')} onClick={closeDrawer} className="block w-full">
                 <Button variant="outline" size="md" className="w-full">
                   View Full Bag
                 </Button>

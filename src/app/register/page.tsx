@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { User, Mail, Phone, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -120,7 +121,7 @@ export default function RegisterPage() {
 
         <div className="pt-4 border-t border-[#E8DED8] text-center text-xs text-[#777777]">
           <span>Already have an account? </span>
-          <Link href="/login" className="font-bold text-[#111111] hover:text-[#B77A68] underline underline-offset-2">
+          <Link href={formatTenantHref('/login')} className="font-bold text-[#111111] hover:text-[#B77A68] underline underline-offset-2">
             Sign In
           </Link>
         </div>

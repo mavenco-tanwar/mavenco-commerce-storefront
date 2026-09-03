@@ -8,6 +8,7 @@ import { Product } from '@/types/product';
 import { ProductService } from '@/services/products';
 import { ProductCard } from '@/components/product/ProductCard';
 import { Button } from '@/components/ui/Button';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface NewArrivalsStudioProps {
   customTitle?: string;
@@ -78,7 +79,7 @@ export function NewArrivalsStudio({
           </div>
 
           <Link
-            href={customCtaUrl}
+            href={formatTenantHref(customCtaUrl)}
             className="text-xs uppercase font-bold tracking-widest text-[#111111] hover:text-[#B77A68] flex items-center gap-1.5 transition-colors group"
           >
             <span>{customCtaText}</span>
@@ -115,7 +116,7 @@ export function NewArrivalsStudio({
               <p className="text-xs text-[#E8DED8] leading-relaxed font-sans font-normal">
                 {bannerSubtitle}
               </p>
-              <Link href={customCtaUrl} className="block pt-2">
+              <Link href={formatTenantHref(customCtaUrl)} className="block pt-2">
                 <Button variant="luxury-gold" size="md" className="w-full">
                   Explore Studio Edit &rarr;
                 </Button>

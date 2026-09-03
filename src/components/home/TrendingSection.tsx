@@ -7,6 +7,7 @@ import { Product } from '@/types/product';
 import { ProductService } from '@/services/products';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { Button } from '@/components/ui/Button';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface TrendingSectionProps {
   customTitle?: string;
@@ -116,7 +117,7 @@ export function TrendingSection({
 
         {/* View All CTA */}
         <div className="mt-12 text-center">
-          <Link href={customCtaUrl}>
+          <Link href={formatTenantHref(customCtaUrl)}>
             <Button
               variant="outline"
               size="lg"

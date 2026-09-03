@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Heart } from 'lucide-react';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface KidsCategoryItem {
   title: string;
@@ -86,7 +87,7 @@ export function KidsEditorial({
           </div>
 
           <Link
-            href={customCtaUrl}
+            href={formatTenantHref(customCtaUrl)}
             className="text-xs uppercase font-bold tracking-widest text-[#111111] hover:text-[#B77A68] flex items-center gap-1.5 transition-colors group"
           >
             <span>{customCtaText}</span>
@@ -99,7 +100,7 @@ export function KidsEditorial({
           {categories.map((cat, idx) => (
             <Link
               key={idx}
-              href={cat.href || '/kids'}
+              href={formatTenantHref(cat.href || '/kids')}
               className="group relative aspect-4/5 overflow-hidden bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow"
             >
               <Image

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Package, Truck, ExternalLink, ChevronDown, Download } from 'lucide-react';
 import { Order } from '@/types/order';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { formatCurrency } from '@/lib/utils';
 import { OrderStatusStepper } from './OrderStatusStepper';
 import { Button } from '@/components/ui/Button';
@@ -74,7 +75,7 @@ export function OrderCard({ order }: { order: Order }) {
               </div>
               <div className="flex-1">
                 <Link
-                  href={`/products/${item.product.slug}`}
+                  href={formatTenantHref(`/products/${item.product.slug}`)}
                   className="text-xs sm:text-sm font-semibold text-[#111111] hover:text-[#B77A68] transition-colors"
                 >
                   {item.product.name}

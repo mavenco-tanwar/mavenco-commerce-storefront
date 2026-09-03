@@ -16,7 +16,7 @@ import {
   ProductPageConfig,
 } from '@/types/pdp-template.types';
 import { getDefaultPdpConfig } from '@/lib/pdp-presets';
-import { resolveTenant } from '@/lib/tenant-config';
+import { resolveTenant, formatTenantHref } from '@/lib/tenant-config';
 import { Product } from '@/types/product';
 import { useCart } from '@/context/CartContext';
 
@@ -104,7 +104,7 @@ export function ProductPageRenderer({
 
   const handleBuyNow = async (qty: number = 1) => {
     await handleAddToCart(qty);
-    router.push('/checkout');
+    router.push(formatTenantHref('/checkout', activeTenant.slug));
   };
 
   return (
@@ -113,8 +113,8 @@ export function ProductPageRenderer({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <Breadcrumbs
           items={[
-            { label: 'Home', href: '/' },
-            { label: product.categoryName || 'Creations', href: `/collections/${product.category || 'all'}` },
+            { label: 'Home', href: formatTenantHref('/', activeTenant.slug) },
+            { label: product.categoryName || 'Creations', href: formatTenantHref(`/collections/${product.category || 'all'}`, activeTenant.slug) },
             { label: product.title },
           ]}
         />

@@ -7,6 +7,7 @@ import { Search, X, TrendingUp, ArrowRight, Loader2 } from 'lucide-react';
 import { ProductService } from '@/services/products';
 import { Product } from '@/types/product';
 import { PriceDisplay } from '@/components/ui/PriceDisplay';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -131,7 +132,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                     Found {results.length} styles
                   </span>
                   <Link
-                    href={`/women?search=${encodeURIComponent(query)}`}
+                    href={formatTenantHref(`/women?search=${encodeURIComponent(query)}`)}
                     onClick={onClose}
                     className="text-xs font-bold text-[#B77A68] hover:underline flex items-center gap-1"
                   >
@@ -143,7 +144,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                   {results.map((product) => (
                     <Link
                       key={product.id}
-                      href={`/products/${product.slug}`}
+                      href={formatTenantHref(`/products/${product.slug}`)}
                       onClick={onClose}
                       className="group flex flex-col bg-[#FAF6F2] border border-[#E8DED8] p-2 hover:border-[#B77A68] transition-all"
                     >
@@ -204,7 +205,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
 
                 <div className="mt-6 pt-6 border-t border-[#E8DED8] grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
                   <Link
-                    href="/women"
+                    href={formatTenantHref('/women')}
                     onClick={onClose}
                     className="p-3 bg-[#FAF6F2] hover:bg-[#F8F1EA] border border-[#E8DED8] transition-colors"
                   >
@@ -215,7 +216,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                   </Link>
 
                   <Link
-                    href="/kids"
+                    href={formatTenantHref('/kids')}
                     onClick={onClose}
                     className="p-3 bg-[#FAF6F2] hover:bg-[#F8F1EA] border border-[#E8DED8] transition-colors"
                   >
@@ -226,7 +227,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                   </Link>
 
                   <Link
-                    href="/new-arrivals"
+                    href={formatTenantHref('/new-arrivals')}
                     onClick={onClose}
                     className="p-3 bg-[#FAF6F2] hover:bg-[#F8F1EA] border border-[#E8DED8] transition-colors"
                   >
@@ -237,7 +238,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                   </Link>
 
                   <Link
-                    href="/sale"
+                    href={formatTenantHref('/sale')}
                     onClick={onClose}
                     className="p-3 bg-[#FAF6F2] hover:bg-[#F8F1EA] border border-[#E8DED8] transition-colors"
                   >

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface PromotionalBannerProps {
   customTitle?: string;
@@ -69,7 +70,7 @@ export function PromotionalBanner({
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-4">
-            <Link href={customPrimaryCtaUrl}>
+            <Link href={formatTenantHref(customPrimaryCtaUrl)}>
               <Button variant="luxury-gold" size="lg" className="min-w-[180px] group">
                 <span>{customPrimaryCtaText}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -77,7 +78,7 @@ export function PromotionalBanner({
             </Link>
 
             {customSecondaryCtaText && (
-              <Link href={customSecondaryCtaUrl}>
+              <Link href={formatTenantHref(customSecondaryCtaUrl)}>
                 <Button
                   variant="outline"
                   size="lg"

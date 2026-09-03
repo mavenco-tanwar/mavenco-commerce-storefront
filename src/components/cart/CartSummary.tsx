@@ -6,6 +6,7 @@ import { Tag, ArrowRight, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 import { CartSummary as CartSummaryType } from '@/types/cart';
 import { Button } from '@/components/ui/Button';
 import { formatCurrency } from '@/lib/utils';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { useCart } from '@/context/CartContext';
 
 export function CartSummary({ summary }: { summary: CartSummaryType }) {
@@ -108,14 +109,14 @@ export function CartSummary({ summary }: { summary: CartSummaryType }) {
 
       {/* Checkout CTA Button */}
       <div className="pt-2 space-y-3">
-        <Link href="/checkout" className="block w-full">
+        <Link href={formatTenantHref('/checkout')} className="block w-full">
           <Button variant="luxury-gold" size="lg" className="w-full justify-between group">
             <span>Proceed to Checkout</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Button>
         </Link>
 
-        <Link href="/women" className="block text-center text-xs text-[#777777] hover:text-[#111111] underline underline-offset-2">
+        <Link href={formatTenantHref('/women')} className="block text-center text-xs text-[#777777] hover:text-[#111111] underline underline-offset-2">
           Continue Shopping
         </Link>
       </div>

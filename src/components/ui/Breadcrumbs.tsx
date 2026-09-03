@@ -1,3 +1,4 @@
+import { formatTenantHref } from '@/lib/tenant-config';
 import React from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
@@ -22,7 +23,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
       <ol className="flex items-center gap-1.5 whitespace-nowrap">
         <li>
           <Link
-            href="/"
+            href={formatTenantHref('/')}
             className="hover:text-[#111111] transition-colors flex items-center"
           >
             Home
@@ -41,7 +42,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                 </span>
               ) : (
                 <Link
-                  href={item.href}
+                  href={formatTenantHref(item.href)}
                   className="hover:text-[#111111] transition-colors truncate max-w-[150px]"
                 >
                   {item.label}

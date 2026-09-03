@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 export interface BreadcrumbItem {
   label: string;
@@ -22,7 +23,7 @@ export function CollectionBreadcrumbs({
 }: CollectionBreadcrumbsProps) {
   return (
     <nav aria-label="Breadcrumb" className={`flex items-center gap-2 text-xs text-slate-500 font-sans select-none ${className}`}>
-      <Link href="/" className="hover:text-rose-600 transition-colors">
+      <Link href={formatTenantHref('/')} className="hover:text-rose-600 transition-colors">
         Home
       </Link>
 
@@ -37,7 +38,7 @@ export function CollectionBreadcrumbs({
                 {item.label}
               </span>
             ) : (
-              <Link href={item.href} className="hover:text-rose-600 transition-colors truncate max-w-[160px]">
+              <Link href={formatTenantHref(item.href)} className="hover:text-rose-600 transition-colors truncate max-w-[160px]">
                 {item.label}
               </Link>
             )}

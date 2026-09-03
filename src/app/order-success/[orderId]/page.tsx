@@ -21,6 +21,7 @@ import { OrderService } from '@/services/orders';
 import { OrderStatusStepper } from '@/components/account/OrderStatusStepper';
 import { Button } from '@/components/ui/Button';
 import { formatCurrency } from '@/lib/utils';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { useToast } from '@/context/ToastContext';
 
 export default function OrderSuccessPage() {
@@ -364,7 +365,7 @@ export default function OrderSuccessPage() {
             Download / Print Official Receipt
           </Button>
 
-          <Link href="/new-arrivals">
+          <Link href={formatTenantHref('/new-arrivals')}>
             <Button
               variant="luxury-gold"
               size="lg"

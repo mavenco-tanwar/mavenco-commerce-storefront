@@ -6,6 +6,7 @@ import { ArrowRight, Flame } from 'lucide-react';
 import { Product } from '@/types/product';
 import { ProductService } from '@/services/products';
 import { ProductGrid } from '@/components/product/ProductGrid';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface BestSellersSectionProps {
   customTitle?: string;
@@ -63,7 +64,7 @@ export function BestSellersSection({
           </div>
 
           <Link
-            href={customCtaUrl}
+            href={formatTenantHref(customCtaUrl)}
             className="text-xs uppercase font-bold tracking-widest text-[#111111] hover:text-[#B77A68] flex items-center gap-1.5 transition-colors group"
           >
             <span>{customCtaText}</span>

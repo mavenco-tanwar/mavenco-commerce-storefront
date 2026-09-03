@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
 import { HeaderBlock } from '@/lib/header-config';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { useWishlist } from '@/context/WishlistContext';
 
 interface WishlistBlockProps {
@@ -19,7 +20,7 @@ export function WishlistBlock({ block, accentColor = '#E11D48' }: WishlistBlockP
 
   return (
     <Link
-      href="/wishlist"
+      href={formatTenantHref('/wishlist')}
       aria-label="Wishlist"
       className="relative flex items-center gap-1.5 hover:opacity-75 transition-opacity text-xs font-semibold tracking-wider uppercase select-none group"
       style={{ color: block.styles?.textColor || 'inherit' }}

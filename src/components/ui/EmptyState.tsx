@@ -43,7 +43,7 @@ export function EmptyState({
       </p>
 
       {actionText && actionHref && (
-        <Link href={actionHref}>
+        <Link href={formatTenantHref(actionHref)}>
           <Button variant="primary" size="md">
             {actionText}
           </Button>

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { FooterBlock } from '@/lib/footer-config';
+import { formatTenantHref } from '@/lib/tenant-config';
 import {
   Phone,
   Mail,
@@ -35,7 +36,7 @@ export function FooterBlockRenderer({
   // 1. Logo Block
   if (type === 'logo') {
     const { text, imageUrl, logoType, width, linkUrl } = content;
-    const targetUrl = linkUrl || `/stores/${tenantSlug}`;
+    const targetUrl = formatTenantHref(linkUrl || '/', tenantSlug);
 
     if (logoType === 'image' && imageUrl) {
       return (
@@ -116,7 +117,7 @@ export function FooterBlockRenderer({
             {items.map((it: any, i: number) => (
               <li key={i}>
                 <Link
-                  href={it.href || '#'}
+                  href={formatTenantHref(it.href || '#', tenantSlug)}
                   style={{ color: styles.linkColor || '#94A3B8' }}
                   className="hover:text-white transition-colors duration-200 block py-0.5"
                 >

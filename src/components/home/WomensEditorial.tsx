@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface WomensCategoryItem {
   title: string;
@@ -100,7 +101,7 @@ export function WomensEditorial({
           </div>
 
           <Link
-            href={customCtaUrl}
+            href={formatTenantHref(customCtaUrl)}
             className="text-xs uppercase font-bold tracking-widest text-[#111111] hover:text-[#B77A68] flex items-center gap-1.5 transition-colors group"
           >
             <span>{customCtaText}</span>
@@ -113,7 +114,7 @@ export function WomensEditorial({
           {categories.map((cat, idx) => (
             <Link
               key={idx}
-              href={cat.href || '/women'}
+              href={formatTenantHref(cat.href || '/women')}
               className="group flex flex-col bg-[#FAF6F2] border border-[#E8DED8] p-3 luxury-card-shadow transition-all duration-300 hover:border-[#B77A68]"
             >
               <div className="relative aspect-3/4 w-full overflow-hidden bg-[#F8F1EA] mb-3">

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useWishlist } from '@/context/WishlistContext';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { useCart } from '@/context/CartContext';
 import { PriceDisplay } from '@/components/ui/PriceDisplay';
 import { Button } from '@/components/ui/Button';
@@ -54,7 +55,7 @@ export default function WishlistPage() {
               title="Your Wishlist is Empty"
               description="Save your favorite dresses, kurti sets, and kids wear to view them here later."
               actionText="Explore Trending Styles"
-              actionHref="/women"
+              actionHref={formatTenantHref('/women')}
             />
           </div>
         ) : (
@@ -66,7 +67,7 @@ export default function WishlistPage() {
               >
                 {/* Thumbnail */}
                 <div className="relative aspect-3/4 bg-[#FAF6F2] overflow-hidden">
-                  <Link href={`/products/${product.slug}`} className="relative block w-full h-full">
+                  <Link href={formatTenantHref(`/products/${product.slug}`)} className="relative block w-full h-full">
                     {product.images[0] && (
                       <Image
                         src={product.images[0].url}
@@ -95,7 +96,7 @@ export default function WishlistPage() {
                       {product.categoryName}
                     </span>
                     <Link
-                      href={`/products/${product.slug}`}
+                      href={formatTenantHref(`/products/${product.slug}`)}
                       className="text-xs sm:text-sm font-semibold text-[#111111] hover:text-[#B77A68] transition-colors line-clamp-1 mt-0.5"
                     >
                       {product.name}
