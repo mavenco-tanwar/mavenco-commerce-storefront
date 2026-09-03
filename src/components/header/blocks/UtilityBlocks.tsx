@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Phone, MessageCircle } from 'lucide-react';
 import { HeaderBlock } from '@/lib/header-config';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 export function WhatsAppBlock({ block }: { block: HeaderBlock }) {
   const s = block.settings || {};
@@ -90,13 +92,14 @@ export function IconBlock({ block }: { block: HeaderBlock }) {
   );
 }
 
-export function CTAButtonBlock({ block }: { block: HeaderBlock }) {
+export function CTAButtonBlock({ block, tenantSlug }: { block: HeaderBlock; tenantSlug?: string }) {
   const s = block.settings || {};
   const label = s.label || 'EXPLORE';
-  const url = s.url || '/sale';
+  const rawUrl = s.url || s.link || '/sale';
+  const url = formatTenantHref(rawUrl, tenantSlug);
 
   return (
-    <a
+    <Link
       href={url}
       className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest transition-transform active:scale-95 shadow-xs select-none inline-flex items-center"
       style={{
@@ -105,7 +108,7 @@ export function CTAButtonBlock({ block }: { block: HeaderBlock }) {
       }}
     >
       {label}
-    </a>
+    </Link>
   );
 }
 

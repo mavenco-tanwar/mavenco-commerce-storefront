@@ -3,8 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface MegaMenuProps {
+  tenantSlug?: string;
   megaMenu: {
     enabled: boolean;
     columns: Array<{
@@ -24,7 +26,7 @@ interface MegaMenuProps {
   onClose?: () => void;
 }
 
-export function MegaMenu({ megaMenu, accentColor = '#E11D48', onClose }: MegaMenuProps) {
+export function MegaMenu({ megaMenu, accentColor = '#E11D48', tenantSlug, onClose }: MegaMenuProps) {
   if (!megaMenu?.enabled || !megaMenu.columns || megaMenu.columns.length === 0) {
     return null;
   }
@@ -57,7 +59,7 @@ export function MegaMenu({ megaMenu, accentColor = '#E11D48', onClose }: MegaMen
                 {col.links.map((link, idx) => (
                   <li key={idx}>
                     <Link
-                      href={link.url}
+                      href={formatTenantHref(link.url, tenantSlug)}
                       onClick={onClose}
                       className="text-xs text-slate-600 hover:text-slate-900 transition-colors flex items-center justify-between group py-1"
                     >
@@ -97,7 +99,7 @@ export function MegaMenu({ megaMenu, accentColor = '#E11D48', onClose }: MegaMen
                     </p>
                   )}
                   <Link
-                    href={col.promoBanner.ctaUrl}
+                    href={formatTenantHref(col.promoBanner.ctaUrl, tenantSlug)}
                     onClick={onClose}
                     className="inline-flex items-center gap-1.5 text-xs font-bold text-white hover:text-amber-200 transition-colors"
                   >

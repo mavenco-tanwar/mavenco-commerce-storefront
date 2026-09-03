@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { HeaderBlock } from '@/lib/header-config';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface LogoBlockProps {
   block: HeaderBlock;
@@ -15,7 +16,7 @@ export function LogoBlock({ block, tenantSlug }: LogoBlockProps) {
   const logoText = s.logoText || s.text || '';
   const badgeText = s.badgeText !== undefined ? s.badgeText : s.tagline !== undefined ? s.tagline : '';
   const logoUrl = s.logoUrl;
-  const link = s.link || `/stores/${tenantSlug}`;
+  const link = formatTenantHref(s.link || '/', tenantSlug);
   const width = s.width || '180px';
   const height = s.height || 'auto';
 

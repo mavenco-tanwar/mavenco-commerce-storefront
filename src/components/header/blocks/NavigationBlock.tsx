@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { HeaderBlock, NavigationItem } from '@/lib/header-config';
 import { MegaMenu } from './MegaMenu';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface NavigationBlockProps {
   block: HeaderBlock;
@@ -60,7 +61,7 @@ export function NavigationBlock({
             onMouseEnter={() => (hasMegaMenu || hasChildren ? setActiveMenuId(item.id) : setActiveMenuId(null))}
           >
             <Link
-              href={item.url}
+              href={formatTenantHref(item.url, tenantSlug)}
               target={item.target || '_self'}
               className="flex items-center gap-1.5 transition-opacity hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{
@@ -100,6 +101,7 @@ export function NavigationBlock({
               <MegaMenu
                 megaMenu={item.megaMenu}
                 accentColor={accentColor}
+                tenantSlug={tenantSlug}
                 onClose={() => setActiveMenuId(null)}
               />
             )}
@@ -113,7 +115,7 @@ export function NavigationBlock({
                 {item.children.map((child) => (
                   <Link
                     key={child.id}
-                    href={child.url}
+                    href={formatTenantHref(child.url, tenantSlug)}
                     onClick={() => setActiveMenuId(null)}
                     className="block px-3 py-2 text-xs font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors"
                   >
