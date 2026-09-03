@@ -128,8 +128,10 @@ export class StoreBootstrapService {
       navigation: {
         header: navDoc?.headerItems || [
           { id: 'nav-1', label: 'Home', url: '/' },
-          { id: 'nav-2', label: 'Collection', url: '/collections' },
-          { id: 'nav-3', label: 'Sale', url: '/sale' },
+          { id: 'nav-2', label: 'New Arrivals', url: '/collections' },
+          { id: 'nav-3', label: 'Atelier Pret', url: '/collections' },
+          { id: 'nav-4', label: 'Signature Line', url: '/collections' },
+          { id: 'nav-5', label: 'Seasonal Lookbook', url: '/lookbook' },
         ],
         footer: navDoc?.footerColumns || [
           {
@@ -155,11 +157,11 @@ export class StoreBootstrapService {
         ],
       },
       theme: {
-        primaryColor: themeDoc?.primaryColor || '#111827',
-        accentColor: themeDoc?.accentColor || '#B77A68',
+        primaryColor: themeDoc?.primaryColor || '#0F172A',
+        accentColor: themeDoc?.accentColor || '#E11D48',
         fontHeading: themeDoc?.fontHeading || 'Playfair Display, serif',
         fontBody: themeDoc?.fontBody || 'Plus Jakarta Sans, sans-serif',
-        borderRadius: themeDoc?.borderRadius || '8px',
+        borderRadius: themeDoc?.borderRadius || '12px',
       },
       market: {
         code: context.marketId,
