@@ -102,7 +102,7 @@ export function CategoryShowcase({
             return (
               <Link
                 key={cat.id || idx}
-                href={href}
+                href={formatTenantHref(href)}
                 className="group relative aspect-3/4 overflow-hidden bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow flex flex-col justify-end p-6"
               >
                 {/* Background Image */}

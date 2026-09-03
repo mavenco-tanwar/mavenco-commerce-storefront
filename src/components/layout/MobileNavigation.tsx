@@ -131,7 +131,7 @@ export function MobileNavigation({ isOpen, onClose, onOpenSearch }: MobileNaviga
           {/* Quick Primary Links */}
           <div className="py-3 space-y-2">
             <Link
-              href="/new-arrivals"
+              href={formatTenantHref('/new-arrivals')}
               onClick={onClose}
               className="flex items-center justify-between py-2 text-sm font-serif font-bold uppercase tracking-wider text-[#111111] hover:text-[#B77A68]"
             >
@@ -142,7 +142,7 @@ export function MobileNavigation({ isOpen, onClose, onOpenSearch }: MobileNaviga
             </Link>
 
             <Link
-              href="/sale"
+              href={formatTenantHref('/sale')}
               onClick={onClose}
               className="flex items-center justify-between py-2 text-sm font-serif font-bold uppercase tracking-wider text-[#B77A68]"
             >
@@ -166,7 +166,7 @@ export function MobileNavigation({ isOpen, onClose, onOpenSearch }: MobileNaviga
               <span>{isAuthenticated ? 'My Account' : 'Sign In'}</span>
             </Link>
             <Link
-              href="/wishlist"
+              href={formatTenantHref('/wishlist')}
               onClick={onClose}
               className="flex items-center justify-center gap-2 p-2.5 bg-[#FFFDFC] border border-[#E8DED8] text-xs font-semibold text-[#111111] hover:border-[#B77A68] transition-colors"
             >

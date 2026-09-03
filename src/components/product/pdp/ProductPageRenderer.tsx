@@ -195,7 +195,7 @@ export function ProductPageRenderer({
                 </h3>
               </div>
               <Link
-                href="/collections"
+                href={formatTenantHref('/collections')}
                 className="text-xs font-bold text-slate-600 hover:text-rose-600 uppercase tracking-wider transition-colors"
               >
                 View All &rarr;

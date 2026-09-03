@@ -84,7 +84,7 @@ export function CartDrawer() {
                 <div key={item.id} className="py-4 flex gap-3.5 group">
                   {/* Thumbnail */}
                   <Link
-                    href={`/products/${item.product.slug}`}
+                    href={formatTenantHref(`/products/${item.product.slug}`)}
                     onClick={closeDrawer}
                     className="relative w-20 aspect-3/4 shrink-0 overflow-hidden bg-[#FAF6F2] border border-[#E8DED8]"
                   >
@@ -104,7 +104,7 @@ export function CartDrawer() {
                     <div>
                       <div className="flex items-start justify-between gap-2">
                         <Link
-                          href={`/products/${item.product.slug}`}
+                          href={formatTenantHref(`/products/${item.product.slug}`)}
                           onClick={closeDrawer}
                           className="text-xs md:text-sm font-semibold text-[#111111] hover:text-[#B77A68] transition-colors line-clamp-1"
                         >

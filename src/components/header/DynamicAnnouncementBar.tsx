@@ -247,7 +247,7 @@ export function DynamicAnnouncementBar({
                   <span>{text}</span>
                   {ctaText && (
                     <Link
-                      href={ctaUrl}
+                      href={formatTenantHref(ctaUrl, tenantSlug)}
                       className="font-bold underline uppercase tracking-widest hover:opacity-80 transition-opacity ml-1"
                       style={{ color: styles?.accentColor || '#F59E0B' }}
                     >

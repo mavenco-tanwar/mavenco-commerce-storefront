@@ -1,3 +1,4 @@
+import { formatTenantHref } from '@/lib/tenant-config';
 import React, { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -119,7 +120,7 @@ export default async function DynamicSlugPage({ params }: PageProps) {
         <div className="bg-[#FAF6F2] border-b border-[#E8DED8] py-3">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="flex items-center gap-2 text-xs text-[#777777] font-sans">
-              <Link href="/" className="hover:text-[#111111] transition-colors">
+              <Link href={formatTenantHref('/')} className="hover:text-[#111111] transition-colors">
                 Home
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-[#B77A68]" />
@@ -219,13 +220,13 @@ export default async function DynamicSlugPage({ params }: PageProps) {
           {/* Bottom Back-to-Shop CTA */}
           <div className="pt-10 border-t border-[#E8DED8] flex flex-col sm:flex-row items-center justify-between gap-4">
             <Link
-              href="/"
+              href={formatTenantHref('/')}
               className="text-xs uppercase font-bold tracking-widest text-[#777777] hover:text-[#111111] transition-colors"
             >
               ← Return to Boutique Home
             </Link>
 
-            <Link href="/new-arrivals">
+            <Link href={formatTenantHref('/new-arrivals')}>
               <Button variant="luxury-gold" size="md" rightIcon={<ArrowRight className="w-4 h-4" />}>
                 Explore New Arrivals
               </Button>
@@ -257,17 +258,17 @@ export default async function DynamicSlugPage({ params }: PageProps) {
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-          <Link href="/women">
+          <Link href={formatTenantHref('/women')}>
             <Button variant="luxury-gold" size="md">
               Shop Women
             </Button>
           </Link>
-          <Link href="/kids">
+          <Link href={formatTenantHref('/kids')}>
             <Button variant="outline" size="md">
               Shop Kids
             </Button>
           </Link>
-          <Link href="/new-arrivals">
+          <Link href={formatTenantHref('/new-arrivals')}>
             <Button variant="outline" size="md">
               New Arrivals
             </Button>

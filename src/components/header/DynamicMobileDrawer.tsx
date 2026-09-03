@@ -142,7 +142,7 @@ export function DynamicMobileDrawer({
                 <div key={item.id} className="rounded-xl overflow-hidden">
                   <div className="flex items-center justify-between">
                     <Link
-                      href={item.url}
+                      href={formatTenantHref(item.url, tenantSlug)}
                       onClick={onClose}
                       className="flex-1 px-3 py-2.5 text-xs font-bold uppercase tracking-wider hover:opacity-75 transition-opacity flex items-center gap-2"
                     >
@@ -183,7 +183,7 @@ export function DynamicMobileDrawer({
                           {col.links?.map((link, idx) => (
                             <Link
                               key={idx}
-                              href={link.url}
+                              href={formatTenantHref(link.url, tenantSlug)}
                               onClick={onClose}
                               className="block py-1 text-xs opacity-80 hover:opacity-100 transition-opacity"
                             >
@@ -201,7 +201,7 @@ export function DynamicMobileDrawer({
                       {item.children.map((child) => (
                         <Link
                           key={child.id}
-                          href={child.url}
+                          href={formatTenantHref(child.url, tenantSlug)}
                           onClick={onClose}
                           className="block py-1.5 text-xs opacity-80 hover:opacity-100 transition-opacity"
                         >
@@ -234,7 +234,7 @@ export function DynamicMobileDrawer({
                 )}
                 {drawerSettings.promoCard.ctaText && (
                   <Link
-                    href={drawerSettings.promoCard.ctaUrl || '/women'}
+                    href={formatTenantHref(drawerSettings.promoCard.ctaUrl || '/women', tenantSlug)}
                     onClick={onClose}
                     className="inline-block mt-1 text-xs font-bold underline uppercase tracking-wider hover:opacity-80"
                     style={{ color: accentColor }}
@@ -251,7 +251,7 @@ export function DynamicMobileDrawer({
         <div className="p-4 border-t space-y-3" style={{ borderColor: 'rgba(0,0,0,0.08)' }}>
           <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
             <Link
-              href="/wishlist"
+              href={formatTenantHref('/wishlist', tenantSlug)}
               onClick={onClose}
               className="flex items-center gap-2 p-2.5 rounded-xl bg-black/5 hover:bg-black/10 transition-colors"
             >
@@ -259,7 +259,7 @@ export function DynamicMobileDrawer({
               <span>Wishlist ({wishlistCount})</span>
             </Link>
             <Link
-              href="/cart"
+              href={formatTenantHref('/cart', tenantSlug)}
               onClick={onClose}
               className="flex items-center gap-2 p-2.5 rounded-xl bg-black/5 hover:bg-black/10 transition-colors"
             >
@@ -306,7 +306,7 @@ export function DynamicMobileDrawer({
               </div>
             ) : (
               <Link
-                href="/login"
+                href={formatTenantHref('/login', tenantSlug)}
                 onClick={onClose}
                 className="flex items-center gap-1.5 font-bold hover:opacity-80 transition-opacity"
               >

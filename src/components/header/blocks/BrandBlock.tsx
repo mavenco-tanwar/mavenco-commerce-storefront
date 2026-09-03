@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { HeaderBlock } from '@/lib/header-config';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface BrandBlockProps {
   block: HeaderBlock;
@@ -12,7 +13,7 @@ interface BrandBlockProps {
 export function BrandBlock({ block, tenantSlug }: BrandBlockProps) {
   const s = block.settings || {};
   const name = s.text || s.name || tenantSlug.toUpperCase();
-  const link = s.link || `/stores/${tenantSlug}`;
+  const link = formatTenantHref(s.link || '/', tenantSlug);
 
   return (
     <Link

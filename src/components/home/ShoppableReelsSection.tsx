@@ -208,7 +208,7 @@ export function ShoppableReelsSection() {
               </div>
 
               <Link
-                href="/stores/demo"
+                href={formatTenantHref('/')}
                 onClick={() => setActiveReel(null)}
                 className="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition-all shrink-0"
               >

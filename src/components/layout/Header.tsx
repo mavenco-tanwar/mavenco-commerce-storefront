@@ -209,7 +209,7 @@ export function Header() {
                           </Link>
 
                           <Link
-                            href="/wishlist"
+                            href={formatTenantHref('/wishlist')}
                             onClick={() => setIsUserMenuOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2 text-[#111111] hover:bg-[#F8F1EA] transition-colors"
                           >

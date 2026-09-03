@@ -113,7 +113,7 @@ export function Navigation() {
                     <ul className="space-y-2 text-xs font-normal normal-case">
                       <li>
                         <Link
-                          href="/women?category=kurtis"
+                          href={formatTenantHref('/women?category=kurtis')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Chanderi Kurti Sets
@@ -121,7 +121,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          href="/women?category=kurtis"
+                          href={formatTenantHref('/women?category=kurtis')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Anarkalis &amp; Suit Sets
@@ -129,7 +129,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          href="/women?category=dresses"
+                          href={formatTenantHref('/women?category=dresses')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Floral Tiered Dresses
@@ -137,7 +137,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          href="/women?category=co-ords"
+                          href={formatTenantHref('/women?category=co-ords')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Linen Co-ord Sets
@@ -153,7 +153,7 @@ export function Navigation() {
                     <ul className="space-y-2 text-xs font-normal normal-case">
                       <li>
                         <Link
-                          href="/women?category=dresses"
+                          href={formatTenantHref('/women?category=dresses')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Midi &amp; Maxi Dresses
@@ -161,7 +161,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          href="/women?category=tops"
+                          href={formatTenantHref('/women?category=tops')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Schiffli Cotton Tops
@@ -169,7 +169,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          href="/women?category=co-ords"
+                          href={formatTenantHref('/women?category=co-ords')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Blazer &amp; Trouser Sets
@@ -244,7 +244,7 @@ export function Navigation() {
                     <ul className="space-y-2 text-xs font-normal normal-case">
                       <li>
                         <Link
-                          href="/kids?category=girls"
+                          href={formatTenantHref('/kids?category=girls')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Princess Party Frocks
@@ -252,7 +252,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          href="/kids?category=girls"
+                          href={formatTenantHref('/kids?category=girls')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Cotton Casual Dresses
@@ -260,7 +260,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          href="/kids?category=girls"
+                          href={formatTenantHref('/kids?category=girls')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Lehenga Choli Sets
@@ -276,7 +276,7 @@ export function Navigation() {
                     <ul className="space-y-2 text-xs font-normal normal-case">
                       <li>
                         <Link
-                          href="/kids?category=boys"
+                          href={formatTenantHref('/kids?category=boys')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Artisanal Kurta Pajama
@@ -284,7 +284,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          href="/kids?category=boys"
+                          href={formatTenantHref('/kids?category=boys')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Printed Cotton Shirts
@@ -292,7 +292,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          href="/kids?category=boys"
+                          href={formatTenantHref('/kids?category=boys')}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Nehru Jacket Sets
@@ -358,7 +358,7 @@ export function Navigation() {
                     {collections.map((col) => (
                       <Link
                         key={col.id}
-                        href={`/collections/${col.slug}`}
+                        href={formatTenantHref(`/collections/${col.slug}`)}
                         className="p-2.5 bg-[#FAF6F2] hover:bg-[#F3ECE6] transition-colors flex items-center justify-between group"
                       >
                         <div>
