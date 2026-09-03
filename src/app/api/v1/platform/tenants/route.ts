@@ -78,19 +78,20 @@ const DEFAULT_TENANTS = [
   },
 ];
 
+let memoryTenants: any[] = [];
+
 export async function GET() {
   try {
     const db = await getDatabase();
-    let tenants = DEFAULT_TENANTS;
+    let tenants: any[] = [];
 
     if (db) {
       const collection = db.collection('platform_tenants_registry');
-      const count = await collection.countDocuments({});
-      if (count === 0) {
-        await collection.insertMany(DEFAULT_TENANTS);
-      }
       const docs = await collection.find({}).sort({ createdAt: -1 }).toArray();
       tenants = docs.map(({ _id, ...rest }) => rest as any);
+      memoryTenants = tenants;
+    } else {
+      tenants = memoryTenants;
     }
 
     return NextResponse.json({
@@ -128,6 +129,7 @@ export async function POST(req: NextRequest) {
     if (db) {
       await db.collection('platform_tenants_registry').insertOne(newTenant);
     }
+    memoryTenants.unshift(newTenant);
 
     return NextResponse.json({
       success: true,
@@ -154,6 +156,17 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    const idx = memoryTenants.findIndex(
+      (t) => t.tenantId === tenantId || t.slug === tenantId || t.id === tenantId
+    );
+    if (idx >= 0) {
+      memoryTenants[idx] = {
+        ...memoryTenants[idx],
+        status: updateStatus,
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
     return NextResponse.json({
       success: true,
       message: `Tenant status updated to '${updateStatus}' (Reason: ${reason || 'Operator Action'})`,
@@ -166,27 +179,57 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    const deleteAll = searchParams.get('all') === 'true';
     let targetId = searchParams.get('tenantId') || searchParams.get('id') || searchParams.get('slug');
 
-    if (!targetId) {
+    if (!targetId && !deleteAll) {
       try {
         const body = await req.json();
         targetId = body.tenantId || body.id || body.slug;
       } catch {}
     }
 
-    if (!targetId) {
+    if (!targetId && !deleteAll) {
       return NextResponse.json(
         { success: false, error: 'tenantId or slug is required for deletion' },
         { status: 400, headers: corsHeaders() }
       );
     }
 
-    const cleanTargetId = targetId.toLowerCase().trim();
+    const cleanTargetId = (targetId || '').toLowerCase().trim();
     const safeSlug = cleanTargetId.replace(/^store_/, '');
 
     const db = await getDatabase();
     let deletedCount = 0;
+
+    if (deleteAll) {
+      if (db) {
+        const res = await db.collection('platform_tenants_registry').deleteMany({});
+        deletedCount = res.deletedCount;
+        await db.collection('tenant_module_entitlements').deleteMany({});
+        await db.collection('tenant_roles').deleteMany({});
+        await db.collection('storefronts').deleteMany({});
+        await db.collection('storefront_pages').deleteMany({});
+        await db.collection('storefront_versions').deleteMany({});
+        await db.collection('stores').deleteMany({});
+      }
+      memoryTenants = [];
+      return NextResponse.json(
+        {
+          success: true,
+          deletedCount,
+          message: 'All platform tenants and isolated database records have been completely purged from MongoDB.',
+        },
+        { headers: corsHeaders() }
+      );
+    }
+
+    // Filter memory registry
+    memoryTenants = memoryTenants.filter((t) => {
+      const tid = (t.tenantId || t.id || t.slug || '').toLowerCase();
+      const tslug = (t.slug || '').toLowerCase();
+      return tid !== cleanTargetId && tslug !== cleanTargetId && tid !== safeSlug && tslug !== safeSlug;
+    });
 
     if (db) {
       // 1. Delete from platform_tenants_registry
