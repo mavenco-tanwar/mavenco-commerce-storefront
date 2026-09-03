@@ -15,69 +15,6 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders() });
 }
 
-const DEFAULT_TENANTS = [
-  {
-    tenantId: 'lumina',
-    slug: 'lumina',
-    name: 'Lumina Luxury Group',
-    status: 'active',
-    databaseIdentifier: 'db_tenant_lumina_prod',
-    planId: 'plan_growth',
-    planName: 'Growth Commerce Tier',
-    storesCount: 2,
-    customDomainsCount: 3,
-    mrrMinor: 29900,
-    health: 'healthy',
-    createdAt: new Date(Date.now() - 86400000 * 180).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    tenantId: 'elysium',
-    slug: 'elysium',
-    name: 'Elysium Haute Horlogerie',
-    status: 'active',
-    databaseIdentifier: 'db_tenant_elysium_prod',
-    planId: 'plan_scale',
-    planName: 'Scale Enterprise Tier',
-    storesCount: 4,
-    customDomainsCount: 6,
-    mrrMinor: 79900,
-    health: 'healthy',
-    createdAt: new Date(Date.now() - 86400000 * 90).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    tenantId: 'aurora',
-    slug: 'aurora',
-    name: 'Aurora Botanical Cosmetics',
-    status: 'active',
-    databaseIdentifier: 'db_tenant_aurora_prod',
-    planId: 'plan_starter',
-    planName: 'Starter Tier',
-    storesCount: 1,
-    customDomainsCount: 1,
-    mrrMinor: 9900,
-    health: 'healthy',
-    createdAt: new Date(Date.now() - 86400000 * 45).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    tenantId: 'vanguard',
-    slug: 'vanguard',
-    name: 'Vanguard Audio Atelier',
-    status: 'suspended',
-    databaseIdentifier: 'db_tenant_vanguard_prod',
-    planId: 'plan_growth',
-    planName: 'Growth Commerce Tier',
-    storesCount: 2,
-    customDomainsCount: 2,
-    mrrMinor: 29900,
-    health: 'warning',
-    createdAt: new Date(Date.now() - 86400000 * 120).toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
 let memoryTenants: any[] = [];
 
 export async function GET() {
