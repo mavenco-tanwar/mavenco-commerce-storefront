@@ -26,6 +26,18 @@ export interface CommerceCartItem {
   lineSubtotal: number;
   lineDiscount: number;
   lineTotal: number;
+  purchaseType?: 'one_time' | 'subscription';
+  subscriptionPlanId?: string;
+  billingInterval?: 'day' | 'week' | 'month' | 'year';
+  billingIntervalCount?: number;
+  deliveryInterval?: 'day' | 'week' | 'month' | 'year';
+  deliveryIntervalCount?: number;
+  subscriptionPricing?: {
+    recurringPrice: number;
+    intervalUnit: string;
+    intervalCount: number;
+    discountPercent?: number;
+  };
 }
 
 export interface CartPricing {
@@ -110,6 +122,11 @@ export interface CommerceOrder {
   orderStatus: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   couponCodes: string[];
   notes?: string;
+  subscriptionId?: string;
+  isRecurringOrder?: boolean;
+  renewalNumber?: number;
+  billingPeriodStart?: string;
+  billingPeriodEnd?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -20,6 +20,7 @@ import {
   Store,
   ChevronRight,
   Sparkles,
+  RefreshCw,
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -29,6 +30,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { label: 'Catalog Overview', href: '/admin/catalog', icon: Layers },
     { label: 'Products', href: '/admin/products', icon: Package },
+    { label: 'Subscriptions', href: '/admin/subscriptions', icon: RefreshCw },
+    { label: 'Subscription Plans', href: '/admin/subscriptions/plans', icon: Sliders },
+    { label: 'Memberships', href: '/admin/subscriptions/memberships', icon: Award },
     { label: 'Merchandising', href: '/admin/merchandising', icon: TrendingUp },
     { label: 'Attributes & Groups', href: '/admin/catalog/attributes', icon: Sliders },
     { label: 'Brands', href: '/admin/catalog/brands', icon: Award },

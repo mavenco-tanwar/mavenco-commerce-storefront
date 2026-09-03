@@ -51,6 +51,12 @@ export interface Order {
   tax: number;
   total: number;
   estimatedDeliveryDate: string;
+  subscriptionId?: string;
+  subscriptionOrderSequence?: number;
+  isRecurringOrder?: boolean;
+  billingPeriodStart?: string;
+  billingPeriodEnd?: string;
+  renewalNumber?: number;
 }
 
 export interface CreateOrderParams {

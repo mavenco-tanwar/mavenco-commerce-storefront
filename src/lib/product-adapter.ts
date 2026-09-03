@@ -140,6 +140,35 @@ export function normalizeProduct(raw: Product | PimProduct, context?: { marketId
     origin: (raw as any).countryOfOrigin || 'Handcrafted in India',
     inStock: (raw as any).inStock ?? true,
     stockCount: (raw as any).stockCount ?? 12,
+    subscriptionAvailability: (raw as any).subscriptionEnabled ?? true,
+    subscriptionPlans: [
+      {
+        id: 'sub_plan_monthly_default',
+        name: 'Subscribe & Save (Monthly)',
+        slug: 'monthly-delivery',
+        billingInterval: 'month' as const,
+        billingIntervalCount: 1,
+        discountPercent: 15,
+        recurringPrice: Math.round(basePrice * 0.85),
+        trialDurationDays: 0,
+      },
+      {
+        id: 'sub_plan_bimonthly',
+        name: 'Subscribe & Save (Bi-Monthly)',
+        slug: 'bimonthly-delivery',
+        billingInterval: 'month' as const,
+        billingIntervalCount: 2,
+        discountPercent: 10,
+        recurringPrice: Math.round(basePrice * 0.9),
+        trialDurationDays: 0,
+      },
+    ],
+    allowedIntervals: ['1 month', '2 months', '3 months'],
+    subscriptionPricing: {
+      recurringPrice: Math.round(basePrice * 0.85),
+      discountPercent: 15,
+    },
+    membershipEligibility: ['atelier-circle-vip'],
   };
 }
 

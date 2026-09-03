@@ -193,4 +193,21 @@ export interface NormalizedProduct {
   origin?: string;
   inStock: boolean;
   stockCount: number;
+  subscriptionAvailability?: boolean;
+  subscriptionPlans?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    billingInterval: 'day' | 'week' | 'month' | 'year';
+    billingIntervalCount: number;
+    discountPercent?: number;
+    recurringPrice: number;
+    trialDurationDays?: number;
+  }>;
+  allowedIntervals?: string[];
+  subscriptionPricing?: {
+    recurringPrice: number;
+    discountPercent?: number;
+  };
+  membershipEligibility?: string[];
 }
