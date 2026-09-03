@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { getProductsForTenant } from '@/data/products';
+import { PimService } from '@/server/pim/pim.service';
 
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug',
+    'Access-Control-Allow-Methods': 'GET, PUT, PATCH, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, x-user-name',
   };
 }
 
@@ -20,7 +21,13 @@ export async function GET(
 ) {
   const { slug } = await params;
   const { searchParams } = new URL(request.url);
-  const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || '').toLowerCase().trim();
+  const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
+
+  // Try PIM first
+  const pimProduct = await PimService.getProductById(tenantSlug, slug);
+  if (pimProduct) {
+    return NextResponse.json({ data: pimProduct, source: 'pim_authoritative' }, { headers: corsHeaders() });
+  }
 
   try {
     const db = await getDatabase();
@@ -54,25 +61,52 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  return handleUpdate(request, params);
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  return handleUpdate(request, params);
+}
+
+async function handleUpdate(
+  request: NextRequest,
+  params: Promise<{ slug: string }>
+) {
   const { slug } = await params;
+  const tenantSlug = (request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
+  const operator = request.headers.get('x-user-name') || 'Admin User';
+
   try {
     const body = await request.json();
-    const db = await getDatabase();
-    if (!db) {
-      return NextResponse.json({ error: 'Database unavailable' }, { status: 500, headers: corsHeaders() });
-    }
 
-    const result = await db.collection('products').updateOne(
-      { $or: [{ slug: slug }, { id: slug }] },
+    // Update through authoritative PIM service
+    const existingPim = await PimService.getProductById(tenantSlug, slug);
+    const updated = await PimService.upsertProduct(
+      tenantSlug,
       {
-        $set: {
-          ...body,
-          updatedAt: new Date().toISOString(),
-        },
-      }
+        ...(existingPim || {}),
+        ...body,
+        id: existingPim?.id || slug,
+        slug: body.slug || existingPim?.slug || slug,
+      },
+      operator
     );
 
-    return NextResponse.json({ success: true, modifiedCount: result.modifiedCount }, { headers: corsHeaders() });
+    // Sync to legacy MongoDB products collection if available
+    try {
+      const db = await getDatabase();
+      if (db) {
+        await db.collection('products').updateOne(
+          { $or: [{ slug: slug }, { id: slug }] },
+          { $set: { ...body, updatedAt: new Date().toISOString() } }
+        );
+      }
+    } catch {}
+
+    return NextResponse.json({ success: true, data: updated, message: 'Product updated successfully' }, { headers: corsHeaders() });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500, headers: corsHeaders() });
   }
@@ -83,17 +117,23 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
+  const tenantSlug = (request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
+  const operator = request.headers.get('x-user-name') || 'Admin User';
+
   try {
-    const db = await getDatabase();
-    if (!db) {
-      return NextResponse.json({ error: 'Database unavailable' }, { status: 500, headers: corsHeaders() });
+    const existing = await PimService.getProductById(tenantSlug, slug);
+    if (existing) {
+      await PimService.deleteProduct(tenantSlug, existing.id, operator);
     }
 
-    const result = await db.collection('products').deleteOne({
-      $or: [{ slug: slug }, { id: slug }],
-    });
+    const db = await getDatabase();
+    if (db) {
+      await db.collection('products').deleteOne({
+        $or: [{ slug: slug }, { id: slug }],
+      });
+    }
 
-    return NextResponse.json({ success: true, deletedCount: result.deletedCount }, { headers: corsHeaders() });
+    return NextResponse.json({ success: true, message: 'Product archived successfully' }, { headers: corsHeaders() });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500, headers: corsHeaders() });
   }
