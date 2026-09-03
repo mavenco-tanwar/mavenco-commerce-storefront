@@ -20,8 +20,9 @@ export function PlatformFooter() {
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
         if (json?.data?.length) {
+          const activeOnly = json.data.filter((t: any) => t.status !== 'deleted' && t.status !== 'suspended');
           setTenants(
-            json.data.map((t: { slug: string; name: string; tagline?: string; category?: string }) => ({
+            activeOnly.map((t: { slug: string; name: string; tagline?: string; category?: string }) => ({
               slug: t.slug,
               name: t.name,
               tagline: t.tagline,
@@ -88,27 +89,9 @@ export function PlatformFooter() {
                   </li>
                 ))
               ) : (
-                /* Fallback if DB is empty */
-                <>
-                  <li>
-                    <Link href="/stores/demo" className="hover:text-rose-400 transition-colors flex items-center justify-between">
-                      <span>Demo Store (Modern Lifestyle)</span>
-                      <span className="text-[10px] text-slate-500 font-mono">/stores/demo</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/stores/auraliving" className="hover:text-rose-400 transition-colors flex items-center justify-between">
-                      <span>Aura Living (Home Decor)</span>
-                      <span className="text-[10px] text-slate-500 font-mono">/stores/auraliving</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/stores/apexathletics" className="hover:text-rose-400 transition-colors flex items-center justify-between">
-                      <span>Apex Athletics (Activewear)</span>
-                      <span className="text-[10px] text-slate-500 font-mono">/stores/apexathletics</span>
-                    </Link>
-                  </li>
-                </>
+                <li className="text-[11px] text-slate-500 py-1">
+                  No active storefronts yet. Provision your custom store from Superadmin.
+                </li>
               )}
             </ul>
           </div>

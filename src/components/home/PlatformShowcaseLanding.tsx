@@ -112,7 +112,8 @@ export function PlatformShowcaseLanding() {
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (Array.isArray(json?.data) && json.data.length > 0) {
-          const mapped = json.data.map((t: any) => ({
+          const activeOnly = json.data.filter((t: any) => t.status !== 'deleted' && t.status !== 'suspended');
+          const mapped = activeOnly.map((t: any) => ({
             id: t.id || `store_${t.slug}`,
             slug: t.slug,
             name: t.name,

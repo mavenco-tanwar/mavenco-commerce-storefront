@@ -47,7 +47,8 @@ export function PlatformNavbar() {
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (Array.isArray(json?.data) && json.data.length > 0) {
-          const mapped = json.data.map((t: any) => ({
+          const activeOnly = json.data.filter((t: any) => t.status !== 'deleted' && t.status !== 'suspended');
+          const mapped = activeOnly.map((t: any) => ({
             slug: t.slug,
             name: t.name,
             industry: t.tagline || 'Modern Commerce Store',
