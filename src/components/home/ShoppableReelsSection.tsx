@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { formatTenantHref } from '@/lib/tenant-config';
 import { Play, Sparkles, ShoppingBag, Eye, Heart, Check, X, ArrowRight } from 'lucide-react';
 
 interface ReelItem {

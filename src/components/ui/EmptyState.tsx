@@ -1,3 +1,4 @@
+import { formatTenantHref } from '@/lib/tenant-config';
 import React from 'react';
 import Link from 'next/link';
 import { LucideIcon, Sparkles } from 'lucide-react';
