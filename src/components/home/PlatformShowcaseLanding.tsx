@@ -52,76 +52,57 @@ import { WhatsAppCommerceSimulator } from './WhatsAppCommerceSimulator';
 import { PlatformRoadmap } from './PlatformRoadmap';
 
 export function PlatformShowcaseLanding() {
-
-  const [tenants, setTenants] = useState([
-    {
-      id: 'store_demo',
-      slug: 'demo',
-      name: 'Demo Store (Generic)',
-      tagline: 'Curated Modern Lifestyle & Design Capsule',
-      industry: 'Modern Lifestyle & Pret (Generic)',
-      currency: 'USD ($)',
-      themeColors: {
-        primary: '#0F172A',
-        secondary: '#F8FAFC',
-        accent: '#6366F1',
-      },
-      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1000&auto=format&fit=crop&q=80',
-      description: 'A brand-agnostic demonstration showcasing visual drag-and-drop CMS blocks, lookbook storytelling, and responsive commerce.',
-      badgeText: 'Featured Client Demo',
-      catalogSize: '36+ Modern SKUs',
-    },
-    {
-      id: 'store_aura_living',
-      slug: 'auraliving',
-      name: 'Aura Living',
-      tagline: 'Minimalist Scandinavian Home Decor & Lifestyle',
-      industry: 'Nordic Interior & Mindful Living',
-      currency: 'USD ($)',
-      themeColors: {
-        primary: '#1B4332',
-        secondary: '#FAF3E0',
-        accent: '#74C69D',
-      },
-      image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1000&auto=format&fit=crop&q=80',
-      description: 'Small-batch handcrafted ceramics, Belgian organic linens, ambient travertine lamps, and solid oak furniture.',
-      badgeText: 'Home & Decor',
-      catalogSize: '18+ Decor Pieces',
-    },
-    {
-      id: 'store_apex_athletics',
-      slug: 'apexathletics',
-      name: 'Apex Athletics',
-      tagline: 'High-Performance Activewear & Compression Gear',
-      industry: 'Athletic Gear & Carbon Footwear',
-      currency: 'USD ($)',
-      themeColors: {
-        primary: '#0A0A0A',
-        secondary: '#161822',
-        accent: '#00F5D4',
-      },
-      image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1000&auto=format&fit=crop&q=80',
-      description: 'Seamless thermo-regulating compression tops, marathon-grade carbon plated shoes, and athlete gear.',
-      badgeText: 'Activewear & Gear',
-      catalogSize: '32+ Athletic SKUs',
-    },
-  ]);
+  const [tenants, setTenants] = useState<any[]>([]);
+  const [isLoadingTenants, setIsLoadingTenants] = useState<boolean>(true);
 
   React.useEffect(() => {
-    fetch('/api/v1/platform/tenants')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        if (Array.isArray(json?.data) && json.data.length > 0) {
-          const activeOnly = json.data.filter(
+    let isMounted = true;
+    async function loadPlatformTenants() {
+      try {
+        const res = await fetch('/api/v1/platform/tenants').then((r) => (r.ok ? r.json() : null));
+        if (isMounted && Array.isArray(res?.data)) {
+          const activeOnly = res.data.filter(
             (t: any) => t.status !== 'suspended' && t.status !== 'archived' && !t.deletedAt
           );
+
           const mapped = activeOnly.map((t: any) => ({
             id: t.id || t.tenantId || `store_${t.slug}`,
             slug: t.slug,
             name: t.name,
             tagline: t.tagline || 'Modern Commerce Storefront',
-            industry: t.tagline || 'Modern Commerce',
-            currency: `${t.currency || 'USD'} (${t.currency === 'INR' ? '₹' : '
+            industry: t.tagline || 'Modern Commerce Store',
+            currency: `${t.currency || 'USD'} (${t.currency === 'INR' ? '₹' : '$'})`,
+            themeColors: {
+              primary: t.theme?.primaryColor || '#0F172A',
+              secondary: t.theme?.secondaryColor || '#F8FAFC',
+              accent: t.theme?.accentColor || '#E11D48',
+            },
+            image:
+              t.theme?.logoUrl ||
+              (t.slug.includes('cloth')
+                ? 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1000&auto=format&fit=crop&q=80'
+                : t.slug.includes('home') || t.slug.includes('aura')
+                ? 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1000&auto=format&fit=crop&q=80'
+                : 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=1000&auto=format&fit=crop&q=80'),
+            description: t.description || `Explore ${t.name} with real-time headless visual CMS and dynamic design tokens.`,
+            badgeText: t.planName || 'Live Storefront',
+            catalogSize: `${t.metrics?.products || 12}+ Modern SKUs`,
+          }));
+
+          setTenants(mapped);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch platform tenants:', err);
+      } finally {
+        if (isMounted) setIsLoadingTenants(false);
+      }
+    }
+
+    loadPlatformTenants();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="flex flex-col bg-[#0A0C10] text-slate-100 min-h-screen select-none">
