@@ -773,9 +773,12 @@ export class GlobalCommerceService {
     tenantId?: string;
     storeId?: string;
   }): MarketContext {
-    const markets = this.markets.filter(
+    let markets = this.markets.filter(
       (m) => m.status === 'active' && (!params.tenantId || m.tenantId === params.tenantId)
     );
+    if (markets.length === 0) {
+      markets = this.markets.filter((m) => m.status === 'active');
+    }
 
     let resolvedMarket: Market | undefined;
 

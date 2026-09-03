@@ -56,7 +56,7 @@ export class StorefrontPageService {
       defaultCurrency: 'USD',
       defaultMarketId: 'GLOBAL',
       themeId: `theme_${safeTenantId}`,
-      publishedVersion: 1,
+      publishedVersion: 0,
       draftVersion: 1,
       lastPublishedAt: now,
       lastPublishedBy: 'system',

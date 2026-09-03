@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "npx tsx scripts/run-all-tests.ts",
     "audit:static-data": "npx tsx scripts/audit-static-data.ts"
   },
   "dependencies": {

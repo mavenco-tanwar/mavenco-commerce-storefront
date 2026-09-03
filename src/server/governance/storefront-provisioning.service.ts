@@ -125,6 +125,12 @@ export class StorefrontProvisioningService {
         storeId,
         input.storefrontTemplate
       );
+      await StorefrontPageService.publishStorefront(
+        safeTenantId,
+        storefront.id,
+        operator,
+        'Initial provisioned storefront snapshot'
+      );
       record.completedSteps.push('PROVISIONING_STOREFRONT');
 
       // Mark Complete

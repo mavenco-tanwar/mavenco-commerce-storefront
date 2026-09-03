@@ -74,12 +74,19 @@ export class TenantDatabaseResolver {
   }
 
   /**
+   * Derives sanitized database name for a tenant.
+   */
+  public static getTenantDatabaseName(tenantId: string): string {
+    const safeTenantId = tenantId.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
+    return `tenant_${safeTenantId}`;
+  }
+
+  /**
    * Resolves the dedicated MongoDB database for a given tenant:
    * ONE TENANT = ONE SEPARATE MONGODB DATABASE (`tenant_${tenantId}`)
    */
   public static async getTenantDatabase(tenantId: string): Promise<Db | null> {
-    const safeTenantId = tenantId.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
-    const dbName = `tenant_${safeTenantId}`;
+    const dbName = this.getTenantDatabaseName(tenantId);
 
     if (this.tenantDbCache.has(dbName)) {
       return this.tenantDbCache.get(dbName)!;
