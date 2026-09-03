@@ -51,14 +51,20 @@ export async function POST(req: NextRequest) {
       tenantId,
       slug: body.slug || `tenant-${Date.now()}`,
       name: body.name || 'New Enterprise Tenant',
-      status: 'active',
+      tagline: body.tagline || 'Modern Commerce Store',
+      status: body.status || 'active',
       databaseIdentifier: `db_tenant_${tenantId}_prod`,
-      planId: body.planId || 'plan_growth',
-      planName: body.planName || 'Growth Commerce Tier',
+      planId: body.planId || 'plan_starter',
+      planName: body.planName || 'Starter Boutique',
       storesCount: 1,
       customDomainsCount: 1,
       mrrMinor: body.mrrMinor || 29900,
       health: 'healthy',
+      theme: body.theme || { primaryColor: '#111111', accentColor: '#E11D48' },
+      features: body.features || {},
+      ownerName: body.ownerName || 'Store Owner',
+      ownerEmail: body.ownerEmail || 'owner@platform.com',
+      currency: body.currency || 'USD',
       createdAt: now,
       updatedAt: now,
     };
@@ -81,32 +87,47 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
-    const { tenantId, action, reason } = body;
+    const targetId = (body.tenantId || body.id || body.slug || '').toLowerCase().trim();
+    const safeSlug = targetId.replace(/^store_/, '');
     const db = await getDatabase();
 
-    const updateStatus = action === 'suspend' ? 'suspended' : action === 'restore' ? 'active' : 'maintenance';
+    const updates: any = {};
+    if (body.action) {
+      updates.status = body.action === 'suspend' ? 'suspended' : body.action === 'restore' ? 'active' : 'maintenance';
+    }
+    if (body.status) updates.status = body.status;
+    if (body.name) updates.name = body.name;
+    if (body.tagline) updates.tagline = body.tagline;
+    if (body.planId) updates.planId = body.planId;
+    if (body.planName) updates.planName = body.planName;
+    if (body.ownerName) updates.ownerName = body.ownerName;
+    if (body.ownerEmail) updates.ownerEmail = body.ownerEmail;
+    if (body.currency) updates.currency = body.currency;
+    if (body.theme) updates.theme = body.theme;
+    if (body.features) updates.features = body.features;
+    updates.updatedAt = new Date().toISOString();
 
     if (db) {
       await db.collection('platform_tenants_registry').updateOne(
-        { tenantId },
-        { $set: { status: updateStatus, updatedAt: new Date().toISOString() } }
+        { $or: [{ tenantId: targetId }, { slug: targetId }, { tenantId: safeSlug }, { slug: safeSlug }] },
+        { $set: updates }
       );
     }
 
     const idx = memoryTenants.findIndex(
-      (t) => t.tenantId === tenantId || t.slug === tenantId || t.id === tenantId
+      (t) => (t.tenantId || '').toLowerCase() === targetId || (t.slug || '').toLowerCase() === targetId || (t.slug || '').toLowerCase() === safeSlug
     );
     if (idx >= 0) {
       memoryTenants[idx] = {
         ...memoryTenants[idx],
-        status: updateStatus,
-        updatedAt: new Date().toISOString(),
+        ...updates,
       };
     }
 
     return NextResponse.json({
       success: true,
-      message: `Tenant status updated to '${updateStatus}' (Reason: ${reason || 'Operator Action'})`,
+      data: idx >= 0 ? memoryTenants[idx] : updates,
+      message: `Tenant '${safeSlug}' configuration updated successfully.`,
     }, { headers: corsHeaders() });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
