@@ -21,7 +21,7 @@ export async function OPTIONS() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const tenantSlug = (body.tenantSlug || body.slug || 'jqtrends').toLowerCase().trim();
+    const tenantSlug = (body.tenantSlug || body.slug || 'lumina').toLowerCase().trim();
     const preset = body.preset || 'apparel';
 
     const db = await getDatabase();

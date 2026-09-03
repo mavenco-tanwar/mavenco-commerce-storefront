@@ -8,7 +8,6 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { CategoryService } from '@/services/categories';
 import { CmsApiService, CmsMenuItem } from '@/services/api/cms';
 import { Category, Collection } from '@/types/category';
-import { categoriesData, collectionsData } from '@/data/categories';
 
 import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
 
@@ -17,8 +16,8 @@ export function Navigation() {
   const searchParams = useSearchParams();
   const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>(categoriesData);
-  const [collections, setCollections] = useState<Collection[]>(collectionsData);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [menuItems, setMenuItems] = useState<CmsMenuItem[]>([
     { id: 'nav_1', label: 'Women', url: '/women', isVisible: true },
     { id: 'nav_2', label: 'Kids', url: '/kids', isVisible: true },
@@ -47,22 +46,11 @@ export function Navigation() {
     });
   }, [pathname, searchParams]);
 
-  // For tenant stores like Aura Living or Apex Athletics, render their clean distinct menu links
-  if (tenant.slug !== 'jqtrends') {
-    const activeNavLinks =
-      tenant.navLinks && tenant.navLinks.length > 0
-        ? tenant.navLinks
-        : [
-            { label: 'NEW IN', href: '/new-arrivals', badge: 'Fresh' },
-            { label: 'APPAREL', href: '/women' },
-            { label: 'LIFESTYLE', href: '/kids' },
-            { label: 'COLLECTIONS', href: '/collections/festive' },
-            { label: 'SALE', href: '/sale' },
-          ];
-
+  // Render tenant-configured custom navigation if provided
+  if (tenant.navLinks && tenant.navLinks.length > 0) {
     return (
       <nav suppressHydrationWarning className="hidden md:flex items-center justify-center gap-7 lg:gap-10 text-xs uppercase tracking-widest font-semibold select-none">
-        {activeNavLinks.map((link) => (
+        {tenant.navLinks.map((link) => (
           <Link
             key={link.label}
             href={link.href}
@@ -86,8 +74,8 @@ export function Navigation() {
     );
   }
 
-  const womenCat = categories.find((c) => c.slug === 'women') || categoriesData[0];
-  const kidsCat = categories.find((c) => c.slug === 'kids') || categoriesData[1];
+  const womenCat = categories.find((c) => c.slug === 'women') || categories[0];
+  const kidsCat = categories.find((c) => c.slug === 'kids') || categories[1];
 
   return (
     <nav

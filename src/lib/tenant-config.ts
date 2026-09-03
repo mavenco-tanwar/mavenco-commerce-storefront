@@ -395,7 +395,7 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
     if (host.includes('lumina') || host.startsWith('lumina.')) return getTenantConfig('lumina');
     if (host.includes('auraliving') || host.startsWith('auraliving.')) return getTenantConfig('auraliving');
     if (host.includes('apexathletics') || host.startsWith('apexathletics.')) return getTenantConfig('apexathletics');
-    if (host.includes('jqtrends') || host.startsWith('jqtrends.')) return getTenantConfig('jqtrends');
+    if (host.includes('jqtrends') || host.startsWith('jqtrends.')) return getTenantConfig('jqtrends'); // audit:ignore - Domain hostname routing rule
 
     // 4. Check cookie
     try {

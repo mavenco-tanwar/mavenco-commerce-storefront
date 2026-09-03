@@ -1,11 +1,11 @@
 import { apiClient } from './client';
 import { mapCmsProductToStorefrontProduct } from './adapters';
 import { Product, ProductQueryParams, ProductListResponse } from '@/types/product';
-import { productsData, getProductsForTenant } from '@/data/products';
 
 export class ProductApiService {
   /**
-   * Retrieves products list with filtering, sorting, pagination, and search.
+   * Retrieves products list strictly from API / DB with filtering, sorting, pagination, and search.
+   * Never falls back to static mock arrays.
    */
   public static async getProducts(params: ProductQueryParams = {}): Promise<ProductListResponse> {
     try {
@@ -31,20 +31,6 @@ export class ProductApiService {
       const res = await apiClient.get<any[]>(`/api/v1/products${queryString}`);
 
       let products: Product[] = (res.data || []).map((p) => mapCmsProductToStorefrontProduct(p));
-
-      if (products.length === 0) {
-        let activeTenant = (params as any).tenant || '';
-        if (!activeTenant && typeof window !== 'undefined') {
-          const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
-          if (pathMatch) {
-            activeTenant = pathMatch[2];
-          } else {
-            const sp = new URLSearchParams(window.location.search);
-            activeTenant = sp.get('tenant') || '';
-          }
-        }
-        products = [...getProductsForTenant(activeTenant)];
-      }
 
       // Client-side refinement for fine-grained options (sizes, colors, price range) if needed
       if (params.department) {
@@ -97,17 +83,11 @@ export class ProductApiService {
         },
       };
     } catch {
-      let fallback = [...productsData];
-      if (params.department) {
-        fallback = fallback.filter((p) => p.department === params.department);
-      }
-      if (params.category && params.category !== 'all') {
-        fallback = fallback.filter((p) => p.category === params.category);
-      }
+      // Zero fallback rule: Return empty list on failure or missing records
       return {
         data: {
-          products: fallback,
-          total: fallback.length,
+          products: [],
+          total: 0,
           page: 1,
           limit: params.limit || 20,
           totalPages: 1,
@@ -117,7 +97,7 @@ export class ProductApiService {
   }
 
   /**
-   * Retrieves a single product by its URL slug.
+   * Retrieves a single product by its URL slug strictly from API.
    */
   public static async getProductBySlug(slug: string): Promise<{ data: Product | null }> {
     try {
@@ -126,21 +106,13 @@ export class ProductApiService {
         return { data: mapCmsProductToStorefrontProduct(res.data) };
       }
     } catch {
-      // Fallback
+      // Zero fallback rule: Return null
     }
-    let activeTenant = '';
-    if (typeof window !== 'undefined') {
-      const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
-      if (pathMatch) activeTenant = pathMatch[2];
-      else activeTenant = new URLSearchParams(window.location.search).get('tenant') || '';
-    }
-    const allProducts = [...getProductsForTenant(activeTenant), ...productsData];
-    const found = allProducts.find((p) => p.slug === slug) || null;
-    return { data: found };
+    return { data: null };
   }
 
   /**
-   * Retrieves a single product by its unique ID.
+   * Retrieves a single product by its unique ID strictly from API.
    */
   public static async getProductById(id: string): Promise<{ data: Product | null }> {
     try {
@@ -149,17 +121,9 @@ export class ProductApiService {
         return { data: mapCmsProductToStorefrontProduct(res.data) };
       }
     } catch {
-      // Fallback
+      // Zero fallback rule: Return null
     }
-    let activeTenant = '';
-    if (typeof window !== 'undefined') {
-      const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
-      if (pathMatch) activeTenant = pathMatch[2];
-      else activeTenant = new URLSearchParams(window.location.search).get('tenant') || '';
-    }
-    const allProducts = [...getProductsForTenant(activeTenant), ...productsData];
-    const found = allProducts.find((p) => p.id === id) || null;
-    return { data: found };
+    return { data: null };
   }
 
   /**
@@ -184,10 +148,6 @@ export class ProductApiService {
    */
   public static async getNewArrivals(limit: number = 6): Promise<{ data: Product[] }> {
     const res = await this.getProducts({ isNewArrival: true, limit });
-    if (res.data.products.length < limit) {
-      const fallback = await this.getProducts({ limit });
-      return { data: fallback.data.products.slice(0, limit) };
-    }
     return { data: res.data.products.slice(0, limit) };
   }
 

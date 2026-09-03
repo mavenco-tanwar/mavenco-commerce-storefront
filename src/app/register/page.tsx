@@ -26,13 +26,13 @@ export default function RegisterPage() {
       <div className="max-w-md w-full p-8 bg-[#FFFDFC] border border-[#E8DED8] luxury-card-shadow space-y-6">
         <div className="text-center space-y-1">
           <span className="text-[11px] uppercase font-bold tracking-widest text-[#B77A68]">
-            Join JQ Trends VIP
+            Join VIP Club
           </span>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#111111]">
             Create Account
           </h1>
           <p className="text-xs text-[#777777] font-sans">
-            Get ₹200 off your first order &amp; exclusive early collection access.
+            Enjoy special welcoming rewards &amp; exclusive early collection access.
           </p>
         </div>
 

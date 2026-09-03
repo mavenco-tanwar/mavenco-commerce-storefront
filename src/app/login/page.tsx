@@ -35,7 +35,7 @@ export default function LoginPage() {
             Welcome Back
           </span>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#111111]">
-            Sign In to JQ Trends
+            Sign In to Your Account
           </h1>
           <p className="text-xs text-[#777777] font-sans">
             Access your orders, saved addresses, and VIP wishlist.

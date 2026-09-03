@@ -615,7 +615,7 @@ const TENANT_DEFAULT_MAP: Record<string, CmsHomepageSection[]> = {
 const memoryStoreByTenant = new Map<string, CmsHomepageSection[]>();
 
 export function getStoredHomepageSections(tenantSlug?: string): CmsHomepageSection[] {
-  const slug = (tenantSlug || 'jqtrends').toLowerCase();
+  const slug = (tenantSlug || 'lumina').toLowerCase();
   
   if (memoryStoreByTenant.has(slug)) {
     return memoryStoreByTenant.get(slug)!;
@@ -657,7 +657,7 @@ export function getStoredHomepageSections(tenantSlug?: string): CmsHomepageSecti
 }
 
 export function saveStoredHomepageSections(sections: CmsHomepageSection[], tenantSlug?: string): void {
-  const slug = (tenantSlug || 'jqtrends').toLowerCase();
+  const slug = (tenantSlug || 'lumina').toLowerCase();
   memoryStoreByTenant.set(slug, sections);
 
   if (typeof window === 'undefined') {

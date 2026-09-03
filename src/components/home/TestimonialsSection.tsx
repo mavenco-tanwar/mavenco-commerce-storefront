@@ -33,7 +33,7 @@ export function TestimonialsSection({
   const title = customTitle || 'Loved By You';
   const subtitle =
     customSubtitle ||
-    'Hear from thousands of delighted women and families who cherish JQ Trends.';
+    'Hear from thousands of delighted customers who cherish our boutique collections.';
   const badge = customBadge || 'Real Customer Stories';
   const reviews =
     customReviews && customReviews.length > 0 ? customReviews : customerReviewsData;

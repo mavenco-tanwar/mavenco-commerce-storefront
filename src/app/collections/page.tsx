@@ -1,17 +1,20 @@
 import React from 'react';
-import { productsData } from '@/data/products';
+import { ProductApiService } from '@/services/api/products';
 import { CollectionListingPage } from '@/components/collection/CollectionListingPage';
 
 export const metadata = {
-  title: 'All Designer Collections | Atelier Storefront',
+  title: 'All Designer Collections | Boutique Atelier',
   description: 'Explore our complete catalog of bespoke silhouettes, handcrafted textiles, and modern luxury co-ords.',
 };
 
-export default function AllCollectionsPage() {
+export default async function AllCollectionsPage() {
+  const prodRes = await ProductApiService.getProducts({ limit: 40 });
+  const products = prodRes.data?.products || [];
+
   return (
     <CollectionListingPage
-      initialProducts={productsData}
-      collectionTitle="All Atelier Creations"
+      initialProducts={products}
+      collectionTitle="All Boutique Collections"
       collectionDescription="Discover our complete catalog of handcrafted silhouettes engineered for timeless grace."
       breadcrumbs={[{ label: 'All Collections' }]}
       availableCategories={[

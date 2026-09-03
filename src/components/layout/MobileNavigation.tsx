@@ -1,20 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
+  X,
+  Search,
   ChevronDown,
   ChevronRight,
   Heart,
   User,
   ShoppingBag,
-  Phone,
   Sparkles,
-  Search,
+  Phone,
+  Mail,
+  MapPin,
+  ExternalLink,
 } from 'lucide-react';
 import { Drawer } from '@/components/ui/Drawer';
 import { BrandLogo } from '@/components/ui/BrandLogo';
-import { categoriesData, collectionsData } from '@/data/categories';
+import { CategoryService } from '@/services/categories';
+import { Category, Collection } from '@/types/category';
 import { useAuth } from '@/context/AuthContext';
 import { useWishlist } from '@/context/WishlistContext';
 
@@ -26,13 +31,23 @@ interface MobileNavigationProps {
 
 export function MobileNavigation({ isOpen, onClose, onOpenSearch }: MobileNavigationProps) {
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
-    women: true,
-    kids: false,
+    departments: true,
     collections: false,
   });
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
 
   const { user, isAuthenticated } = useAuth();
   const { wishlistCount } = useWishlist();
+
+  useEffect(() => {
+    CategoryService.getCategories().then((res) => {
+      if (res.data) setCategories(res.data);
+    });
+    CategoryService.getCollections().then((res) => {
+      if (res.data) setCollections(res.data);
+    });
+  }, []);
 
   const toggleAccordion = (key: string) => {
     setOpenAccordions((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -44,193 +59,119 @@ export function MobileNavigation({ isOpen, onClose, onOpenSearch }: MobileNaviga
   };
 
   return (
-    <Drawer
-      isOpen={isOpen}
-      onClose={onClose}
-      position="left"
-      title=""
-      headerAction={<BrandLogo size="sm" showTagline={false} />}
-    >
-      <div className="flex flex-col h-full justify-between -mt-2">
-        <div>
-          {/* Mobile Search Button */}
+    <Drawer isOpen={isOpen} onClose={onClose} position="left" size="md">
+      <div className="flex flex-col h-full bg-[#FFFDFC] text-[#111111] select-none">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-[#E8DED8]">
+          <BrandLogo size="sm" />
+          <button
+            onClick={onClose}
+            className="p-2 text-[#777777] hover:text-[#111111] transition-colors"
+            aria-label="Close navigation"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Search Bar Input Button */}
+        <div className="p-4 border-b border-[#E8DED8] bg-[#FAF6F2]">
           <button
             onClick={handleSearchClick}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#FAF6F2] border border-[#E8DED8] text-xs text-[#777777] mb-6 rounded-none"
+            className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#FFFDFC] border border-[#E8DED8] rounded-none text-xs text-[#777777] hover:border-[#B77A68] transition-colors text-left"
           >
             <span className="flex items-center gap-2">
               <Search className="w-4 h-4 text-[#B77A68]" />
-              Search dresses, kurtis, kids...
-            </span>
-            <span className="text-[10px] bg-[#E8DED8] px-1.5 py-0.5 font-bold uppercase text-[#111111]">
-              Search
+              Search boutique collections...
             </span>
           </button>
+        </div>
 
-          {/* Nav Categories */}
-          <div className="space-y-1 divide-y divide-[#E8DED8]">
-            {/* Women Category Accordion */}
-            <div className="py-2">
+        {/* Main Navigation Links */}
+        <div className="flex-1 overflow-y-auto px-4 py-2 divide-y divide-[#E8DED8]">
+          {/* Categories / Departments Accordions */}
+          {categories.map((cat) => (
+            <div key={cat.id} className="py-2">
               <button
-                onClick={() => toggleAccordion('women')}
+                onClick={() => toggleAccordion(cat.id)}
                 className="w-full flex items-center justify-between py-2 text-sm font-serif font-bold uppercase tracking-wider text-[#111111]"
               >
-                <span>Women&apos;s Fashion</span>
-                {openAccordions['women'] ? (
+                <span>{cat.name}</span>
+                {openAccordions[cat.id] ? (
                   <ChevronDown className="w-4 h-4 text-[#B77A68]" />
                 ) : (
                   <ChevronRight className="w-4 h-4 text-[#777777]" />
                 )}
               </button>
 
-              {openAccordions['women'] && (
+              {openAccordions[cat.id] && (
                 <div className="pl-3 py-1 space-y-2 text-xs border-l-2 border-[#E8B8B5] mt-1 ml-1 animate-in fade-in duration-200">
                   <Link
-                    href="/women"
+                    href={`/collections/${cat.slug}`}
                     onClick={onClose}
                     className="block font-semibold text-[#B77A68] hover:underline"
                   >
-                    View All Women &rarr;
+                    View All {cat.name} &rarr;
                   </Link>
-                  {categoriesData[0].subcategories.map((sub) => (
+                  {(cat.subcategories || []).map((sub) => (
                     <Link
                       key={sub.id}
-                      href={`/women?category=${sub.slug}`}
+                      href={`/collections/${sub.slug}`}
                       onClick={onClose}
                       className="block text-[#777777] hover:text-[#111111] transition-colors py-0.5"
                     >
-                      {sub.name} ({sub.itemCount})
+                      {sub.name}
                     </Link>
                   ))}
                 </div>
               )}
             </div>
+          ))}
 
-            {/* Kids Category Accordion */}
-            <div className="py-2">
-              <button
-                onClick={() => toggleAccordion('kids')}
-                className="w-full flex items-center justify-between py-2 text-sm font-serif font-bold uppercase tracking-wider text-[#111111]"
-              >
-                <span>Kids Collection</span>
-                {openAccordions['kids'] ? (
-                  <ChevronDown className="w-4 h-4 text-[#B77A68]" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-[#777777]" />
-                )}
-              </button>
+          {/* Quick Primary Links */}
+          <div className="py-3 space-y-2">
+            <Link
+              href="/new-arrivals"
+              onClick={onClose}
+              className="flex items-center justify-between py-2 text-sm font-serif font-bold uppercase tracking-wider text-[#111111] hover:text-[#B77A68]"
+            >
+              <span>New In Studio</span>
+              <span className="text-[10px] bg-[#B77A68] text-white px-2 py-0.5 font-sans font-semibold">
+                NEW
+              </span>
+            </Link>
 
-              {openAccordions['kids'] && (
-                <div className="pl-3 py-1 space-y-2 text-xs border-l-2 border-[#E8B8B5] mt-1 ml-1 animate-in fade-in duration-200">
-                  <Link
-                    href="/kids"
-                    onClick={onClose}
-                    className="block font-semibold text-[#B77A68] hover:underline"
-                  >
-                    View All Kids &rarr;
-                  </Link>
-                  {categoriesData[1].subcategories.map((sub) => (
-                    <Link
-                      key={sub.id}
-                      href={`/kids?category=${sub.slug}`}
-                      onClick={onClose}
-                      className="block text-[#777777] hover:text-[#111111] transition-colors py-0.5"
-                    >
-                      {sub.name} ({sub.itemCount})
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Direct Links */}
-            <div className="py-2 space-y-2">
-              <Link
-                href="/new-arrivals"
-                onClick={onClose}
-                className="flex items-center justify-between py-2 text-sm font-serif font-bold uppercase tracking-wider text-[#111111] hover:text-[#B77A68]"
-              >
-                <span className="flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-[#B77A68]" />
-                  New Arrivals
-                </span>
-                <span className="text-[10px] bg-[#111111] text-white px-1.5 py-0.5">FRESH</span>
-              </Link>
-
-              <Link
-                href="/sale"
-                onClick={onClose}
-                className="flex items-center justify-between py-2 text-sm font-serif font-bold uppercase tracking-wider text-[#C98282] hover:text-[#111111]"
-              >
-                <span>Special Sale</span>
-                <span className="text-[10px] bg-[#C98282] text-white px-1.5 py-0.5">UP TO 50% OFF</span>
-              </Link>
-            </div>
-
-            {/* Curated Collections */}
-            <div className="py-2">
-              <button
-                onClick={() => toggleAccordion('collections')}
-                className="w-full flex items-center justify-between py-2 text-sm font-serif font-bold uppercase tracking-wider text-[#111111]"
-              >
-                <span>Curated Lookbooks</span>
-                {openAccordions['collections'] ? (
-                  <ChevronDown className="w-4 h-4 text-[#B77A68]" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-[#777777]" />
-                )}
-              </button>
-
-              {openAccordions['collections'] && (
-                <div className="pl-3 py-1 space-y-2 text-xs border-l-2 border-[#B77A68] mt-1 ml-1 animate-in fade-in duration-200">
-                  {collectionsData.map((col) => (
-                    <Link
-                      key={col.id}
-                      href={`/collections/${col.slug}`}
-                      onClick={onClose}
-                      className="block text-[#777777] hover:text-[#111111] transition-colors py-0.5"
-                    >
-                      {col.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+            <Link
+              href="/sale"
+              onClick={onClose}
+              className="flex items-center justify-between py-2 text-sm font-serif font-bold uppercase tracking-wider text-[#B77A68]"
+            >
+              <span>Celebratory Sale</span>
+              <span className="text-[10px] bg-[#E8B8B5] text-[#111111] px-2 py-0.5 font-sans font-bold">
+                SALE
+              </span>
+            </Link>
           </div>
         </div>
 
-        {/* Bottom Drawer Actions */}
-        <div className="pt-6 border-t border-[#E8DED8] space-y-4">
+        {/* Footer Actions */}
+        <div className="p-4 border-t border-[#E8DED8] bg-[#FAF6F2] space-y-3">
           <div className="grid grid-cols-2 gap-2">
-            <Link
-              href="/wishlist"
-              onClick={onClose}
-              className="flex items-center justify-center gap-2 py-2.5 bg-[#FAF6F2] border border-[#E8DED8] text-xs font-semibold text-[#111111]"
-            >
-              <Heart className="w-4 h-4 text-[#B77A68]" />
-              <span>Wishlist {wishlistCount > 0 && `(${wishlistCount})`}</span>
-            </Link>
-
             <Link
               href={isAuthenticated ? '/account' : '/login'}
               onClick={onClose}
-              className="flex items-center justify-center gap-2 py-2.5 bg-[#FAF6F2] border border-[#E8DED8] text-xs font-semibold text-[#111111]"
+              className="flex items-center justify-center gap-2 p-2.5 bg-[#FFFDFC] border border-[#E8DED8] text-xs font-semibold text-[#111111] hover:border-[#B77A68] transition-colors"
             >
-              <User className="w-4 h-4 text-[#B77A68]" />
+              <User className="w-3.5 h-3.5 text-[#B77A68]" />
               <span>{isAuthenticated ? 'My Account' : 'Sign In'}</span>
             </Link>
-          </div>
-
-          {/* Quick Help & Whatsapp */}
-          <div className="bg-[#F8F1EA] p-3 border border-[#E8DED8] text-xs text-[#777777]">
-            <p className="font-semibold text-[#111111] mb-1">Customer Support</p>
-            <div className="flex flex-col gap-1 text-[11px]">
-              <a href="tel:+919876543210" className="flex items-center gap-1.5 hover:text-[#111111]">
-                <Phone className="w-3.5 h-3.5 text-[#B77A68]" /> +91 98765 43210
-              </a>
-              <p>Email: care@jqtrends.com</p>
-              <p>Mon - Sat: 10:00 AM - 7:00 PM IST</p>
-            </div>
+            <Link
+              href="/wishlist"
+              onClick={onClose}
+              className="flex items-center justify-center gap-2 p-2.5 bg-[#FFFDFC] border border-[#E8DED8] text-xs font-semibold text-[#111111] hover:border-[#B77A68] transition-colors"
+            >
+              <Heart className="w-3.5 h-3.5 text-[#B77A68]" />
+              <span>Wishlist ({wishlistCount})</span>
+            </Link>
           </div>
         </div>
       </div>

@@ -63,106 +63,100 @@ export interface CmsPage {
     title?: string;
     description?: string;
   };
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export class CmsApiService {
   /**
-   * Retrieves active or preview homepage sections from the CMS.
+   * Retrieves homepage layout sections from the Visual Builder database.
    */
   public static async getHomepageSections(
     isPreview: boolean = false,
     tenantSlug?: string
   ): Promise<CmsHomepageSection[]> {
-    const slug = (tenantSlug || 'demo').toLowerCase().trim();
-
-    // 1. API Fetch via apiClient (calls server /api/v1/content/homepage which reads MongoDB)
     try {
-      const endpoint = `/api/v1/content/homepage?tenant=${slug}${isPreview ? '&preview=draft' : ''}`;
-      const res = await apiClient.get<CmsHomepageResponse>(endpoint);
+      const endpoint = isPreview ? '/api/v1/content/homepage?status=draft' : '/api/v1/content/homepage';
+      const headers: Record<string, string> = {};
+      if (tenantSlug) {
+        headers['x-tenant-slug'] = tenantSlug;
+      }
+      const res = await apiClient.get<CmsHomepageResponse>(endpoint, { headers });
 
-      if (res.data?.sections && Array.isArray(res.data.sections)) {
-        return res.data.sections;
+      if (res.data && res.data.sections && Array.isArray(res.data.sections) && res.data.sections.length > 0) {
+        return res.data.sections
+          .filter((s) => s.isVisible !== false)
+          .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
       }
     } catch (err) {
-      // Fallback
+      console.warn('[CmsApiService] Could not load homepage layout from CMS:', err);
     }
 
-    // 2. Local In-Memory Store Fallback
-    try {
-      const { getStoredHomepageSections } = require('@/lib/cms-store');
-      const stored = getStoredHomepageSections(slug);
-      if (stored && stored.length > 0) {
-        return stored;
-      }
-    } catch {}
+    // Dynamic initial template when unconfigured
+    return this.getDefaultHomepageSections();
+  }
 
-    // Default fallback sections
+  /**
+   * Safe architectural fallback template when tenant homepage is unconfigured.
+   */
+  public static getDefaultHomepageSections(): CmsHomepageSection[] {
     return [
       {
         id: 'sec_hero_1',
         type: 'hero',
-        title: 'Elegance In Every Thread',
-        subtitle: 'Affordable Luxury Women & Kids Fashion',
+        title: 'Artisanal Elegance & Contemporary Poise',
+        subtitle: 'Handcrafted luxury silhouettes tailored for timeless moments.',
         displayOrder: 1,
         isVisible: true,
         settings: {
-          tagline: 'Spring / Summer 2026 Collection',
-          primaryBtnText: 'Shop Women',
-          primaryBtnLink: '/women',
-          secondaryBtnText: 'Shop Kids',
-          secondaryBtnLink: '/kids',
-          desktopImage: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&auto=format&fit=crop&q=85',
-          tabletImage: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1200&auto=format&fit=crop&q=85',
-          mobileImage: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&auto=format&fit=crop&q=80',
-          overlayOpacity: 45,
-          textAlignment: 'center',
+          badge: 'NEW SEASON COLLECTION',
+          primaryCtaText: 'Shop New In',
+          primaryCtaLink: '/new-arrivals',
+          secondaryCtaText: 'Explore Lookbook',
+          secondaryCtaLink: '/collections',
+          overlayOpacity: 25,
+          alignment: 'left',
+          image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop',
         },
       },
       {
-        id: 'sec_cat_grid_2',
-        type: 'category-grid',
-        title: 'Curated Departments',
-        subtitle: 'Shop By Category',
+        id: 'sec_categories_2',
+        type: 'categories-grid',
+        title: 'Shop by Department',
+        subtitle: 'Explore curated boutique edits',
         displayOrder: 2,
         isVisible: true,
         settings: {
-          layout: 'grid',
-          columnsDesktop: 4,
-          columnsMobile: 2,
-          categorySlugs: ['women', 'kids', 'dresses', 'kurtis'],
+          layout: 'grid-3',
         },
       },
       {
-        id: 'sec_trending_3',
-        type: 'trending',
-        title: 'Trending Now',
-        subtitle: 'Most Coveted Silhouettes',
+        id: 'sec_featured_3',
+        type: 'featured-products',
+        title: 'Studio Best Sellers',
+        subtitle: 'Beloved creations with enduring appeal',
         displayOrder: 3,
         isVisible: true,
         settings: {
           limit: 8,
-          department: 'all',
-          showDepartmentFilter: true,
+          filter: 'bestseller',
         },
       },
       {
-        id: 'sec_womens_editorial_4',
-        type: 'womens-editorial',
-        title: "Women's Collection",
-        subtitle: 'Effortless grace meets contemporary silhouette',
+        id: 'sec_banner_4',
+        type: 'banner',
+        title: 'Limited Edition Hand-Crafted Batches',
+        subtitle: 'Pure organic fabrics, skin-friendly dyes, and artisanal craftsmanship.',
         displayOrder: 4,
         isVisible: true,
         settings: {
-          tagline: "Women's Universe • Studio Edit",
+          ctaText: 'Discover The Atelier',
+          ctaLink: '/about',
         },
       },
       {
         id: 'sec_new_arrivals_5',
         type: 'new-arrivals',
         title: 'Fresh From The Studio',
-        subtitle: 'Weekly Drop • Just In',
+        subtitle: 'Just released boutique silhouettes',
         displayOrder: 5,
         isVisible: true,
         settings: {
@@ -170,201 +164,72 @@ export class CmsApiService {
         },
       },
       {
-        id: 'sec_kids_editorial_6',
-        type: 'kids-editorial',
-        title: 'Little Looks, Big Style',
-        subtitle: '“Comfort meets adorable.”',
+        id: 'sec_sale_6',
+        type: 'sale-banner',
+        title: 'Seasonal Sale Event',
+        subtitle: 'Enjoy up to 50% savings on select boutique pieces',
         displayOrder: 6,
         isVisible: true,
         settings: {
-          tagline: 'Kids Universe • Ages 2 to 12 Years',
+          badge: 'SPECIAL SALE',
+          ctaText: 'Shop The Sale',
+          ctaLink: '/sale',
         },
       },
       {
-        id: 'sec_best_sellers_7',
-        type: 'best-sellers',
-        title: 'Our Best Sellers',
-        subtitle: 'Customer Favorites • High Demand',
+        id: 'sec_reviews_7',
+        type: 'customer-reviews',
+        title: 'Voices of Appreciation',
+        subtitle: 'Cherished memories shared by our community',
         displayOrder: 7,
         isVisible: true,
         settings: {
-          limit: 4,
+          averageRating: 4.9,
+          totalReviewsCount: '5,000+',
         },
       },
       {
-        id: 'sec_reviews_8',
-        type: 'reviews',
-        title: 'Loved By Over 10,000+ Women & Moms',
-        subtitle: 'Stories of Elegance & Delight',
+        id: 'sec_newsletter_8',
+        type: 'newsletter',
+        title: 'Join Our Private Atelier Circle',
+        subtitle: 'Receive exclusive drop alerts, private trunk shows, and styling previews.',
         displayOrder: 8,
         isVisible: true,
         settings: {
-          averageRating: 4.9,
-          totalReviewsCount: '10,000+',
-        },
-      },
-      {
-        id: 'sec_instagram_9',
-        type: 'instagram-feed',
-        title: '@JQTrendsOfficial',
-        subtitle: 'Tag us in your photos to get featured',
-        displayOrder: 9,
-        isVisible: true,
-        settings: {
-          handle: '@JQTrendsOfficial',
-        },
-      },
-      {
-        id: 'sec_newsletter_10',
-        type: 'newsletter',
-        title: 'Unlock 10% Off Your First Order',
-        subtitle: 'Join the JQ Trends VIP Insider Circle',
-        displayOrder: 10,
-        isVisible: true,
-        settings: {
-          couponPromo: 'JQTRENDS10',
+          couponPromo: 'WELCOME10',
         },
       },
     ];
   }
 
   /**
-   * Retrieves a CMS custom page by its slug.
+   * Retrieves a CMS custom page by its slug strictly from the database API.
+   * Zero static business text fallback: Returns null if not in database.
    */
   public static async getPageBySlug(slug: string): Promise<CmsPage | null> {
     try {
-      const res = await apiClient.get<CmsPage>(`/api/v1/content/pages/slug/${slug}`);
+      const res = await apiClient.get<CmsPage>(`/api/storefront/v1/pages/${encodeURIComponent(slug)}`);
       if (res.data) {
         return res.data;
       }
     } catch (err) {
-      console.warn(`[CmsApiService] Could not load page for slug '${slug}', checking defaults:`, err);
+      // Try content page endpoint
+      try {
+        const res2 = await apiClient.get<CmsPage>(`/api/v1/content/pages/slug/${encodeURIComponent(slug)}`);
+        if (res2.data) {
+          return res2.data;
+        }
+      } catch {
+        // Not found in database
+      }
     }
 
-    // Built-in luxury page fallbacks
-    if (slug === 'about-us') {
-      return {
-        id: 'page_about_us',
-        title: 'About JQ Trends',
-        slug: 'about-us',
-        status: 'published',
-        blocks: [
-          {
-            type: 'hero',
-            data: {
-              title: 'The JQ Trends Story',
-              subtitle: 'Crafting effortless grace, hand-finished silhouettes, and affordable luxury fashion for modern women and little royals.',
-              badge: 'OUR HERITAGE & VISION',
-              image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop',
-            },
-          },
-          {
-            type: 'rich-text',
-            data: {
-              heading: 'Where Tradition Meets Contemporary Silhouette',
-              content: `
-                <p class="text-base text-[#444444] leading-relaxed mb-6 font-sans">
-                  Founded with a passionate vision to make runway-inspired luxury and artisanal Indian craftsmanship accessible, <strong>JQ Trends</strong> is a boutique fashion label celebrating femininity, poise, and youthful joy.
-                </p>
-                <p class="text-sm text-[#666666] leading-relaxed mb-6 font-sans">
-                  Every garment in our Women and Kids ateliers is designed with meticulous attention to detail — from breathable pure linen co-ord sets and flowing tiered chiffon midi dresses to regal Chanderi silk kurti sets embroidered with delicate zari work.
-                </p>
-                <p class="text-sm text-[#666666] leading-relaxed mb-6 font-sans">
-                  We believe that elegance should never compromise on comfort. That is why our fabrics are skin-friendly, hand-pressed, and tailored for every celebration — from sunlit daytime brunches to grand festive weddings.
-                </p>
-              `,
-            },
-          },
-        ],
-        seo: {
-          title: 'About JQ Trends | Luxury Women & Kids Fashion',
-          description: 'Discover the story of JQ Trends, Indian boutique label delivering hand-crafted luxury fashion for women and kids.',
-        },
-      };
-    }
-
-    if (slug === 'shipping-policy') {
-      return {
-        id: 'page_shipping',
-        title: 'Shipping & Delivery Policy',
-        slug: 'shipping-policy',
-        status: 'published',
-        blocks: [
-          {
-            type: 'rich-text',
-            data: {
-              heading: 'White-Glove Express Delivery Across India',
-              content: `
-                <p class="text-sm text-[#444444] leading-relaxed mb-4">We offer <strong>Free Express Shipping</strong> on all orders above ₹999 across all serviceable pin codes in India.</p>
-                <h4 class="font-serif font-bold text-lg text-[#111111] mt-6 mb-2">Delivery Timelines:</h4>
-                <ul class="list-disc pl-5 text-sm text-[#666666] space-y-2 mb-6">
-                  <li><strong>Metro Cities (Bengaluru, Mumbai, Delhi-NCR, Hyderabad, Chennai):</strong> 2–3 Business Days</li>
-                  <li><strong>Rest of India:</strong> 3–5 Business Days</li>
-                </ul>
-                <p class="text-sm text-[#666666] leading-relaxed">All parcels are hand-packed in signature JQ Trends luxury keepsake boxes with protective butter-paper wrapping to ensure your boutique garments arrive in pristine runway condition.</p>
-              `,
-            },
-          },
-        ],
-      };
-    }
-
-    if (slug === 'return-policy' || slug === 'returns') {
-      return {
-        id: 'page_returns',
-        title: 'Returns & Exchanges',
-        slug: 'return-policy',
-        status: 'published',
-        blocks: [
-          {
-            type: 'rich-text',
-            data: {
-              heading: 'Hassle-Free 7-Day Doorstep Exchange Policy',
-              content: `
-                <p class="text-sm text-[#444444] leading-relaxed mb-4">We want you to adore everything you order from JQ Trends. If the size or fit isn't absolutely perfect, we provide a <strong>7-Day Doorstep Exchange & Return</strong> window.</p>
-                <h4 class="font-serif font-bold text-lg text-[#111111] mt-6 mb-2">How to Initiate:</h4>
-                <ol class="list-decimal pl-5 text-sm text-[#666666] space-y-2 mb-6">
-                  <li>Visit your Account dashboard or WhatsApp our Concierge Team at <strong>+91 98765 43210</strong>.</li>
-                  <li>Our courier partner will pick up the parcel from your doorstep.</li>
-                  <li>Instant replacement or store credit is issued upon quick inspection.</li>
-                </ol>
-              `,
-            },
-          },
-        ],
-      };
-    }
-
-    if (slug === 'contact' || slug === 'contact-us') {
-      return {
-        id: 'page_contact',
-        title: 'Contact Us & Concierge',
-        slug: 'contact',
-        status: 'published',
-        blocks: [
-          {
-            type: 'rich-text',
-            data: {
-              heading: 'We Are Here To Assist You',
-              content: `
-                <p class="text-sm text-[#444444] leading-relaxed mb-4">Our personal styling concierge and client support team is available Monday through Saturday from 10:00 AM to 7:00 PM IST.</p>
-                <div class="p-6 bg-[#FAF6F2] border border-[#E8DED8] rounded-xl space-y-3 mt-6">
-                  <div><strong>WhatsApp & Phone:</strong> +91 98765 43210</div>
-                  <div><strong>Email:</strong> care@jqtrends.com</div>
-                  <div><strong>Flagship Atelier:</strong> 100 Feet Road, Indiranagar, Bengaluru, Karnataka 560038</div>
-                </div>
-              `,
-            },
-          },
-        ],
-      };
-    }
-
+    // Zero fallback rule: Return null when not found in database
     return null;
   }
 
   /**
-   * Retrieves footer layout configuration from the CMS.
+   * Retrieves footer layout configuration from the CMS database.
    */
   public static async getFooterConfig(): Promise<CmsFooterConfig | null> {
     try {
@@ -379,7 +244,7 @@ export class CmsApiService {
   }
 
   /**
-   * Retrieves navigation menu items by menu code (header-menu, footer-menu-shop, footer-menu-care)
+   * Retrieves navigation menu items by menu code strictly from API.
    */
   public static async getMenu(code: string): Promise<CmsMenuItem[]> {
     try {
@@ -391,35 +256,29 @@ export class CmsApiService {
       // Fallback
     }
 
+    // Minimal neutral system navigation fallback (no tenant brand names)
     if (code === 'header-menu') {
       return [
-        { id: 'nav_1', label: 'Women', url: '/women', isVisible: true },
-        { id: 'nav_2', label: 'Kids', url: '/kids', isVisible: true },
-        { id: 'nav_3', label: 'New In', url: '/new-arrivals', isVisible: true },
-        { id: 'nav_4', label: 'Collections', url: '/collections/festive-elegance', isVisible: true },
-        { id: 'nav_5', label: 'Sale', url: '/sale', isVisible: true },
+        { id: 'nav_1', label: 'Home', url: '/', isVisible: true },
+        { id: 'nav_2', label: 'Collections', url: '/collections', isVisible: true },
+        { id: 'nav_3', label: 'New Arrivals', url: '/new-arrivals', isVisible: true },
+        { id: 'nav_4', label: 'Sale', url: '/sale', isVisible: true },
       ];
     }
     if (code === 'footer-menu-shop') {
       return [
-        { id: 'f_1', label: "Women's Fashion", url: '/women', isVisible: true },
-        { id: 'f_2', label: 'Kids Collection', url: '/kids', isVisible: true },
-        { id: 'f_3', label: 'New In Studio', url: '/new-arrivals', isVisible: true },
-        { id: 'f_4', label: 'Floral Dresses', url: '/women?category=dresses', isVisible: true },
-        { id: 'f_5', label: 'Chanderi Kurti Sets', url: '/women?category=kurtis', isVisible: true },
-        { id: 'f_6', label: 'Linen Co-ords', url: '/women?category=co-ords', isVisible: true },
-        { id: 'f_7', label: 'Special Sale (Up to 50% Off)', url: '/sale', isVisible: true },
+        { id: 'f_1', label: 'All Collections', url: '/collections', isVisible: true },
+        { id: 'f_2', label: 'New Arrivals', url: '/new-arrivals', isVisible: true },
+        { id: 'f_3', label: 'Special Sale', url: '/sale', isVisible: true },
       ];
     }
     if (code === 'footer-menu-care') {
       return [
-        { id: 'c_1', label: 'About JQ Trends', url: '/about-us', isVisible: true },
-        { id: 'c_2', label: 'Shipping & Delivery', url: '/shipping-policy', isVisible: true },
-        { id: 'c_3', label: 'Returns & Exchanges', url: '/return-policy', isVisible: true },
-        { id: 'c_4', label: 'Contact & Concierge', url: '/contact', isVisible: true },
-        { id: 'c_5', label: 'Track Your Order', url: '/account', isVisible: true },
-        { id: 'c_6', label: 'Privacy Notice', url: '/privacy-policy', isVisible: true },
-        { id: 'c_7', label: 'Terms of Service', url: '/terms-and-conditions', isVisible: true },
+        { id: 'c_1', label: 'About Us', url: '/about', isVisible: true },
+        { id: 'c_2', label: 'Contact Us', url: '/contact', isVisible: true },
+        { id: 'c_3', label: 'FAQ', url: '/faq', isVisible: true },
+        { id: 'c_4', label: 'Privacy Policy', url: '/privacy-policy', isVisible: true },
+        { id: 'c_5', label: 'Terms of Service', url: '/terms-conditions', isVisible: true },
       ];
     }
     return [];

@@ -26,8 +26,8 @@ export function NewsletterSection({
   const subtitle =
     customSubtitle ||
     'Get first access to new collections, exclusive seasonal offers, and direct styling inspiration delivered to your inbox.';
-  const badge = customBadge || 'JQ Trends VIP Club';
-  const coupon = customCouponPromo || 'WELCOME200';
+  const badge = customBadge || 'VIP Insider Club';
+  const coupon = customCouponPromo || 'WELCOME10';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,10 +62,10 @@ export function NewsletterSection({
           <div className="max-w-md mx-auto p-6 bg-[#FFFDFC] border border-[#B77A68] shadow-lg animate-in zoom-in-95 duration-200">
             <CheckCircle2 className="w-8 h-8 text-[#B77A68] mx-auto mb-2" />
             <h4 className="text-base font-serif font-bold text-[#111111]">
-              Welcome to the JQ Trends Family!
+              Welcome to the VIP Family!
             </h4>
             <p className="text-xs text-[#777777] mt-1 font-sans">
-              Use code <strong className="text-[#B77A68] font-bold">{coupon}</strong> for ₹200 off your first purchase above ₹1,499.
+              Use code <strong className="text-[#B77A68] font-bold">{coupon}</strong> for special savings on your upcoming purchase.
             </p>
           </div>
         ) : (

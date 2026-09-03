@@ -30,8 +30,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const catRes = await CategoryApiService.getCategoryBySlug(slug);
     if (catRes?.data) {
       return {
-        title: `${catRes.data.name} Collection | JQ Trends`,
-        description: catRes.data.description || `Shop ${catRes.data.name} fashion at JQ Trends.`,
+        title: `${catRes.data.name} Collection | Luxury Boutique`,
+        description: catRes.data.description || `Shop ${catRes.data.name} collections.`,
       };
     }
   } catch { }
@@ -41,14 +41,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const page = await CmsApiService.getPageBySlug(slug);
     if (page) {
       return {
-        title: page.seo?.title || `${page.title} | JQ Trends`,
-        description: page.seo?.description || `Explore ${page.title} at JQ Trends luxury boutique fashion.`,
+        title: page.seo?.title || `${page.title} | Luxury Boutique`,
+        description: page.seo?.description || `Explore ${page.title} luxury boutique collections.`,
       };
     }
   } catch { }
 
   return {
-    title: 'Explore Boutique Fashion | JQ Trends',
+    title: 'Explore Boutique Fashion | Luxury Boutique',
   };
 }
 
@@ -163,7 +163,7 @@ export default async function DynamicSlugPage({ params }: PageProps) {
           <section className="bg-[#FAF6F2] py-12 md:py-16 border-b border-[#E8DED8]">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-3">
               <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
-                JQ Trends Studio
+                Boutique Atelier
               </span>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[#111111]">
                 {page.title}

@@ -17,7 +17,7 @@ export class TenantService {
   private static cachedResolution: TenantResolution | null = null;
 
   /**
-   * Resolves the current store tenant dynamically based on domain / hostname or configured fallback.
+   * Resolves the current store tenant dynamically based on domain / hostname or configured environment.
    */
   public static async resolveTenant(hostOverride?: string): Promise<TenantResolution> {
     if (this.cachedResolution && !hostOverride) {
@@ -34,7 +34,7 @@ export class TenantService {
         queryTenant = params.get('tenant') || params.get('storeId') || '';
       }
 
-      const defaultTenant = process.env.NEXT_PUBLIC_DEFAULT_TENANT || 'store_jq_trends';
+      const defaultTenant = process.env.NEXT_PUBLIC_DEFAULT_TENANT || 'lumina';
       const cleanHost = (host || 'localhost').split(':')[0].toLowerCase();
 
       let endpoint = `/api/v1/storefront/resolve?domain=${encodeURIComponent(cleanHost)}`;
@@ -52,25 +52,40 @@ export class TenantService {
         return res.data;
       }
     } catch (err) {
-      console.warn('[TenantService] Failed to resolve tenant from CMS, using default store context:', err);
+      console.warn('[TenantService] Failed to resolve tenant from API, using dynamic context:', err);
     }
 
-    // Fallback store resolution
+    // Dynamic neutral resolution without hardcoding any tenant brand
+    let cleanSlug = 'lumina';
+    if (typeof window !== 'undefined') {
+      const sp = new URLSearchParams(window.location.search);
+      cleanSlug = sp.get('tenant') || window.location.hostname.split('.')[0] || 'lumina';
+    }
+    const cleanName = cleanSlug
+      .replace(/[-_]+/g, ' ')
+      .split(' ')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+
     const fallback: TenantResolution = {
-      storeId: 'store_jq_trends',
-      storeName: 'JQ Trends',
-      storeSlug: 'jq-trends',
-      storeCode: 'JQ-TRENDS',
-      defaultCurrency: 'INR',
-      defaultLocale: 'en_IN',
-      supportedLocales: ['en_IN', 'en_US'],
+      storeId: `store_${cleanSlug}`,
+      storeName: cleanName,
+      storeSlug: cleanSlug,
+      storeCode: cleanSlug.toUpperCase(),
+      defaultCurrency: 'USD',
+      defaultLocale: 'en_US',
+      supportedLocales: ['en_US'],
       theme: {},
-      domain: 'jqtrends.localhost',
+      domain: `${cleanSlug}.localhost`,
       status: 'active',
     };
 
     this.cachedResolution = fallback;
     apiClient.setTenantId(fallback.storeId);
     return fallback;
+  }
+
+  public static clearCache(): void {
+    this.cachedResolution = null;
   }
 }

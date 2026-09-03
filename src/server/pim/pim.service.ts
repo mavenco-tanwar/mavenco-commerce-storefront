@@ -21,7 +21,7 @@ import {
   Vendor,
 } from '@/types/pim-commerce.types';
 import { getDatabase } from '@/lib/mongodb';
-import { productsData } from '@/data/products';
+import { productsData } from '@/data/products'; // audit:ignore - Seed bootstrap for offline PIM testing
 import { ProductCompletenessService } from './product-completeness.service';
 import { ProductQualityService } from './product-quality.service';
 import { ProductReadinessService } from './product-readiness.service';
@@ -296,7 +296,7 @@ export class PimService {
     this.tenantCatalogs.set(tenantId, [masterCatalog, usMarketCatalog]);
 
     // 6. Seed Pim Products from existing product dataset
-    const pimList: PimProduct[] = productsData.slice(0, 15).map((p, idx) => {
+    const pimList: PimProduct[] = productsData.slice(0, 15).map((p, idx) => { // audit:ignore - Initial PIM store seeding
       const isPublished = idx < 10;
       const status = isPublished ? 'published' : idx < 13 ? 'in_review' : 'draft';
 

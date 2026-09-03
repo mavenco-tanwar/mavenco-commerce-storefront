@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "audit:static-data": "npx tsx scripts/audit-static-data.ts"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",

@@ -32,7 +32,7 @@ export function middleware(request: NextRequest) {
     if (!apiTenantSlug) {
       if (hostname.includes('auraliving')) apiTenantSlug = 'auraliving';
       else if (hostname.includes('apexathletics')) apiTenantSlug = 'apexathletics';
-      else if (hostname.includes('jqtrends')) apiTenantSlug = 'jqtrends';
+      else if (hostname.includes('jqtrends')) apiTenantSlug = 'jqtrends'; // audit:ignore - Hostname routing
     }
     response.headers.set('x-tenant-slug', apiTenantSlug);
     return response;
@@ -64,8 +64,8 @@ export function middleware(request: NextRequest) {
     tenantSlug = 'auraliving';
   } else if (hostname.includes('apexathletics') || hostname.startsWith('apexathletics.')) {
     tenantSlug = 'apexathletics';
-  } else if (hostname.includes('jqtrends') || hostname.startsWith('jqtrends.')) {
-    tenantSlug = 'jqtrends';
+  } else if (hostname.includes('jqtrends') || hostname.startsWith('jqtrends.')) { // audit:ignore - Hostname routing
+    tenantSlug = 'jqtrends'; // audit:ignore - Hostname routing
   } else {
     // Default platform domain (e.g. mavenco-storefront.vercel.app)
     tenantSlug = '';

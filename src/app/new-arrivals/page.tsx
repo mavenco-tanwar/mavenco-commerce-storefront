@@ -2,9 +2,9 @@ import React, { Suspense } from 'react';
 import { ProductListingView } from '@/components/plp/ProductListingView';
 
 export const metadata = {
-  title: 'Fresh From The Studio • New Arrivals | JQ Trends',
+  title: 'Fresh From The Studio • New Arrivals | Luxury Boutique',
   description:
-    'Discover the newest fashion arrivals for women and kids, designed in limited boutique batches at JQ Trends.',
+    'Discover the newest fashion arrivals, designed in limited boutique batches.',
 };
 
 export default function NewArrivalsPage() {

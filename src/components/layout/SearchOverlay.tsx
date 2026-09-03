@@ -85,7 +85,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
           {/* Header Bar */}
           <div className="flex items-center justify-between pb-4 border-b border-[#E8DED8]">
             <span className="text-xs uppercase tracking-widest font-bold text-[#B77A68]">
-              Search JQ Trends
+              Search Store Catalog
             </span>
             <button
               onClick={onClose}

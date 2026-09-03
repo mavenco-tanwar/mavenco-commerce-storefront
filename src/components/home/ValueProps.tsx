@@ -41,7 +41,7 @@ const DEFAULT_PROMISES: ValuePropItem[] = [
   {
     icon: 'truck',
     title: 'Easy Delivery & Returns',
-    description: 'Free express shipping > ₹999 with 7-day doorstep exchange.',
+    description: 'Complimentary express delivery with hassle-free doorstep returns.',
   },
 ];
 

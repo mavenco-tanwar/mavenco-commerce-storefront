@@ -17,7 +17,7 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'jqtrends').toLowerCase().trim();
+  const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
 
   try {
     const db = await getDatabase();
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'jqtrends').toLowerCase().trim();
+    const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
     const body = await request.json();
     const newSections = body.sections || body;
 

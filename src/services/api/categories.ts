@@ -1,14 +1,14 @@
 import { apiClient } from './client';
 import { mapCmsCategoryToStorefrontCategory } from './adapters';
 import { Category, Collection } from '@/types/category';
-import { categoriesData, collectionsData } from '@/data/categories';
 
 export class CategoryApiService {
   private static cachedCategories: Category[] | null = null;
   private static cachedCollections: Collection[] | null = null;
 
   /**
-   * Retrieves all active store categories.
+   * Retrieves all active store categories strictly from database API.
+   * Never falls back to static categories arrays.
    */
   public static async getCategories(department?: 'women' | 'kids'): Promise<{ data: Category[] }> {
     try {
@@ -27,18 +27,22 @@ export class CategoryApiService {
         return { data: categories };
       }
     } catch (err) {
-      console.warn('[CategoryApiService] Using fallback categories:', err);
+      console.warn('[CategoryApiService] Category API fetch error:', err);
     }
 
-    const fallback = this.cachedCategories || categoriesData;
-    if (department) {
-      return { data: fallback.filter((c) => c.department === department) };
+    if (this.cachedCategories) {
+      if (department) {
+        return { data: this.cachedCategories.filter((c) => c.department === department) };
+      }
+      return { data: this.cachedCategories };
     }
-    return { data: fallback };
+
+    // Zero fallback rule: Return empty array when unconfigured
+    return { data: [] };
   }
 
   /**
-   * Retrieves a single category by slug.
+   * Retrieves a single category by slug strictly from API.
    */
   public static async getCategoryBySlug(slug: string): Promise<{ data: Category | null }> {
     try {
@@ -47,14 +51,13 @@ export class CategoryApiService {
         return { data: mapCmsCategoryToStorefrontCategory(res.data) };
       }
     } catch {
-      // Fallback
+      // Zero fallback rule
     }
-    const fallback = categoriesData.find((c) => c.slug === slug) || null;
-    return { data: fallback };
+    return { data: null };
   }
 
   /**
-   * Retrieves lookbook collections.
+   * Retrieves lookbook collections strictly from API.
    */
   public static async getCollections(): Promise<{ data: Collection[] }> {
     try {
@@ -66,7 +69,7 @@ export class CategoryApiService {
           slug: c.slug,
           subtitle: 'Studio Exclusive Lookbook',
           description: c.description || '',
-          bannerImage: c.imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop',
+          bannerImage: c.imageUrl || '',
           badge: 'Lookbook',
           productIds: [],
         }));
@@ -75,14 +78,19 @@ export class CategoryApiService {
         return { data: collections };
       }
     } catch (err) {
-      console.warn('[CategoryApiService] Using fallback collections:', err);
+      console.warn('[CategoryApiService] Collection API fetch error:', err);
     }
 
-    return { data: this.cachedCollections || collectionsData };
+    if (this.cachedCollections) {
+      return { data: this.cachedCollections };
+    }
+
+    // Zero fallback rule: Return empty list
+    return { data: [] };
   }
 
   /**
-   * Retrieves a single collection by slug.
+   * Retrieves a single collection by slug strictly from API.
    */
   public static async getCollectionBySlug(slug: string): Promise<{ data: Collection | null }> {
     try {
@@ -96,16 +104,20 @@ export class CategoryApiService {
             slug: c.slug,
             subtitle: 'Studio Exclusive Lookbook',
             description: c.description || '',
-            bannerImage: c.imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&auto=format&fit=crop',
+            bannerImage: c.imageUrl || '',
             badge: 'Lookbook',
             productIds: [],
           },
         };
       }
     } catch {
-      // Fallback
+      // Zero fallback rule
     }
-    const fallback = collectionsData.find((c) => c.slug === slug) || null;
-    return { data: fallback };
+    return { data: null };
+  }
+
+  public static clearCache(): void {
+    this.cachedCategories = null;
+    this.cachedCollections = null;
   }
 }

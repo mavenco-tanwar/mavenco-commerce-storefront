@@ -2,9 +2,9 @@ import React, { Suspense } from 'react';
 import { ProductListingView } from '@/components/plp/ProductListingView';
 
 export const metadata = {
-  title: 'Special Fashion Sale • Up to 50% Off | JQ Trends',
+  title: 'Special Fashion Sale • Up to 50% Off | Luxury Boutique',
   description:
-    'Exclusive discounts on premium dresses, kurti sets, and kids wear at JQ Trends. Limited stock available.',
+    'Exclusive discounts on premium dresses, curated sets, and designer wear. Limited stock available.',
 };
 
 export default function SalePage() {

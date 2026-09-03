@@ -26,7 +26,7 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
   const [showQuickSizes, setShowQuickSizes] = useState(false);
   const activeTenant = resolveTenant();
   const productUrl = `/products/${product.slug}${
-    activeTenant.slug && activeTenant.slug !== 'demo' && activeTenant.slug !== 'jqtrends'
+    activeTenant.slug && activeTenant.slug !== 'demo'
       ? `?tenant=${activeTenant.slug}`
       : ''
   }`;

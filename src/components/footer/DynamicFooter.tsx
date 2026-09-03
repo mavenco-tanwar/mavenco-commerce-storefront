@@ -15,15 +15,15 @@ export function DynamicFooter({ initialConfig }: DynamicFooterProps) {
   const searchParams = useSearchParams();
 
   const [mounted, setMounted] = useState(false);
-  const [tenantSlug, setTenantSlug] = useState<string>('jqtrends');
+  const [tenantSlug, setTenantSlug] = useState<string>('lumina');
   const [config, setConfig] = useState<FooterConfig>(() => {
-    return initialConfig || getDefaultFooterConfig('jqtrends', 'STOREFRONT');
+    return initialConfig || getDefaultFooterConfig('lumina', 'STOREFRONT');
   });
 
   useEffect(() => {
     setMounted(true);
     const t = resolveTenant();
-    const slug = (t.slug || 'jqtrends').toLowerCase().trim();
+    const slug = (t.slug || 'lumina').toLowerCase().trim();
     setTenantSlug(slug);
 
     // Fetch published configuration from API

@@ -103,7 +103,7 @@ export default function OrderSuccessPage() {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Tax Invoice - ${order.orderNumber} | JQ Trends</title>
+        <title>Tax Invoice - ${order.orderNumber}</title>
         <style>
           body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #111; padding: 40px; max-width: 800px; margin: 0 auto; line-height: 1.5; }
           .header { display: flex; justify-content: space-between; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
@@ -204,7 +204,7 @@ export default function OrderSuccessPage() {
         </div>
 
         <div class="footer-note">
-          Thank you for choosing JQ Trends! For styling support or order inquiries, reach us at +91 98765 43210.<br/>
+          Thank you for choosing our boutique atelier! For order inquiries, please reach out to customer concierge.<br/>
           This is a computer-generated tax invoice and requires no physical signature.
         </div>
       </body>
