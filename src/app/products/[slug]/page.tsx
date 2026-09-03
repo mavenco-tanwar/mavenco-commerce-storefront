@@ -35,8 +35,22 @@ async function getPdpTemplateConfig(tenantSlug: string = 'lumina') {
 
 export async function generateMetadata({ params }: ProductPageProps) {
   const resolved = await params;
-  const res = await ProductService.getProductBySlug(resolved.slug);
-  const product = res.data;
+  let product = (await ProductService.getProductBySlug(resolved.slug)).data;
+
+  if (!product) {
+    try {
+      const db = await getDatabase();
+      if (db) {
+        const doc = await db.collection('products').findOne({
+          $or: [{ slug: resolved.slug }, { id: resolved.slug }],
+        });
+        if (doc) {
+          const { _id, ...clean } = doc;
+          product = clean as any;
+        }
+      }
+    } catch {}
+  }
 
   if (!product) {
     return {
@@ -44,13 +58,17 @@ export async function generateMetadata({ params }: ProductPageProps) {
     };
   }
 
+  const pName = product.name || (product as any).title || 'Garment';
+  const pDesc = product.shortDescription || product.description || '';
+  const firstImg = product.images?.[0] ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url) : undefined;
+
   return {
-    title: `${product.name} | Atelier Haute Couture`,
-    description: product.shortDescription || product.description,
+    title: `${pName} | Atelier Haute Couture`,
+    description: pDesc,
     openGraph: {
-      title: `${product.name} | Atelier Haute Couture`,
-      description: product.shortDescription || product.description,
-      images: product.images[0] ? [typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url] : [],
+      title: `${pName} | Atelier Haute Couture`,
+      description: pDesc,
+      images: firstImg ? [firstImg] : [],
     },
   };
 }
@@ -66,7 +84,25 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     getPdpTemplateConfig(activeTenant.slug || 'lumina'),
   ]);
 
-  const rawProduct = productRes.data;
+  let rawProduct = productRes.data;
+
+  // Direct MongoDB fallback for instant sync with Admin Panel
+  if (!rawProduct) {
+    try {
+      const db = await getDatabase();
+      if (db) {
+        const doc = await db.collection('products').findOne({
+          $or: [{ slug: resolved.slug }, { id: resolved.slug }],
+        });
+        if (doc) {
+          const { _id, ...clean } = doc;
+          rawProduct = clean as any;
+        }
+      }
+    } catch (e) {
+      console.warn('Direct MongoDB PDP fallback lookup failed:', e);
+    }
+  }
 
   if (!rawProduct) {
     notFound();

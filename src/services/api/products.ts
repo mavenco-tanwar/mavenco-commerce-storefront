@@ -101,7 +101,7 @@ export class ProductApiService {
    */
   public static async getProductBySlug(slug: string): Promise<{ data: Product | null }> {
     try {
-      const res = await apiClient.get<any>(`/api/v1/products/slug/${encodeURIComponent(slug)}`);
+      const res = await apiClient.get<any>(`/api/v1/products/${encodeURIComponent(slug)}`);
       if (res.data) {
         return { data: mapCmsProductToStorefrontProduct(res.data) };
       }

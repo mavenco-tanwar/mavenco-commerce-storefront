@@ -29,7 +29,36 @@ export async function GET(request: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   try {
-    const { products, total } = await PimService.getProducts(tenantSlug, {
+    const db = await getDatabase();
+    let dbProducts: any[] = [];
+    if (db) {
+      const tenantMatchConditions: any[] = [{ tenantSlug }, { storeSlug: tenantSlug }, { tenantId: tenantSlug }];
+      if (tenantSlug === 'demo' || tenantSlug === 'lumina') {
+        tenantMatchConditions.push({ tenantSlug: 'demo' }, { tenantSlug: 'lumina' }, { tenantId: 'demo' }, { tenantId: 'lumina' });
+      }
+
+      const query: Record<string, any> = {
+        $or: tenantMatchConditions,
+      };
+
+      if (category && category !== 'all') {
+        query.$and = [{ $or: [{ categoryIds: category }, { category: category }, { categories: category }] }];
+      }
+
+      if (search) {
+        query.title = { $regex: search, $options: 'i' };
+      }
+
+      const raw = await db.collection('products').find(query).toArray();
+      dbProducts = raw.map(({ _id, ...clean }) => ({
+        ...clean,
+        id: clean.id || clean._id,
+        title: clean.title || clean.name,
+        name: clean.name || clean.title,
+      }));
+    }
+
+    const { products: pimProducts, total: pimTotal } = await PimService.getProducts(tenantSlug, {
       category,
       search,
       status,
@@ -40,10 +69,28 @@ export async function GET(request: NextRequest) {
       limit,
     });
 
+    // Merge MongoDB products and PIM products (dedup by slug / id)
+    const existingSlugs = new Set<string>();
+    const merged: any[] = [];
+
+    for (const p of dbProducts) {
+      if (p.slug && !existingSlugs.has(p.slug)) {
+        existingSlugs.add(p.slug);
+        merged.push(p);
+      }
+    }
+
+    for (const p of pimProducts) {
+      if (p.slug && !existingSlugs.has(p.slug)) {
+        existingSlugs.add(p.slug);
+        merged.push(p);
+      }
+    }
+
     return NextResponse.json(
       {
-        data: products,
-        total,
+        data: merged,
+        total: merged.length,
         page,
         limit,
         source: 'pim_authoritative',
@@ -59,22 +106,32 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const tenantSlug = (body.tenantSlug || body.tenantId || request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
+    const tenantSlug = (body.tenantSlug || body.tenantId || request.headers.get('x-tenant-slug') || 'demo').toLowerCase().trim();
     const operator = request.headers.get('x-user-name') || 'Admin Curator';
 
     const saved = await PimService.upsertProduct(tenantSlug, body, operator);
 
-    // Sync to legacy MongoDB products collection if available
+    // Sync to MongoDB products collection with safe upsert
     try {
       const db = await getDatabase();
       if (db) {
-        await db.collection('products').insertOne({
-          ...saved,
-          tenantSlug,
-          storeSlug: tenantSlug,
-        });
+        await db.collection('products').updateOne(
+          { $or: [{ id: saved.id }, { slug: saved.slug }] },
+          {
+            $set: {
+              ...saved,
+              tenantId: tenantSlug,
+              tenantSlug,
+              storeSlug: tenantSlug,
+              updatedAt: new Date().toISOString(),
+            },
+          },
+          { upsert: true }
+        );
       }
-    } catch {}
+    } catch (e) {
+      console.warn('Failed to upsert product in MongoDB:', e);
+    }
 
     return NextResponse.json(
       {

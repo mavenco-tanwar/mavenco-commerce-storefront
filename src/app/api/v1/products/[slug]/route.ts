@@ -32,15 +32,29 @@ export async function GET(
   try {
     const db = await getDatabase();
     if (db) {
+      // 1. Primary query: match slug/id with tenant
+      const tenantMatchConditions: any[] = [{ tenantSlug }, { storeSlug: tenantSlug }, { tenantId: tenantSlug }];
+      if (tenantSlug === 'demo' || tenantSlug === 'lumina') {
+        tenantMatchConditions.push({ tenantSlug: 'demo' }, { tenantSlug: 'lumina' }, { tenantId: 'demo' }, { tenantId: 'lumina' });
+      }
+
       const query: Record<string, any> = {
         $or: [{ slug: slug }, { id: slug }],
       };
 
       if (tenantSlug) {
-        query.$and = [{ $or: [{ tenantSlug }, { storeSlug: tenantSlug }] }];
+        query.$and = [{ $or: tenantMatchConditions }];
       }
 
-      const product = await db.collection('products').findOne(query);
+      let product = await db.collection('products').findOne(query);
+
+      // 2. Secondary query: if not found with tenant filter, check by slug directly
+      if (!product) {
+        product = await db.collection('products').findOne({
+          $or: [{ slug: slug }, { id: slug }],
+        });
+      }
+
       if (product) {
         const { _id, ...clean } = product;
         return NextResponse.json({ data: clean, source: 'mongodb_atlas' }, { headers: corsHeaders() });
