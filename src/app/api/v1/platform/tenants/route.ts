@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getMongoClient } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, X-API-Key, X-Store-ID',
   };
 }
@@ -162,3 +162,87 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    let targetId = searchParams.get('tenantId') || searchParams.get('id') || searchParams.get('slug');
+
+    if (!targetId) {
+      try {
+        const body = await req.json();
+        targetId = body.tenantId || body.id || body.slug;
+      } catch {}
+    }
+
+    if (!targetId) {
+      return NextResponse.json(
+        { success: false, error: 'tenantId or slug is required for deletion' },
+        { status: 400, headers: corsHeaders() }
+      );
+    }
+
+    const cleanTargetId = targetId.toLowerCase().trim();
+    const safeSlug = cleanTargetId.replace(/^store_/, '');
+
+    const db = await getDatabase();
+    let deletedCount = 0;
+
+    if (db) {
+      // 1. Delete from platform_tenants_registry
+      const deleteResult = await db.collection('platform_tenants_registry').deleteMany({
+        $or: [
+          { tenantId: cleanTargetId },
+          { slug: cleanTargetId },
+          { id: cleanTargetId },
+          { tenantId: safeSlug },
+          { slug: safeSlug },
+        ],
+      });
+      deletedCount = deleteResult.deletedCount;
+
+      // 2. Cascade cleanup from platform governance & storefront collections
+      await db.collection('tenant_module_entitlements').deleteMany({
+        $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }],
+      });
+      await db.collection('tenant_roles').deleteMany({
+        $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }],
+      });
+      await db.collection('storefronts').deleteMany({
+        $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }],
+      });
+      await db.collection('storefront_pages').deleteMany({
+        $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }],
+      });
+      await db.collection('storefront_versions').deleteMany({
+        $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }],
+      });
+      await db.collection('stores').deleteMany({
+        $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }],
+      });
+
+      // 3. Drop isolated dedicated database for this tenant
+      try {
+        const client = await getMongoClient();
+        if (client) {
+          await client.db(`tenant_${safeSlug}`).dropDatabase();
+        }
+      } catch (dropErr) {
+        console.warn(`[DELETE /platform/tenants] Could not drop database tenant_${safeSlug}:`, dropErr);
+      }
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        deletedCount,
+        deletedTenantId: safeSlug,
+        message: `Tenant '${safeSlug}' and all its isolated database records have been permanently deleted from MongoDB.`,
+      },
+      { headers: corsHeaders() }
+    );
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
+  }
+}
+
