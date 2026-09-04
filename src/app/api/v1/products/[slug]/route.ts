@@ -7,7 +7,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, x-user-name',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, x-user-name, X-Store-ID, X-API-Key, X-Tenant-Slug, x-store-id, x-api-key',
   };
 }
 
@@ -131,23 +131,53 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const tenantSlug = (request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
+  const decodedSlug = decodeURIComponent(slug).trim();
+  const tenantSlug = (request.headers.get('x-tenant-slug') || request.headers.get('x-store-slug') || '').toLowerCase().trim();
   const operator = request.headers.get('x-user-name') || 'Admin User';
 
   try {
-    const existing = await PimService.getProductById(tenantSlug, slug);
-    if (existing) {
-      await PimService.deleteProduct(tenantSlug, existing.id, operator);
+    if (tenantSlug) {
+      try {
+        const existing = await PimService.getProductById(tenantSlug, decodedSlug);
+        if (existing) {
+          await PimService.deleteProduct(tenantSlug, existing.id, operator);
+        }
+      } catch {}
     }
 
     const db = await getDatabase();
     if (db) {
-      await db.collection('products').deleteOne({
-        $or: [{ slug: slug }, { id: slug }],
-      });
+      const { ObjectId } = await import('mongodb');
+      let objId = null;
+      try {
+        if (ObjectId.isValid(decodedSlug) && decodedSlug.length === 24) {
+          objId = new ObjectId(decodedSlug);
+        }
+      } catch {}
+
+      const deleteQuery: Record<string, any> = {
+        $or: [
+          { slug: decodedSlug },
+          { id: decodedSlug },
+          { sku: decodedSlug },
+          ...(objId ? [{ _id: objId }] : []),
+        ],
+      };
+
+      const pRes = await db.collection('products').deleteMany(deleteQuery);
+      const pimRes = await db.collection('pim_products').deleteMany(deleteQuery);
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: 'Product permanently deleted from database',
+          deletedCount: (pRes.deletedCount || 0) + (pimRes.deletedCount || 0),
+        },
+        { headers: corsHeaders() }
+      );
     }
 
-    return NextResponse.json({ success: true, message: 'Product archived successfully' }, { headers: corsHeaders() });
+    return NextResponse.json({ success: true, message: 'Product deleted' }, { headers: corsHeaders() });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500, headers: corsHeaders() });
   }

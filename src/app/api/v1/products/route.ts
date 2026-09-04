@@ -9,7 +9,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, x-user-name',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, x-user-name, X-Store-ID, X-API-Key, X-Tenant-Slug, x-store-id, x-api-key',
   };
 }
 
@@ -169,6 +169,44 @@ export async function POST(request: NextRequest) {
       },
       { headers: corsHeaders() }
     );
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500, headers: corsHeaders() });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id') || searchParams.get('slug');
+    const ids = searchParams.get('ids')?.split(',') || [];
+    if (id) ids.push(id);
+
+    const db = await getDatabase();
+    if (db && ids.length > 0) {
+      const { ObjectId } = await import('mongodb');
+      const orConditions: any[] = [];
+      for (const rawId of ids) {
+        const clean = decodeURIComponent(rawId).trim();
+        orConditions.push({ id: clean }, { slug: clean }, { sku: clean });
+        if (ObjectId.isValid(clean) && clean.length === 24) {
+          orConditions.push({ _id: new ObjectId(clean) });
+        }
+      }
+
+      const pRes = await db.collection('products').deleteMany({ $or: orConditions });
+      const pimRes = await db.collection('pim_products').deleteMany({ $or: orConditions });
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: 'Products permanently deleted from database',
+          deletedCount: (pRes.deletedCount || 0) + (pimRes.deletedCount || 0),
+        },
+        { headers: corsHeaders() }
+      );
+    }
+
+    return NextResponse.json({ success: true }, { headers: corsHeaders() });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500, headers: corsHeaders() });
   }
