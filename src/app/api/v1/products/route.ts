@@ -124,19 +124,29 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
     const body = await request.json();
     const db = await getDatabase();
     const rawResolved =
+      searchParams.get('tenant') ||
+      searchParams.get('store') ||
+      searchParams.get('tenantSlug') ||
       request.headers.get('x-tenant-slug') ||
+      request.headers.get('x-tenant') ||
       request.headers.get('x-store-slug') ||
-      body.tenantId ||
-      body.storeSlug ||
       body.tenantSlug ||
-      (await resolveRequestTenantSlug(request, undefined, db));
-    const tenantSlug = (rawResolved || '').replace(/^store_/, '').toLowerCase().trim();
+      body.storeSlug ||
+      body.tenantId ||
+      (await resolveRequestTenantSlug(request, searchParams, db));
+    const tenantSlug = (rawResolved || '').replace(/^store_/, '').toLowerCase().trim() || 'jq-trends';
     const operator = request.headers.get('x-user-name') || 'Admin Curator';
 
-    const saved = await PimService.upsertProduct(tenantSlug, body, operator);
+    const saved = await PimService.upsertProduct(tenantSlug, {
+      ...body,
+      tenantId: `store_${tenantSlug}`,
+      tenantSlug,
+      storeSlug: tenantSlug,
+    }, operator);
 
     // Sync to MongoDB products collection with safe upsert
     try {
@@ -147,7 +157,7 @@ export async function POST(request: NextRequest) {
           {
             $set: {
               ...saved,
-              tenantId: tenantSlug,
+              tenantId: `store_${tenantSlug}`,
               tenantSlug,
               storeSlug: tenantSlug,
               updatedAt: new Date().toISOString(),

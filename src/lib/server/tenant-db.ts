@@ -103,22 +103,46 @@ export async function checkTenantValidityDb(slug?: string): Promise<{
 }
 
 export async function resolveRequestTenantSlug(
-  req: { headers: Headers | { get(key: string): string | null } },
+  req: { headers: Headers | { get(key: string): string | null }; cookies?: any },
   searchParams?: URLSearchParams,
   db?: any
 ): Promise<string> {
-  const fromQuery = searchParams?.get('tenant') || searchParams?.get('store') || searchParams?.get('tenantId');
+  const fromQuery =
+    searchParams?.get('tenant') ||
+    searchParams?.get('store') ||
+    searchParams?.get('tenantSlug') ||
+    searchParams?.get('tenantId');
+
   const fromHeader =
     req.headers.get('x-tenant-slug') ||
+    req.headers.get('x-tenant') ||
     req.headers.get('x-store-slug') ||
     req.headers.get('x-tenant-id') ||
-    req.headers.get('x-store-id') ||
-    req.headers.get('x-store');
+    req.headers.get('X-Tenant-Slug');
 
-  const raw = (fromQuery || fromHeader || '').trim();
+  let fromCookie = '';
+  try {
+    if (typeof (req as any).cookies?.get === 'function') {
+      fromCookie =
+        (req as any).cookies.get('jq_saas_active_tenant_slug')?.value ||
+        (req as any).cookies.get('jq_active_tenant')?.value ||
+        '';
+    }
+  } catch {}
+
+  const raw = (fromQuery || fromHeader || fromCookie || '').trim();
   if (raw) {
     const cleaned = raw.replace(/^store_/, '').replace(/^store-/, '').replace(/_/g, '-').toLowerCase();
     if (cleaned && cleaned !== 'all' && cleaned !== 'demo' && cleaned !== 'lumina') {
+      return cleaned;
+    }
+  }
+
+  // Fallback: Check store-id only if explicitly set and not generic
+  const storeIdHeader = req.headers.get('x-store-id') || req.headers.get('x-store');
+  if (storeIdHeader) {
+    const cleaned = storeIdHeader.replace(/^store_/, '').replace(/^store-/, '').replace(/_/g, '-').toLowerCase();
+    if (cleaned && cleaned !== 'all' && cleaned !== 'demo' && cleaned !== 'lumina' && cleaned !== 'jq-trends' && cleaned !== 'store-jq-trends') {
       return cleaned;
     }
   }

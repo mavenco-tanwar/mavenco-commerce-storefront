@@ -22,19 +22,40 @@ export function middleware(request: NextRequest) {
       return new NextResponse(null, { status: 204, headers: corsHeaders });
     }
 
-    // For non-preflight API requests, continue but attach CORS headers
-    const response = NextResponse.next();
-    for (const [key, value] of Object.entries(corsHeaders)) {
-      response.headers.set(key, value);
-    }
     // Still set tenant header for API routes
-    let apiTenantSlug = tenantParam?.toLowerCase() || '';
+    let apiTenantSlug =
+      tenantParam?.toLowerCase() ||
+      request.headers.get('x-tenant-slug')?.toLowerCase() ||
+      request.headers.get('x-tenant')?.toLowerCase() ||
+      request.headers.get('x-store-slug')?.toLowerCase() ||
+      request.cookies.get('jq_saas_active_tenant_slug')?.value?.toLowerCase() ||
+      request.cookies.get('jq_active_tenant')?.value?.toLowerCase() ||
+      '';
+
     if (!apiTenantSlug) {
       if (hostname.includes('auraliving')) apiTenantSlug = 'auraliving';
       else if (hostname.includes('apexathletics')) apiTenantSlug = 'apexathletics';
       else if (hostname.includes('jqtrends')) apiTenantSlug = 'jqtrends'; // audit:ignore - Hostname routing
     }
-    response.headers.set('x-tenant-slug', apiTenantSlug);
+
+    const requestHeaders = new Headers(request.headers);
+    if (apiTenantSlug) {
+      requestHeaders.set('x-tenant-slug', apiTenantSlug);
+    }
+
+    // For non-preflight API requests, continue and forward headers plus attach CORS
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+
+    for (const [key, value] of Object.entries(corsHeaders)) {
+      response.headers.set(key, value);
+    }
+    if (apiTenantSlug) {
+      response.headers.set('x-tenant-slug', apiTenantSlug);
+    }
     return response;
   }
 
