@@ -64,8 +64,13 @@ export class StorefrontProvisioningService {
       // Step 2: Register Platform Tenant
       record.currentStep = 'REGISTERING_TENANT';
       const db = await getDatabase();
+      const ownerEmail = (input.adminEmail || input.email || '').toLowerCase().trim();
+      const ownerName = input.adminName || 'Store Owner';
+      const tempPass = `Mavenco@2026!${safeTenantId}`;
+
       const tenantRecord = {
         tenantId: safeTenantId,
+        id: `store_${safeTenantId}`,
         slug: safeTenantId,
         name: input.tenantName,
         status: 'active',
@@ -76,16 +81,60 @@ export class StorefrontProvisioningService {
         customDomainsCount: 1,
         mrrMinor: 29900,
         health: 'healthy',
+        ownerName,
+        ownerEmail,
+        contact: {
+          email: ownerEmail,
+          phone: input.phone || '',
+        },
+        password: tempPass,
+        temporaryPassword: tempPass,
+        isTemporaryPassword: true,
         createdAt: now,
         updatedAt: now,
       };
 
       if (db) {
-        await db.collection('platform_tenants_registry').updateOne(
-          { tenantId: safeTenantId },
-          { $set: tenantRecord },
-          { upsert: true }
-        );
+        await Promise.all([
+          db.collection('platform_tenants_registry').updateOne(
+            { tenantId: safeTenantId },
+            { $set: tenantRecord, $setOnInsert: { createdAt: now } },
+            { upsert: true }
+          ),
+          db.collection('tenants').updateOne(
+            { slug: safeTenantId },
+            { $set: tenantRecord, $setOnInsert: { createdAt: now } },
+            { upsert: true }
+          ),
+        ]);
+
+        if (ownerEmail) {
+          await db.collection('users').updateOne(
+            { email: ownerEmail },
+            {
+              $set: {
+                email: ownerEmail,
+                name: ownerName,
+                tenantSlug: safeTenantId,
+                tenantId: `store_${safeTenantId}`,
+                storeSlug: safeTenantId,
+                role: 'owner',
+                roleId: 'role_owner',
+                roleName: 'Store Owner & Administrator',
+                status: 'active',
+                password: tempPass,
+                temporaryPassword: tempPass,
+                isTemporaryPassword: true,
+                updatedAt: now,
+              },
+              $setOnInsert: {
+                id: `user_${ownerEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
+                createdAt: now,
+              },
+            },
+            { upsert: true }
+          );
+        }
       }
       record.completedSteps.push('REGISTERING_TENANT');
 

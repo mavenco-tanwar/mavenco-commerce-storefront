@@ -7,7 +7,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Store-ID, X-API-Key',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, X-Tenant-Slug, x-tenant, x-store-slug, x-store-id, x-user-name, X-Store-ID, X-API-Key, x-api-key, *',
   };
 }
 
@@ -121,21 +121,87 @@ export async function POST(request: NextRequest) {
     try {
       const db = await getDatabase();
       if (db) {
+        const ownerEmail = (body.ownerEmail || body.contact?.email || '').toLowerCase().trim();
+        const ownerName = body.ownerName || '';
+        const now = new Date().toISOString();
+
+        const setPayload: any = {
+          ...updated,
+          slug: clean,
+          status: body.status || 'active',
+          updatedAt: now,
+        };
+
+        if (ownerEmail) {
+          setPayload.ownerEmail = ownerEmail;
+          if (!setPayload.contact) setPayload.contact = {};
+          setPayload.contact.email = ownerEmail;
+        }
+        if (ownerName) {
+          setPayload.ownerName = ownerName;
+        }
+
         await db.collection('tenants').updateOne(
           { slug: clean },
           {
-            $set: {
-              ...updated,
-              slug: clean,
-              status: body.status || 'active',
-              updatedAt: new Date().toISOString(),
-            },
+            $set: setPayload,
             $setOnInsert: {
-              createdAt: new Date().toISOString(),
+              createdAt: now,
             },
           },
           { upsert: true }
         );
+
+        // Also update platform_tenants_registry
+        await db.collection('platform_tenants_registry').updateOne(
+          { slug: clean },
+          {
+            $set: {
+              name: updated.name,
+              slug: clean,
+              status: body.status || 'active',
+              currency: updated.currency,
+              theme: updated.theme,
+              ...(ownerEmail ? { ownerEmail } : {}),
+              ...(ownerName ? { ownerName } : {}),
+              updatedAt: now,
+            },
+            $setOnInsert: {
+              createdAt: now,
+            },
+          },
+          { upsert: true }
+        );
+
+        // Upsert owner user if email is provided
+        if (ownerEmail) {
+          const tempPass = `Mavenco@2026!${clean}`;
+          await db.collection('users').updateOne(
+            { email: ownerEmail },
+            {
+              $set: {
+                email: ownerEmail,
+                name: ownerName || updated.name || 'Store Owner',
+                tenantSlug: clean,
+                tenantId: `store_${clean}`,
+                storeSlug: clean,
+                role: 'owner',
+                roleId: 'role_owner',
+                roleName: 'Store Owner & Administrator',
+                status: 'active',
+                updatedAt: now,
+              },
+              $setOnInsert: {
+                id: `user_${ownerEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
+                password: tempPass,
+                temporaryPassword: tempPass,
+                isTemporaryPassword: true,
+                createdAt: now,
+              },
+            },
+            { upsert: true }
+          );
+        }
       }
     } catch (err) {
       console.error('MongoDB tenant write error:', err);

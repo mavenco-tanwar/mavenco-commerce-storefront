@@ -7,7 +7,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, X-API-Key, X-Store-ID',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, X-Tenant-Slug, x-tenant, x-store-slug, x-store-id, x-user-name, X-Store-ID, X-API-Key, x-api-key, *',
   };
 }
 
@@ -44,8 +44,8 @@ export async function GET() {
         databaseName: t.databaseName || `tenant_${t.slug}`,
         databaseIdentifier: t.databaseIdentifier || `db_tenant_${t.slug}_prod`,
         currency: t.currency || 'USD',
-        ownerName: t.ownerName || 'Store Owner',
-        ownerEmail: t.ownerEmail || t.contact?.email || 'owner@platform.com',
+        ownerName: t.ownerName || t.adminName || 'Store Owner',
+        ownerEmail: t.ownerEmail || t.contact?.email || t.email || '',
         primaryDomain: t.primaryDomain || `${t.slug}.com`,
         theme: t.theme || {
           primaryColor: '#0F172A',
@@ -124,8 +124,8 @@ export async function POST(req: NextRequest) {
         productCardStyle: 'minimal_hover_zoom',
       },
       features: body.features || {},
-      ownerName: body.ownerName || 'Store Owner',
-      ownerEmail: body.ownerEmail || 'owner@platform.com',
+      ownerName: body.ownerName || body.adminName || 'Store Owner',
+      ownerEmail: body.ownerEmail ? body.ownerEmail.toLowerCase().trim() : (body.email ? body.email.toLowerCase().trim() : ''),
       currency: body.currency || 'USD',
       currencySymbol: body.currency === 'INR' ? '₹' : '$',
       primaryDomain: body.primaryDomain || `${cleanSlug}.com`,
