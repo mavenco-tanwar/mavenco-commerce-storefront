@@ -19,19 +19,17 @@ export async function getMongoClient(): Promise<MongoClient | null> {
     return null;
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    if (!global._mongoClientPromise) {
-      client = new MongoClient(uri, { serverSelectionTimeoutMS: 8000 });
-      global._mongoClientPromise = client.connect();
-    }
-    return global._mongoClientPromise;
-  } else {
-    if (!clientPromise) {
-      client = new MongoClient(uri, { serverSelectionTimeoutMS: 8000 });
-      clientPromise = client.connect();
-    }
-    return clientPromise;
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri, {
+      serverSelectionTimeoutMS: 8000,
+      maxPoolSize: 25,
+      minPoolSize: 2,
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 30000,
+    });
+    global._mongoClientPromise = client.connect();
   }
+  return global._mongoClientPromise;
 }
 
 export async function getDatabase(dbName: string = 'mavenco_platform'): Promise<Db | null> {
