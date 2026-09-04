@@ -92,6 +92,9 @@ export async function POST(req: NextRequest) {
     const cleanSlug = (body.slug || `tenant-${Date.now()}`).toLowerCase().trim();
     const tenantId = body.tenantId || cleanSlug;
 
+    const cleanPassword = body.temporaryPassword || body.password || `Mavenco@2026!${cleanSlug}`;
+    const cleanIsTemp = body.isTemporaryPassword !== undefined ? body.isTemporaryPassword : true;
+
     const newTenant = {
       id: body.id || `store_${cleanSlug}`,
       tenantId,
@@ -126,16 +129,60 @@ export async function POST(req: NextRequest) {
       currency: body.currency || 'USD',
       currencySymbol: body.currency === 'INR' ? '₹' : '$',
       primaryDomain: body.primaryDomain || `${cleanSlug}.com`,
+      password: cleanPassword,
+      temporaryPassword: cleanPassword,
+      isTemporaryPassword: cleanIsTemp,
+      passwordUpdatedAt: now,
       createdAt: now,
       updatedAt: now,
     };
 
     if (db) {
+      const tenantMatch = {
+        $or: [
+          { slug: cleanSlug },
+          { id: body.id || `store_${cleanSlug}` },
+          { tenantId },
+        ],
+      };
+
       // Synchronize write to both 'tenants' and 'platform_tenants_registry'
       await Promise.all([
-        db.collection('tenants').insertOne({ ...newTenant }),
-        db.collection('platform_tenants_registry').insertOne({ ...newTenant }),
+        db.collection('tenants').updateOne(tenantMatch, { $set: newTenant, $setOnInsert: { createdAt: now } }, { upsert: true }),
+        db.collection('platform_tenants_registry').updateOne(tenantMatch, { $set: newTenant, $setOnInsert: { createdAt: now } }, { upsert: true }),
       ]);
+
+      // Synchronize/upsert store owner in 'users' collection
+      const ownerEmail = body.ownerEmail ? body.ownerEmail.toLowerCase().trim() : null;
+      if (ownerEmail) {
+        await db.collection('users').updateOne(
+          { email: ownerEmail },
+          {
+            $set: {
+              email: ownerEmail,
+              name: body.ownerName || body.name || 'Store Owner',
+              firstName: body.ownerName ? body.ownerName.split(' ')[0] : body.name || 'Store',
+              lastName: body.ownerName ? body.ownerName.split(' ').slice(1).join(' ') || 'Owner' : 'Owner',
+              roleId: 'role_owner',
+              role: 'owner',
+              roleName: 'Store Owner & Administrator',
+              tenantId: body.id || `store_${cleanSlug}`,
+              tenantSlug: cleanSlug,
+              password: cleanPassword,
+              temporaryPassword: cleanPassword,
+              isTemporaryPassword: cleanIsTemp,
+              status: body.status || 'active',
+              passwordUpdatedAt: now,
+              updatedAt: now,
+            },
+            $setOnInsert: {
+              id: `user_${ownerEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
+              createdAt: now,
+            },
+          },
+          { upsert: true }
+        );
+      }
     }
 
     memoryTenants.unshift(newTenant);
@@ -156,6 +203,7 @@ export async function PATCH(req: NextRequest) {
     const targetId = (body.tenantId || body.id || body.slug || '').toLowerCase().trim();
     const safeSlug = targetId.replace(/^store_/, '');
     const db = await getDatabase();
+    const now = new Date().toISOString();
 
     const updates: any = {};
     if (body.action) {
@@ -174,7 +222,14 @@ export async function PATCH(req: NextRequest) {
     }
     if (body.theme) updates.theme = body.theme;
     if (body.features) updates.features = body.features;
-    updates.updatedAt = new Date().toISOString();
+    if (body.password || body.temporaryPassword) {
+      const pass = body.password || body.temporaryPassword;
+      updates.password = pass;
+      updates.temporaryPassword = pass;
+      updates.isTemporaryPassword = body.isTemporaryPassword !== undefined ? body.isTemporaryPassword : false;
+      updates.passwordUpdatedAt = now;
+    }
+    updates.updatedAt = now;
 
     const filter = {
       $or: [
@@ -192,6 +247,29 @@ export async function PATCH(req: NextRequest) {
         db.collection('tenants').updateMany(filter, { $set: updates }),
         db.collection('platform_tenants_registry').updateMany(filter, { $set: updates }),
       ]);
+
+      // If password or owner details updated, also synchronize users collection
+      const cleanOwnerEmail = (body.ownerEmail || body.email || '').toLowerCase().trim();
+      if (updates.password || cleanOwnerEmail) {
+        const userFilter: any[] = [];
+        if (cleanOwnerEmail) userFilter.push({ email: cleanOwnerEmail });
+        if (safeSlug) userFilter.push({ tenantSlug: safeSlug });
+
+        if (userFilter.length > 0) {
+          const userUpdates: any = { updatedAt: now };
+          if (updates.password) {
+            userUpdates.password = updates.password;
+            userUpdates.temporaryPassword = updates.temporaryPassword;
+            userUpdates.isTemporaryPassword = updates.isTemporaryPassword;
+            userUpdates.passwordUpdatedAt = now;
+          }
+          if (updates.ownerName) userUpdates.name = updates.ownerName;
+          if (cleanOwnerEmail) userUpdates.email = cleanOwnerEmail;
+          if (safeSlug) userUpdates.tenantSlug = safeSlug;
+
+          await db.collection('users').updateMany({ $or: userFilter }, { $set: userUpdates });
+        }
+      }
     }
 
     const idx = memoryTenants.findIndex(
