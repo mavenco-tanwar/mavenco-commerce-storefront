@@ -20,7 +20,24 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const db = await getDatabase();
-    const tenantSlug = await resolveRequestTenantSlug(req, searchParams, db);
+
+    const rawTenant =
+      searchParams.get('tenant') ||
+      searchParams.get('store') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('tenantId') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      req.headers.get('X-Tenant-Slug');
+
+    let tenantSlug = rawTenant
+      ? rawTenant.replace(/^store_/, '').trim().toLowerCase()
+      : await resolveRequestTenantSlug(req, searchParams, db);
+
+    if (!tenantSlug || tenantSlug === 'all' || tenantSlug === 'lumina') {
+      tenantSlug = 'jq-trends';
+    }
+
     const department = searchParams.get('department') || undefined;
 
     if (db) {
@@ -62,11 +79,26 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const db = await getDatabase();
-    let tenantSlug = await resolveRequestTenantSlug(req, undefined, db);
-    if ((!tenantSlug || tenantSlug === 'demo') && (body.tenantSlug || body.storeSlug)) {
-      tenantSlug = body.tenantSlug || body.storeSlug;
+    const { searchParams } = new URL(req.url);
+
+    // Explicit tenant from body has highest precedence, followed by query params, then headers
+    const rawTenant =
+      body.tenantSlug ||
+      body.storeSlug ||
+      body.tenantId ||
+      searchParams.get('tenant') ||
+      searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      req.headers.get('X-Tenant-Slug');
+
+    let tenantSlug = rawTenant
+      ? rawTenant.replace(/^store_/, '').trim().toLowerCase()
+      : await resolveRequestTenantSlug(req, searchParams, db);
+
+    if (!tenantSlug || tenantSlug === 'all' || tenantSlug === 'lumina') {
+      tenantSlug = 'jq-trends';
     }
-    tenantSlug = (tenantSlug || 'jq-trends').toLowerCase().trim();
 
     const now = new Date().toISOString();
     const cleanName = body.name || 'New Category';

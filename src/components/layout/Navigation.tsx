@@ -177,7 +177,7 @@ export function Navigation() {
                       </li>
                       <li>
                         <Link
-                          {formatTenantHref("/women", tenant?.slug)}
+                          href={formatTenantHref("/women", tenant?.slug)}
                           className="text-[#777777] hover:text-[#111111] hover:font-medium transition-colors"
                         >
                           Resort &amp; Vacation Wear
@@ -204,7 +204,7 @@ export function Navigation() {
                         Summer Linen &amp; Florals
                       </h5>
                       <Link
-                        {formatTenantHref("/women", tenant?.slug)}
+                        href={formatTenantHref("/women", tenant?.slug)}
                         className="text-[10px] uppercase tracking-wider text-white font-bold inline-flex items-center gap-1 hover:underline pt-1"
                       >
                         Shop Now &rarr;
@@ -319,7 +319,7 @@ export function Navigation() {
                         Partywear &amp; Occasion Sets
                       </h5>
                       <Link
-                        {formatTenantHref("/kids", tenant?.slug)}
+                        href={formatTenantHref("/kids", tenant?.slug)}
                         className="text-[10px] uppercase tracking-wider text-white font-bold inline-flex items-center gap-1 hover:underline pt-1"
                       >
                         Explore Kids &rarr;
