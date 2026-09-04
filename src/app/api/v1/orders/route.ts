@@ -18,113 +18,23 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const tenantSlug = (searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'lumina').toLowerCase();
+    const rawSlug = searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'jq-trends';
+    const tenantSlug = (rawSlug === 'lumina' || rawSlug === 'demo' ? 'jq-trends' : rawSlug).toLowerCase().trim();
 
     const db = await getDatabase();
     if (db) {
       const collection = db.collection('orders');
-      const count = await collection.countDocuments({
-        $or: [{ tenantId: tenantSlug }, { storeSlug: tenantSlug }],
-      });
-
-      if (count === 0) {
-        // Auto-seed initial orders in MongoDB Atlas
-        const initialOrders = [
-          {
-            id: 'ord_100234',
-            orderNumber: 'LUM-100234',
-            tenantId: tenantSlug,
-            customerName: 'Aanya Kapoor',
-            customerEmail: 'aanya.kapoor@example.com',
-            phone: '+91 9876543210',
-            orderStatus: 'CONFIRMED',
-            paymentStatus: 'PAID',
-            paymentMethod: 'card',
-            pricing: {
-              subtotal: 1499,
-              discountTotal: 0,
-              shippingFee: 0,
-              grandTotal: 1499,
-            },
-            shippingAddress: {
-              fullName: 'Aanya Kapoor',
-              phone: '+91 9876543210',
-              addressLine1: 'Villa 14, Palm Meadows, Indiranagar',
-              city: 'Bengaluru',
-              state: 'Karnataka',
-              pincode: '560038',
-            },
-            items: [
-              {
-                id: 'it_1',
-                productId: 'prod_1',
-                quantity: 1,
-                unitPrice: 1499,
-                productSnapshot: {
-                  title: 'Blush Floral Tiered Midi Dress',
-                  image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400',
-                  sku: 'DRS-FLR-M',
-                },
-                variantSnapshot: {
-                  name: 'Rose / Size M',
-                },
-              },
-            ],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          {
-            id: 'ord_100289',
-            orderNumber: 'LUM-100289',
-            tenantId: tenantSlug,
-            customerName: 'Rohan Mehra',
-            customerEmail: 'rohan.mehra@example.com',
-            phone: '+91 98111 22334',
-            orderStatus: 'PROCESSING',
-            paymentStatus: 'PAID',
-            paymentMethod: 'upi',
-            pricing: {
-              subtotal: 1899,
-              discountTotal: 100,
-              shippingFee: 0,
-              grandTotal: 1799,
-            },
-            shippingAddress: {
-              fullName: 'Rohan Mehra',
-              phone: '+91 98111 22334',
-              addressLine1: 'Flat 402, Sea Green Apartments, Bandra West',
-              city: 'Mumbai',
-              state: 'Maharashtra',
-              pincode: '400050',
-            },
-            items: [
-              {
-                id: 'it_2',
-                productId: 'prod_2',
-                quantity: 1,
-                unitPrice: 1899,
-                productSnapshot: {
-                  title: 'Ivory Linen Relaxed Blazer Co-ord',
-                  image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400',
-                  sku: 'BLZ-IVY-S',
-                },
-                variantSnapshot: {
-                  name: 'Ivory / Size S',
-                },
-              },
-            ],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ];
-        await collection.insertMany(initialOrders);
-      }
-
       const docs = await collection
         .find({
-          $or: [{ tenantId: tenantSlug }, { storeSlug: tenantSlug }],
+          $or: [
+            { tenantId: tenantSlug },
+            { tenantId: `store_${tenantSlug}` },
+            { storeSlug: tenantSlug },
+            { tenantSlug: tenantSlug },
+            { tenantSlug: tenantSlug.replace('-', '') },
+          ],
         })
-        .sort({ createdAt: -1 })
+        .sort({ placedAt: -1, createdAt: -1 })
         .toArray();
 
       const clean = docs.map(({ _id, ...rest }) => rest);
@@ -143,15 +53,18 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const tenantSlug = (req.headers.get('x-tenant-slug') || body.tenantId || 'lumina').toLowerCase();
+    const rawSlug = req.headers.get('x-tenant-slug') || body.tenantId || 'jq-trends';
+    const tenantSlug = (rawSlug === 'lumina' || rawSlug === 'demo' ? 'jq-trends' : rawSlug).toLowerCase().trim();
 
     const db = await getDatabase();
     const now = new Date().toISOString();
     const newOrder = {
       ...body,
       id: body.id || `ord_${Date.now()}`,
-      orderNumber: body.orderNumber || `LUM-${Math.floor(100000 + Math.random() * 900000)}`,
-      tenantId: tenantSlug,
+      orderNumber: body.orderNumber || `JQT-${Math.floor(100000 + Math.random() * 900000)}`,
+      tenantId: `store_${tenantSlug}`,
+      tenantSlug: tenantSlug,
+      storeSlug: tenantSlug,
       createdAt: now,
       updatedAt: now,
     };

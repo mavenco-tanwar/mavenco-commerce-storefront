@@ -18,7 +18,8 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
+  const rawSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'jq-trends';
+  const tenantSlug = (rawSlug === 'lumina' || rawSlug === 'demo' ? 'jq-trends' : rawSlug).toLowerCase().trim();
   const category = searchParams.get('category') || undefined;
   const search = searchParams.get('search') || undefined;
   const status = searchParams.get('status') || undefined;

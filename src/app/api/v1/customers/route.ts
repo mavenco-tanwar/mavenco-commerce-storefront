@@ -18,62 +18,20 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const tenantSlug = (searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'lumina').toLowerCase();
+    const rawSlug = searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'jq-trends';
+    const tenantSlug = (rawSlug === 'lumina' || rawSlug === 'demo' ? 'jq-trends' : rawSlug).toLowerCase().trim();
 
     const db = await getDatabase();
     if (db) {
       const collection = db.collection('customers');
-      const count = await collection.countDocuments({
-        $or: [{ tenantId: tenantSlug }, { storeSlug: tenantSlug }],
-      });
-
-      if (count === 0) {
-        // Auto-seed customers in MongoDB Atlas
-        const initialCustomers = [
-          {
-            id: 'cust_1',
-            tenantId: tenantSlug,
-            name: 'Aanya Kapoor',
-            email: 'aanya.kapoor@example.com',
-            phone: '+91 9876543210',
-            ordersCount: 3,
-            totalSpent: 4297,
-            status: 'active',
-            tags: ['VIP', 'Haute Couture'],
-            addresses: [
-              {
-                id: 'addr_1',
-                fullName: 'Aanya Kapoor',
-                addressLine1: 'Villa 14, Palm Meadows, Indiranagar',
-                city: 'Bengaluru',
-                state: 'Karnataka',
-                postalCode: '560038',
-                isDefault: true,
-              },
-            ],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          {
-            id: 'cust_2',
-            tenantId: tenantSlug,
-            name: 'Rohan Mehra',
-            email: 'rohan.mehra@example.com',
-            phone: '+91 98111 22334',
-            ordersCount: 1,
-            totalSpent: 1799,
-            status: 'active',
-            tags: ['New Member'],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ];
-        await collection.insertMany(initialCustomers);
-      }
-
       const docs = await collection
         .find({
-          $or: [{ tenantId: tenantSlug }, { storeSlug: tenantSlug }],
+          $or: [
+            { tenantId: tenantSlug },
+            { tenantId: `store_${tenantSlug}` },
+            { storeSlug: tenantSlug },
+            { tenantSlug: tenantSlug },
+          ],
         })
         .sort({ createdAt: -1 })
         .toArray();
@@ -85,7 +43,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ success: true, data: [] }, { headers: corsHeaders() });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: error.message || 'Failed to fetch customers' },
       { status: 500, headers: corsHeaders() }
     );
   }
