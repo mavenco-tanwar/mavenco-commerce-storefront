@@ -38,8 +38,29 @@ export function mapCmsProductToStorefrontProduct(cms: any): Product {
   const sizeOption = rawOptions.find((o: any) => o.name?.toLowerCase() === 'size');
   const colorOption = rawOptions.find((o: any) => o.name?.toLowerCase() === 'color');
 
+  // Extract dynamic sizes and colors from variants if present
+  const rawVariants = Array.isArray(cms.variants)
+    ? cms.variants
+    : typeof cms.variants === 'string'
+    ? JSON.parse(cms.variants || '[]')
+    : [];
+
+  const dynamicSizes: string[] = [];
+  const dynamicColors: string[] = [];
+  if (rawVariants.length > 0) {
+    for (const v of rawVariants) {
+      const s = v.options?.size || (v.title && v.title.includes('/') ? v.title.split('/')[0].trim() : undefined);
+      const c = v.options?.color || (v.title && v.title.includes('/') ? v.title.split('/')[1].trim() : undefined);
+      if (s && s !== 'Default' && !dynamicSizes.includes(s)) dynamicSizes.push(s);
+      if (c && c !== 'Default' && !dynamicColors.includes(c)) dynamicColors.push(c);
+    }
+  }
+
+  const effectiveSizeValues = dynamicSizes.length > 0 ? dynamicSizes : (sizeOption?.values || ['XS', 'S', 'M', 'L', 'XL']);
+  const effectiveColorValues = dynamicColors.length > 0 ? dynamicColors : (colorOption?.values || ['Blush Pink', 'Rose Gold', 'Ivory']);
+
   // Extract sizes
-  const sizes: ProductSize[] = (sizeOption?.values || ['XS', 'S', 'M', 'L', 'XL']).map((s: string) => ({
+  const sizes: ProductSize[] = effectiveSizeValues.map((s: string) => ({
     size: s,
     inStock: true,
     stockCount: 15,
@@ -48,10 +69,15 @@ export function mapCmsProductToStorefrontProduct(cms: any): Product {
   // Extract colors with hex lookup
   const colorHexMap: Record<string, string> = {
     'Blush Pink': '#E8B8B5',
+    'Ruby Red': '#DC2626',
+    'Obsidian Black': '#111111',
+    'Ivory White': '#FFFDFC',
+    'Emerald Green': '#059669',
+    'Royal Navy': '#1E3A8A',
     'Dusty Rose': '#C98282',
+    'Mustard Honey': '#D97706',
     'Rose Gold': '#B77A68',
     'Ivory Cream': '#F8F1EA',
-    'Ivory White': '#FFFDFC',
     'Oatmeal Beige': '#E5DDD5',
     'Sage Mist': '#C8D5C8',
     'Powder Blue': '#D0E1FD',
@@ -61,13 +87,12 @@ export function mapCmsProductToStorefrontProduct(cms: any): Product {
     'Royal Navy & Ivory': '#1A2B49',
     'Emerald & Gold': '#1B4D3E',
     'Lilac Bloom': '#D8BFD8',
-    'Mustard Honey': '#E1A95F',
     'Sky Denim': '#8CB8D8',
   };
 
-  const colors: ProductColor[] = (colorOption?.values || ['Blush Pink', 'Rose Gold', 'Ivory']).map((c: string) => ({
+  const colors: ProductColor[] = effectiveColorValues.map((c: string) => ({
     name: c,
-    hex: colorHexMap[c] || '#111111',
+    hex: colorHexMap[c] || '#B77A68',
   }));
 
   // Compare at price & discount calculation
