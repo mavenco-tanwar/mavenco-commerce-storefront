@@ -90,7 +90,6 @@ export class StorefrontProvisioningService {
         password: tempPass,
         temporaryPassword: tempPass,
         isTemporaryPassword: true,
-        createdAt: now,
         updatedAt: now,
       };
 

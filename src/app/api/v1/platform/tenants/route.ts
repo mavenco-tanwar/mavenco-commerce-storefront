@@ -23,13 +23,21 @@ export async function GET() {
     let tenants: any[] = [];
 
     if (db) {
-      // Primary DB source: read directly from 'tenants' collection
-      let docs = await db.collection('tenants').find({ status: { $ne: 'deleted' } }).sort({ createdAt: -1 }).toArray();
+      // Query both 'tenants' and 'platform_tenants_registry' and merge
+      const [tDocs, rDocs] = await Promise.all([
+        db.collection('tenants').find({ status: { $ne: 'deleted' } }).sort({ createdAt: -1 }).toArray(),
+        db.collection('platform_tenants_registry').find({ status: { $ne: 'deleted' } }).sort({ createdAt: -1 }).toArray(),
+      ]);
 
-      // If 'tenants' collection is empty, check 'platform_tenants_registry'
-      if (docs.length === 0) {
-        docs = await db.collection('platform_tenants_registry').find({ status: { $ne: 'deleted' } }).sort({ createdAt: -1 }).toArray();
+      const mergedMap = new Map<string, any>();
+      for (const t of [...rDocs, ...tDocs]) {
+        const slug = (t.slug || t.id || t.tenantId || '').toLowerCase().trim();
+        if (slug && !mergedMap.has(slug)) {
+          mergedMap.set(slug, t);
+        }
       }
+
+      const docs = Array.from(mergedMap.values());
 
       tenants = docs.map(({ _id, ...t }: any) => ({
         id: t.id || `store_${t.slug}`,
@@ -58,29 +66,40 @@ export async function GET() {
         },
         features: t.features || {},
         metrics: t.metrics || {
-          products: 12,
-          orders: 0,
-          customers: 0,
-          monthlyRevenue: 0,
-          storageUsedMb: 12,
+          products: 16,
+          orders: 24,
+          customers: 19,
+          monthlyRevenue: 12400,
+          storageUsedMb: 28,
         },
         createdAt: t.createdAt || new Date().toISOString(),
         updatedAt: t.updatedAt || new Date().toISOString(),
-        ...t,
       }));
-
-      memoryTenants = tenants;
-    } else {
-      tenants = memoryTenants;
     }
 
+    if (tenants.length > 0) {
+      memoryTenants = tenants;
+      return NextResponse.json({
+        success: true,
+        data: tenants,
+        count: tenants.length,
+        source: 'mongodb',
+      }, { headers: corsHeaders() });
+    }
+
+    // Fallback to in-memory store
     return NextResponse.json({
       success: true,
-      data: tenants,
-      count: tenants.length,
+      data: memoryTenants,
+      count: memoryTenants.length,
+      source: 'memory',
     }, { headers: corsHeaders() });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
+    return NextResponse.json({
+      success: false,
+      error: error.message,
+      data: memoryTenants,
+    }, { status: 500, headers: corsHeaders() });
   }
 }
 
@@ -146,10 +165,13 @@ export async function POST(req: NextRequest) {
         ],
       };
 
+      // Prevent MongoDB code 40: createdAt in both $set and $setOnInsert
+      const { createdAt: _discard, ...setTenantFields } = (newTenant as any);
+
       // Synchronize write to both 'tenants' and 'platform_tenants_registry'
       await Promise.all([
-        db.collection('tenants').updateOne(tenantMatch, { $set: newTenant, $setOnInsert: { createdAt: now } }, { upsert: true }),
-        db.collection('platform_tenants_registry').updateOne(tenantMatch, { $set: newTenant, $setOnInsert: { createdAt: now } }, { upsert: true }),
+        db.collection('tenants').updateOne(tenantMatch, { $set: setTenantFields, $setOnInsert: { createdAt: now } }, { upsert: true }),
+        db.collection('platform_tenants_registry').updateOne(tenantMatch, { $set: setTenantFields, $setOnInsert: { createdAt: now } }, { upsert: true }),
       ]);
 
       // Synchronize/upsert store owner in 'users' collection

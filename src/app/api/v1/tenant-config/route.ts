@@ -131,6 +131,8 @@ export async function POST(request: NextRequest) {
           status: body.status || 'active',
           updatedAt: now,
         };
+        delete setPayload.createdAt;
+        delete setPayload._id;
 
         if (ownerEmail) {
           setPayload.ownerEmail = ownerEmail;
