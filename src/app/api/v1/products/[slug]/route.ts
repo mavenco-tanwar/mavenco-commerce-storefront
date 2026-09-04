@@ -8,7 +8,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, x-user-name, X-Store-ID, X-API-Key, X-Tenant-Slug, x-store-id, x-api-key',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, X-Tenant-Slug, x-tenant, x-store-slug, x-store-id, x-user-name, X-Store-ID, X-API-Key, x-api-key, *',
   };
 }
 
@@ -164,7 +164,15 @@ export async function DELETE(
 ) {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug).trim();
-  const tenantSlug = (request.headers.get('x-tenant-slug') || request.headers.get('x-store-slug') || '').toLowerCase().trim();
+  const { searchParams } = new URL(request.url);
+  const extraSlug = searchParams.get('slug') ? decodeURIComponent(searchParams.get('slug')!).trim() : undefined;
+  const tenantSlug = (
+    searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
+    request.headers.get('x-tenant-slug') ||
+    request.headers.get('x-store-slug') ||
+    ''
+  ).toLowerCase().trim();
   const operator = request.headers.get('x-user-name') || 'Admin User';
 
   try {
@@ -175,6 +183,14 @@ export async function DELETE(
           await PimService.deleteProduct(tenantSlug, existing.id, operator);
         }
       } catch {}
+      if (extraSlug) {
+        try {
+          const existingExtra = await PimService.getProductById(tenantSlug, extraSlug);
+          if (existingExtra) {
+            await PimService.deleteProduct(tenantSlug, existingExtra.id, operator);
+          }
+        } catch {}
+      }
     }
 
     const db = await getDatabase();
@@ -187,17 +203,20 @@ export async function DELETE(
         }
       } catch {}
 
-      const deleteQuery: Record<string, any> = {
-        $or: [
-          { slug: decodedSlug },
-          { id: decodedSlug },
-          { sku: decodedSlug },
-          ...(objId ? [{ _id: objId }] : []),
-        ],
-      };
+      const deleteConditions: any[] = [
+        { slug: decodedSlug },
+        { id: decodedSlug },
+        { _id: decodedSlug },
+        { sku: decodedSlug },
+        ...(objId ? [{ _id: objId }] : []),
+      ];
 
-      const pRes = await db.collection('products').deleteMany(deleteQuery);
-      const pimRes = await db.collection('pim_products').deleteMany(deleteQuery);
+      if (extraSlug) {
+        deleteConditions.push({ slug: extraSlug }, { id: extraSlug }, { _id: extraSlug });
+      }
+
+      const pRes = await db.collection('products').deleteMany({ $or: deleteConditions });
+      const pimRes = await db.collection('pim_products').deleteMany({ $or: deleteConditions });
 
       return NextResponse.json(
         {

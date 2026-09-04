@@ -9,11 +9,14 @@ export function middleware(request: NextRequest) {
   // ── Global CORS handling for all API routes ──
   const isApiRoute = url.pathname.startsWith('/api/');
   if (isApiRoute) {
+    const requestedHeaders =
+      request.headers.get('access-control-request-headers') ||
+      'Content-Type, Authorization, x-tenant-slug, X-Tenant-Slug, x-tenant, x-store-slug, x-store-id, X-Store-ID, X-API-Key, x-api-key, x-user-name, x-channel-code, x-market-code, x-currency, x-locale, x-session-id';
+
     const corsHeaders: Record<string, string> = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers':
-        'Content-Type, Authorization, x-tenant-slug, X-API-Key, X-Store-ID, x-channel-code, x-market-code, x-currency, x-locale, x-session-id',
+      'Access-Control-Allow-Headers': requestedHeaders,
       'Access-Control-Max-Age': '86400',
     };
 

@@ -9,7 +9,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, x-user-name, X-Store-ID, X-API-Key, X-Tenant-Slug, x-store-id, x-api-key',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, X-Tenant-Slug, x-tenant, x-store-slug, x-store-id, x-user-name, X-Store-ID, X-API-Key, x-api-key, *',
   };
 }
 
@@ -62,12 +62,17 @@ export async function GET(request: NextRequest) {
       }
 
       const raw = await db.collection('products').find(query).toArray();
-      dbProducts = raw.map(({ _id, ...clean }) => ({
-        ...clean,
-        id: clean.id || clean._id,
-        title: clean.title || clean.name,
-        name: clean.name || clean.title,
-      }));
+      dbProducts = raw.map(({ _id, ...clean }) => {
+        const stringId = _id ? (typeof _id === 'object' ? _id.toString() : String(_id)) : undefined;
+        const finalId = clean.id || stringId || clean.slug;
+        return {
+          ...clean,
+          _id: stringId,
+          id: finalId,
+          title: clean.title || clean.name,
+          name: clean.name || clean.title,
+        };
+      });
 
       // Also check pim_products collection in MongoDB
       try {
@@ -75,12 +80,14 @@ export async function GET(request: NextRequest) {
         const existingIds = new Set(dbProducts.map((p) => p.id));
         for (const rawItem of rawPim) {
           const { _id, ...clean } = rawItem;
-          const itemId = clean.id || _id;
-          if (!existingIds.has(itemId)) {
-            existingIds.add(itemId);
+          const stringId = _id ? (typeof _id === 'object' ? _id.toString() : String(_id)) : undefined;
+          const finalId = clean.id || stringId || clean.slug;
+          if (!existingIds.has(finalId)) {
+            existingIds.add(finalId);
             dbProducts.push({
               ...clean,
-              id: itemId,
+              _id: stringId,
+              id: finalId,
               title: clean.title || clean.name,
               name: clean.name || clean.title,
             });
@@ -148,21 +155,25 @@ export async function POST(request: NextRequest) {
       storeSlug: tenantSlug,
     }, operator);
 
-    // Sync to MongoDB products collection with safe upsert
+    // Sync to MongoDB products and pim_products collections with safe upsert
     try {
       const db = await getDatabase();
       if (db) {
+        const payload = {
+          ...saved,
+          tenantId: `store_${tenantSlug}`,
+          tenantSlug,
+          storeSlug: tenantSlug,
+          updatedAt: new Date().toISOString(),
+        };
         await db.collection('products').updateOne(
           { $or: [{ id: saved.id }, { slug: saved.slug }] },
-          {
-            $set: {
-              ...saved,
-              tenantId: `store_${tenantSlug}`,
-              tenantSlug,
-              storeSlug: tenantSlug,
-              updatedAt: new Date().toISOString(),
-            },
-          },
+          { $set: payload },
+          { upsert: true }
+        );
+        await db.collection('pim_products').updateOne(
+          { $or: [{ id: saved.id }, { slug: saved.slug }] },
+          { $set: payload },
           { upsert: true }
         );
       }
@@ -245,7 +256,7 @@ export async function DELETE(request: NextRequest) {
       const orConditions: any[] = [];
       for (const rawId of ids) {
         const clean = decodeURIComponent(rawId).trim();
-        orConditions.push({ id: clean }, { slug: clean }, { sku: clean });
+        orConditions.push({ id: clean }, { slug: clean }, { sku: clean }, { _id: clean });
         if (ObjectId.isValid(clean) && clean.length === 24) {
           orConditions.push({ _id: new ObjectId(clean) });
         }
