@@ -62,12 +62,22 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const db = await getDatabase();
-    const tenantSlug = await resolveRequestTenantSlug(req, undefined, db);
+    let tenantSlug = await resolveRequestTenantSlug(req, undefined, db);
+    if ((!tenantSlug || tenantSlug === 'demo') && (body.tenantSlug || body.storeSlug)) {
+      tenantSlug = body.tenantSlug || body.storeSlug;
+    }
+    tenantSlug = (tenantSlug || 'jq-trends').toLowerCase().trim();
 
     const now = new Date().toISOString();
+    const cleanName = body.name || 'New Category';
+    const cleanSlug = body.slug || cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const catId = body.id || `cat_${cleanSlug}_${tenantSlug}`;
+
     const newCategory = {
       ...body,
-      id: body.id || `cat_${Date.now()}`,
+      id: catId,
+      name: cleanName,
+      slug: cleanSlug,
       tenantId: `store_${tenantSlug}`,
       tenantSlug,
       storeSlug: tenantSlug,
@@ -76,7 +86,11 @@ export async function POST(req: NextRequest) {
     };
 
     if (db) {
-      await db.collection('categories').insertOne(newCategory);
+      await db.collection('categories').updateOne(
+        { $or: [{ id: catId }, { slug: cleanSlug, tenantSlug }] },
+        { $set: newCategory },
+        { upsert: true }
+      );
     }
 
     return NextResponse.json(

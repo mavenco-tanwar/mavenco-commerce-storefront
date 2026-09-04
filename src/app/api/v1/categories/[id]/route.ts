@@ -7,7 +7,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, x-user-name, X-Store-ID, X-API-Key, X-Tenant-Slug, x-store-id, x-api-key, *',
   };
 }
 
@@ -21,9 +21,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const body = await req.json();
     const db = await getDatabase();
     if (db) {
+      const { _id, createdAt, ...updates } = body;
       await db.collection('categories').updateOne(
-        { id },
-        { $set: { ...body, updatedAt: new Date().toISOString() } }
+        { $or: [{ id }, { slug: id }] },
+        { $set: { ...updates, updatedAt: new Date().toISOString() } }
       );
     }
     return NextResponse.json({ success: true, message: 'Category updated in MongoDB' }, { headers: corsHeaders() });
@@ -37,7 +38,9 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const { id } = params;
     const db = await getDatabase();
     if (db) {
-      await db.collection('categories').deleteOne({ id });
+      await db.collection('categories').deleteMany({
+        $or: [{ id }, { slug: id }, { parentId: id }],
+      });
     }
     return NextResponse.json({ success: true, message: 'Category deleted from MongoDB' }, { headers: corsHeaders() });
   } catch (error: any) {
