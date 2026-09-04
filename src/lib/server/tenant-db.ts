@@ -101,3 +101,32 @@ export async function checkTenantValidityDb(slug?: string): Promise<{
 
   return { isValid: false, isSuspended: false, config: null };
 }
+
+export async function resolveRequestTenantSlug(
+  req: { headers: Headers | { get(key: string): string | null } },
+  searchParams?: URLSearchParams,
+  db?: any
+): Promise<string> {
+  const fromQuery = searchParams?.get('tenant') || searchParams?.get('store') || searchParams?.get('tenantId');
+  const fromHeader = req.headers.get('x-tenant-slug') || req.headers.get('x-store-slug') || req.headers.get('x-tenant-id');
+
+  const raw = (fromQuery || fromHeader || '').trim();
+  if (raw) {
+    return raw.replace(/^store_/, '').toLowerCase();
+  }
+
+  // If no tenant header or query param is passed, dynamically retrieve the active created store from MongoDB
+  if (db) {
+    try {
+      const activeDoc = await db.collection('tenants').findOne(
+        { status: { $ne: 'deleted' } },
+        { sort: { createdAt: -1 } }
+      );
+      if (activeDoc?.slug) {
+        return activeDoc.slug.toLowerCase().trim();
+      }
+    } catch {}
+  }
+
+  return '';
+}

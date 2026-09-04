@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,22 +19,24 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const rawSlug = searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'jq-trends';
-    const tenantSlug = (rawSlug === 'lumina' || rawSlug === 'demo' ? 'jq-trends' : rawSlug).toLowerCase().trim();
-
     const db = await getDatabase();
+    const tenantSlug = await resolveRequestTenantSlug(req, searchParams, db);
+
     if (db) {
       const collection = db.collection('orders');
+      const query = tenantSlug
+        ? {
+            $or: [
+              { tenantId: tenantSlug },
+              { tenantId: `store_${tenantSlug}` },
+              { storeSlug: tenantSlug },
+              { tenantSlug: tenantSlug },
+            ],
+          }
+        : {};
+
       const docs = await collection
-        .find({
-          $or: [
-            { tenantId: tenantSlug },
-            { tenantId: `store_${tenantSlug}` },
-            { storeSlug: tenantSlug },
-            { tenantSlug: tenantSlug },
-            { tenantSlug: tenantSlug.replace('-', '') },
-          ],
-        })
+        .find(query)
         .sort({ placedAt: -1, createdAt: -1 })
         .toArray();
 
@@ -53,15 +56,23 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const rawSlug = req.headers.get('x-tenant-slug') || body.tenantId || 'jq-trends';
-    const tenantSlug = (rawSlug === 'lumina' || rawSlug === 'demo' ? 'jq-trends' : rawSlug).toLowerCase().trim();
-
     const db = await getDatabase();
+    const rawResolved =
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-store-slug') ||
+      body.tenantId ||
+      body.storeSlug ||
+      body.tenantSlug ||
+      (await resolveRequestTenantSlug(req, undefined, db));
+
+    const tenantSlug = (rawResolved || '').replace(/^store_/, '').toLowerCase().trim();
+    const prefix = (tenantSlug || 'ORD').slice(0, 3).toUpperCase();
+
     const now = new Date().toISOString();
     const newOrder = {
       ...body,
       id: body.id || `ord_${Date.now()}`,
-      orderNumber: body.orderNumber || `JQT-${Math.floor(100000 + Math.random() * 900000)}`,
+      orderNumber: body.orderNumber || `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`,
       tenantId: `store_${tenantSlug}`,
       tenantSlug: tenantSlug,
       storeSlug: tenantSlug,

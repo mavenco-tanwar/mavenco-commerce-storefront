@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { PimService } from '@/server/pim/pim.service';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,8 +19,6 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const rawSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'jq-trends';
-  const tenantSlug = (rawSlug === 'lumina' || rawSlug === 'demo' ? 'jq-trends' : rawSlug).toLowerCase().trim();
   const category = searchParams.get('category') || undefined;
   const search = searchParams.get('search') || undefined;
   const status = searchParams.get('status') || undefined;
@@ -31,16 +30,20 @@ export async function GET(request: NextRequest) {
 
   try {
     const db = await getDatabase();
+    const tenantSlug = await resolveRequestTenantSlug(request, searchParams, db);
     let dbProducts: any[] = [];
     if (db) {
-      const tenantMatchConditions: any[] = [{ tenantSlug }, { storeSlug: tenantSlug }, { tenantId: tenantSlug }];
-      if (tenantSlug === 'demo' || tenantSlug === 'lumina') {
-        tenantMatchConditions.push({ tenantSlug: 'demo' }, { tenantSlug: 'lumina' }, { tenantId: 'demo' }, { tenantId: 'lumina' });
+      const tenantMatchConditions: any[] = [];
+      if (tenantSlug) {
+        tenantMatchConditions.push(
+          { tenantSlug },
+          { storeSlug: tenantSlug },
+          { tenantId: tenantSlug },
+          { tenantId: `store_${tenantSlug}` }
+        );
       }
 
-      const query: Record<string, any> = {
-        $or: tenantMatchConditions,
-      };
+      const query: Record<string, any> = tenantMatchConditions.length > 0 ? { $or: tenantMatchConditions } : {};
 
       if (category && category !== 'all') {
         query.$and = [{ $or: [{ categoryIds: category }, { category: category }, { categories: category }] }];
@@ -107,7 +110,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const tenantSlug = (body.tenantSlug || body.tenantId || request.headers.get('x-tenant-slug') || 'demo').toLowerCase().trim();
+    const db = await getDatabase();
+    const rawResolved =
+      request.headers.get('x-tenant-slug') ||
+      request.headers.get('x-store-slug') ||
+      body.tenantId ||
+      body.storeSlug ||
+      body.tenantSlug ||
+      (await resolveRequestTenantSlug(request, undefined, db));
+    const tenantSlug = (rawResolved || '').replace(/^store_/, '').toLowerCase().trim();
     const operator = request.headers.get('x-user-name') || 'Admin Curator';
 
     const saved = await PimService.upsertProduct(tenantSlug, body, operator);

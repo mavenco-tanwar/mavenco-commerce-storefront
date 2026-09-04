@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,21 +19,24 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const rawSlug = searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'jq-trends';
-    const tenantSlug = (rawSlug === 'lumina' || rawSlug === 'demo' ? 'jq-trends' : rawSlug).toLowerCase().trim();
-
     const db = await getDatabase();
+    const tenantSlug = await resolveRequestTenantSlug(req, searchParams, db);
+
     if (db) {
       const collection = db.collection('customers');
+      const query = tenantSlug
+        ? {
+            $or: [
+              { tenantId: tenantSlug },
+              { tenantId: `store_${tenantSlug}` },
+              { storeSlug: tenantSlug },
+              { tenantSlug: tenantSlug },
+            ],
+          }
+        : {};
+
       const docs = await collection
-        .find({
-          $or: [
-            { tenantId: tenantSlug },
-            { tenantId: `store_${tenantSlug}` },
-            { storeSlug: tenantSlug },
-            { tenantSlug: tenantSlug },
-          ],
-        })
+        .find(query)
         .sort({ createdAt: -1 })
         .toArray();
 
@@ -52,14 +56,24 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const tenantSlug = (req.headers.get('x-tenant-slug') || body.tenantId || 'lumina').toLowerCase();
-
     const db = await getDatabase();
+    const rawResolved =
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-store-slug') ||
+      body.tenantId ||
+      body.storeSlug ||
+      body.tenantSlug ||
+      (await resolveRequestTenantSlug(req, undefined, db));
+
+    const tenantSlug = (rawResolved || '').replace(/^store_/, '').toLowerCase().trim();
+
     const now = new Date().toISOString();
     const newCust = {
       ...body,
       id: body.id || `cust_${Date.now()}`,
-      tenantId: tenantSlug,
+      tenantId: `store_${tenantSlug}`,
+      tenantSlug,
+      storeSlug: tenantSlug,
       createdAt: now,
       updatedAt: now,
     };
