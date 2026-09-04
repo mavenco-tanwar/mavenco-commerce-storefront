@@ -174,6 +174,54 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { ids, id, status, updates } = body;
+    const targetIds: string[] = [];
+    if (Array.isArray(ids)) targetIds.push(...ids);
+    if (id) targetIds.push(id);
+
+    const updatePayload: Record<string, any> = {
+      ...(updates || {}),
+      updatedAt: new Date().toISOString(),
+    };
+    if (status) {
+      updatePayload.status = status;
+    }
+
+    const db = await getDatabase();
+    if (db && targetIds.length > 0) {
+      const { ObjectId } = await import('mongodb');
+      const orConditions: any[] = [];
+      for (const rawId of targetIds) {
+        const clean = decodeURIComponent(rawId).trim();
+        orConditions.push({ id: clean }, { slug: clean }, { sku: clean });
+        if (ObjectId.isValid(clean) && clean.length === 24) {
+          orConditions.push({ _id: new ObjectId(clean) });
+        }
+      }
+
+      const pRes = await db.collection('products').updateMany({ $or: orConditions }, { $set: updatePayload });
+      const pimRes = await db.collection('pim_products').updateMany({ $or: orConditions }, { $set: updatePayload });
+
+      return NextResponse.json(
+        {
+          success: true,
+          message: 'Products updated in database',
+          matchedCount: (pRes.matchedCount || 0) + (pimRes.matchedCount || 0),
+          modifiedCount: (pRes.modifiedCount || 0) + (pimRes.modifiedCount || 0),
+        },
+        { headers: corsHeaders() }
+      );
+    }
+
+    return NextResponse.json({ success: true, message: 'No target IDs provided' }, { headers: corsHeaders() });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500, headers: corsHeaders() });
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

@@ -120,6 +120,9 @@ class ApiClient {
       const storeMatch = window.location.pathname.match(/^\/stores\/([a-zA-Z0-9_-]+)/);
       if (storeMatch && storeMatch[1]) {
         activeTenantSlug = storeMatch[1];
+      } else {
+        const stored = localStorage.getItem('jq_active_store_slug');
+        activeTenantSlug = stored && stored !== 'all' ? stored : 'jq-trends';
       }
     }
 

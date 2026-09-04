@@ -108,19 +108,33 @@ export async function resolveRequestTenantSlug(
   db?: any
 ): Promise<string> {
   const fromQuery = searchParams?.get('tenant') || searchParams?.get('store') || searchParams?.get('tenantId');
-  const fromHeader = req.headers.get('x-tenant-slug') || req.headers.get('x-store-slug') || req.headers.get('x-tenant-id');
+  const fromHeader =
+    req.headers.get('x-tenant-slug') ||
+    req.headers.get('x-store-slug') ||
+    req.headers.get('x-tenant-id') ||
+    req.headers.get('x-store-id') ||
+    req.headers.get('x-store');
 
   const raw = (fromQuery || fromHeader || '').trim();
   if (raw) {
-    return raw.replace(/^store_/, '').toLowerCase();
+    const cleaned = raw.replace(/^store_/, '').replace(/^store-/, '').replace(/_/g, '-').toLowerCase();
+    if (cleaned && cleaned !== 'all' && cleaned !== 'demo' && cleaned !== 'lumina') {
+      return cleaned;
+    }
   }
 
-  // If no tenant header or query param is passed, dynamically retrieve the active created store from MongoDB
+  // Default fallback: return 'jq-trends' or the active tenant
   if (db) {
     try {
+      const defaultTenant = await db.collection('tenants').findOne({
+        slug: 'jq-trends',
+        status: { $ne: 'deleted' },
+      });
+      if (defaultTenant?.slug) return defaultTenant.slug.toLowerCase().trim();
+
       const activeDoc = await db.collection('tenants').findOne(
         { status: { $ne: 'deleted' } },
-        { sort: { createdAt: -1 } }
+        { sort: { createdAt: 1 } }
       );
       if (activeDoc?.slug) {
         return activeDoc.slug.toLowerCase().trim();
@@ -128,5 +142,5 @@ export async function resolveRequestTenantSlug(
     } catch {}
   }
 
-  return '';
+  return 'jq-trends';
 }

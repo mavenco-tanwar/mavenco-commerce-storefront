@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { getProductsForTenant } from '@/data/products';
 import { PimService } from '@/server/pim/pim.service';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 function corsHeaders() {
   return {
@@ -20,55 +21,63 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug).trim();
   const { searchParams } = new URL(request.url);
-  const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
+  const db = await getDatabase();
+  const tenantSlug = await resolveRequestTenantSlug(request, searchParams, db);
 
   // Try PIM first
-  const pimProduct = await PimService.getProductById(tenantSlug, slug);
-  if (pimProduct) {
-    return NextResponse.json({ data: pimProduct, source: 'pim_authoritative' }, { headers: corsHeaders() });
-  }
-
   try {
-    const db = await getDatabase();
-    if (db) {
-      // 1. Primary query: match slug/id with tenant
-      const tenantMatchConditions: any[] = [{ tenantSlug }, { storeSlug: tenantSlug }, { tenantId: tenantSlug }];
-      if (tenantSlug === 'demo' || tenantSlug === 'lumina') {
-        tenantMatchConditions.push({ tenantSlug: 'demo' }, { tenantSlug: 'lumina' }, { tenantId: 'demo' }, { tenantId: 'lumina' });
-      }
-
-      const query: Record<string, any> = {
-        $or: [{ slug: slug }, { id: slug }],
-      };
-
-      if (tenantSlug) {
-        query.$and = [{ $or: tenantMatchConditions }];
-      }
-
-      let product = await db.collection('products').findOne(query);
-
-      // 2. Secondary query: if not found with tenant filter, check by slug directly
-      if (!product) {
-        product = await db.collection('products').findOne({
-          $or: [{ slug: slug }, { id: slug }],
-        });
-      }
-
-      if (product) {
-        const { _id, ...clean } = product;
-        return NextResponse.json({ data: clean, source: 'mongodb_atlas' }, { headers: corsHeaders() });
-      }
+    const pimProduct = await PimService.getProductById(tenantSlug, decodedSlug);
+    if (pimProduct) {
+      return NextResponse.json({ data: pimProduct, source: 'pim_authoritative' }, { headers: corsHeaders() });
     }
-  } catch (err) {
-    console.error('MongoDB product by slug error:', err);
+  } catch {}
+
+  // Try MongoDB
+  if (db) {
+    const { ObjectId } = await import('mongodb');
+    let objId = null;
+    try {
+      if (ObjectId.isValid(decodedSlug) && decodedSlug.length === 24) {
+        objId = new ObjectId(decodedSlug);
+      }
+    } catch {}
+
+    const product = await db.collection('products').findOne({
+      $and: [
+        {
+          $or: [
+            { tenantSlug },
+            { storeSlug: tenantSlug },
+            { tenantId: tenantSlug },
+            { tenantId: `store_${tenantSlug}` },
+          ],
+        },
+        {
+          $or: [
+            { slug: decodedSlug },
+            { id: decodedSlug },
+            { sku: decodedSlug },
+            ...(objId ? [{ _id: objId }] : []),
+          ],
+        },
+      ],
+    });
+
+    if (product) {
+      const { _id, ...rest } = product;
+      return NextResponse.json({ data: { ...rest, id: rest.id || _id.toString() }, source: 'database' }, { headers: corsHeaders() });
+    }
   }
 
-  // Fallback
-  const all = getProductsForTenant(tenantSlug);
-  const found = all.find((p) => p.slug === slug || p.id === slug) || null;
+  // Fallback to static tenant catalog
+  const tenantCatalog = getProductsForTenant(tenantSlug);
+  const found = tenantCatalog.find(
+    (p) => p.slug === decodedSlug || p.id === decodedSlug || p.sku === decodedSlug
+  );
 
-  return NextResponse.json({ data: found, source: 'fallback' }, { headers: corsHeaders() });
+  return NextResponse.json({ data: found || null, source: 'fallback' }, { headers: corsHeaders() });
 }
 
 export async function PUT(
@@ -90,37 +99,60 @@ async function handleUpdate(
   params: Promise<{ slug: string }>
 ) {
   const { slug } = await params;
-  const tenantSlug = (request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
+  const decodedSlug = decodeURIComponent(slug).trim();
+  const db = await getDatabase();
+  const tenantSlug = await resolveRequestTenantSlug(request, undefined, db);
   const operator = request.headers.get('x-user-name') || 'Admin User';
 
   try {
     const body = await request.json();
 
-    // Update through authoritative PIM service
-    const existingPim = await PimService.getProductById(tenantSlug, slug);
-    const updated = await PimService.upsertProduct(
-      tenantSlug,
-      {
-        ...(existingPim || {}),
-        ...body,
-        id: existingPim?.id || slug,
-        slug: body.slug || existingPim?.slug || slug,
-      },
-      operator
-    );
-
-    // Sync to legacy MongoDB products collection if available
+    // Update through authoritative PIM service if available
     try {
-      const db = await getDatabase();
-      if (db) {
-        await db.collection('products').updateOne(
-          { $or: [{ slug: slug }, { id: slug }] },
-          { $set: { ...body, updatedAt: new Date().toISOString() } }
+      const existingPim = await PimService.getProductById(tenantSlug, decodedSlug);
+      if (existingPim) {
+        await PimService.upsertProduct(
+          tenantSlug,
+          {
+            ...existingPim,
+            ...body,
+            id: existingPim.id || decodedSlug,
+            slug: body.slug || existingPim.slug || decodedSlug,
+          },
+          operator
         );
       }
     } catch {}
 
-    return NextResponse.json({ success: true, data: updated, message: 'Product updated successfully' }, { headers: corsHeaders() });
+    // Update MongoDB products and pim_products collections
+    if (db) {
+      const { ObjectId } = await import('mongodb');
+      let objId = null;
+      try {
+        if (ObjectId.isValid(decodedSlug) && decodedSlug.length === 24) {
+          objId = new ObjectId(decodedSlug);
+        }
+      } catch {}
+
+      const matchQuery: Record<string, any> = {
+        $or: [
+          { slug: decodedSlug },
+          { id: decodedSlug },
+          { sku: decodedSlug },
+          ...(objId ? [{ _id: objId }] : []),
+        ],
+      };
+
+      const updatePayload = {
+        ...body,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await db.collection('products').updateMany(matchQuery, { $set: updatePayload });
+      await db.collection('pim_products').updateMany(matchQuery, { $set: updatePayload });
+    }
+
+    return NextResponse.json({ success: true, message: 'Product updated successfully' }, { headers: corsHeaders() });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500, headers: corsHeaders() });
   }
