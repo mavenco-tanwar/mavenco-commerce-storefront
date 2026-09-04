@@ -123,6 +123,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customCategories={sData.categoriesList || sData.categories || sData.items}
+                tenantSlug={tenantSlug}
               />
             );
 

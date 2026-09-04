@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
@@ -6,11 +8,16 @@ import { formatTenantHref } from '@/lib/tenant-config';
 
 interface CategoryItem {
   id?: string;
-  title: string;
-  tagline: string;
-  imageUrl: string;
-  href: string;
-  buttonText: string;
+  title?: string;
+  name?: string;
+  label?: string;
+  tagline?: string;
+  description?: string;
+  imageUrl?: string;
+  image?: string;
+  href?: string;
+  link?: string;
+  buttonText?: string;
   badge?: string;
 }
 
@@ -19,6 +26,7 @@ interface CategoryShowcaseProps {
   customSubtitle?: string;
   customBadge?: string;
   customCategories?: CategoryItem[];
+  tenantSlug?: string;
 }
 
 const DEFAULT_CATEGORIES: CategoryItem[] = [
@@ -65,13 +73,86 @@ export function CategoryShowcase({
   customSubtitle,
   customBadge,
   customCategories,
+  tenantSlug,
 }: CategoryShowcaseProps = {}) {
-  const title = customTitle || 'Shop By Category';
+  const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    if (customCategories && Array.isArray(customCategories) && customCategories.length > 0) {
+      return customCategories;
+    }
+    return [];
+  });
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    // 1. If explicit custom categories are configured in CMS Visual Studio, prioritize them
+    if (customCategories && Array.isArray(customCategories) && customCategories.length > 0) {
+      setCategories(customCategories);
+      setIsLoaded(true);
+      return;
+    }
+
+    // 2. Resolve active tenant slug
+    const effectiveSlug =
+      tenantSlug ||
+      (typeof window !== 'undefined'
+        ? window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/)?.[2] ||
+          new URLSearchParams(window.location.search).get('tenant') ||
+          ''
+        : '') ||
+      '';
+
+    if (!effectiveSlug) {
+      setIsLoaded(true);
+      return;
+    }
+
+    // 3. Dynamically fetch the store's real categories from MongoDB API
+    fetch(`/api/v1/categories?tenant=${encodeURIComponent(effectiveSlug)}`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (res && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped: CategoryItem[] = res.data.map((cat: any) => ({
+            id: cat.id || cat.slug,
+            title: cat.name || cat.title || 'Category',
+            tagline: cat.description || cat.tagline || 'Explore Collection',
+            imageUrl:
+              cat.imageUrl ||
+              cat.image ||
+              'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop',
+            href: `/collections?category=${encodeURIComponent(cat.slug || cat.id)}`,
+            buttonText: `Explore ${cat.name || 'Category'}`,
+            badge: cat.badge || cat.department || 'Curated Department',
+          }));
+          setCategories(mapped);
+        } else if (effectiveSlug === 'demo' || effectiveSlug === 'jq-trends') {
+          // Flagship reference store fallback
+          setCategories(DEFAULT_CATEGORIES);
+        } else {
+          // New/custom tenant with 0 categories: hide section completely
+          setCategories([]);
+        }
+      })
+      .catch((err) => {
+        console.warn('[CategoryShowcase] Failed to load tenant categories:', err);
+        if (effectiveSlug === 'demo' || effectiveSlug === 'jq-trends') {
+          setCategories(DEFAULT_CATEGORIES);
+        } else {
+          setCategories([]);
+        }
+      })
+      .finally(() => setIsLoaded(true));
+  }, [customCategories, tenantSlug]);
+
+  // If no categories exist for this tenant, hide the section completely
+  if (categories.length === 0) {
+    return null;
+  }
+
+  const title = customTitle || 'Shop By Department';
   const subtitle =
     customSubtitle ||
-    'Handpicked collections tailored for everyday comfort, grand celebrations, and playful moments.';
+    'Explore our meticulously curated departments tailored for everyday luxury.';
   const badge = customBadge || 'Curated Fashion Universes';
-  const categories = customCategories && customCategories.length > 0 ? customCategories : DEFAULT_CATEGORIES;
 
   return (
     <section className="py-16 md:py-24 bg-[#FFFDFC] select-none">
@@ -93,22 +174,25 @@ export function CategoryShowcase({
         {/* Categories Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {categories.map((cat: any, idx) => {
-            const title = cat.title || cat.label || `Category ${idx + 1}`;
-            const image = cat.imageUrl || cat.image || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop';
-            const tagline = cat.tagline || cat.count || 'Explore Collection';
-            const href = cat.href || cat.link || '/women';
-            const btnText = cat.buttonText || 'Explore';
+            const itemTitle = cat.title || cat.name || cat.label || `Category ${idx + 1}`;
+            const image =
+              cat.imageUrl ||
+              cat.image ||
+              'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop';
+            const tagline = cat.tagline || cat.description || cat.count || 'Explore Collection';
+            const href = cat.href || cat.link || '/collections';
+            const btnText = cat.buttonText || `Explore ${itemTitle}`;
 
             return (
               <Link
                 key={cat.id || idx}
-                href={formatTenantHref(href)}
+                href={formatTenantHref(href, tenantSlug)}
                 className="group relative aspect-3/4 overflow-hidden bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow flex flex-col justify-end p-6"
               >
                 {/* Background Image */}
                 <Image
                   src={image}
-                  alt={title}
+                  alt={itemTitle}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-108"
@@ -126,7 +210,7 @@ export function CategoryShowcase({
                   )}
 
                   <h3 className="text-2xl font-serif font-bold tracking-tight text-white">
-                    {title}
+                    {itemTitle}
                   </h3>
 
                   <p className="text-xs text-[#E8DED8] line-clamp-2 font-sans font-normal">
