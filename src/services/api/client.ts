@@ -115,11 +115,20 @@ class ApiClient {
   ): Promise<ApiResponseEnvelope<T>> {
     const url = `${this.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
+    let activeTenantSlug = '';
+    if (typeof window !== 'undefined') {
+      const storeMatch = window.location.pathname.match(/^\/stores\/([a-zA-Z0-9_-]+)/);
+      if (storeMatch && storeMatch[1]) {
+        activeTenantSlug = storeMatch[1];
+      }
+    }
+
     const headers: Record<string, string> = {
       Accept: 'application/json',
       'Content-Type': 'application/json',
       'X-API-Key': this.apiKey,
       'X-Store-ID': this.tenantId,
+      ...(activeTenantSlug ? { 'x-tenant-slug': activeTenantSlug } : {}),
       ...(options.headers as Record<string, string> || {}),
     };
 

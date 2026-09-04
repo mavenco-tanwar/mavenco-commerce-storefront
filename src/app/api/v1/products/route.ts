@@ -49,6 +49,14 @@ export async function GET(request: NextRequest) {
         query.$and = [{ $or: [{ categoryIds: category }, { category: category }, { categories: category }] }];
       }
 
+      if (status && status !== 'all') {
+        if (status === 'published') {
+          query.status = { $in: ['published', 'active'] };
+        } else {
+          query.status = status;
+        }
+      }
+
       if (search) {
         query.title = { $regex: search, $options: 'i' };
       }
@@ -60,44 +68,51 @@ export async function GET(request: NextRequest) {
         title: clean.title || clean.name,
         name: clean.name || clean.title,
       }));
+
+      // Also check pim_products collection in MongoDB
+      try {
+        const rawPim = await db.collection('pim_products').find(query).toArray();
+        const existingIds = new Set(dbProducts.map((p) => p.id));
+        for (const rawItem of rawPim) {
+          const { _id, ...clean } = rawItem;
+          const itemId = clean.id || _id;
+          if (!existingIds.has(itemId)) {
+            existingIds.add(itemId);
+            dbProducts.push({
+              ...clean,
+              id: itemId,
+              title: clean.title || clean.name,
+              name: clean.name || clean.title,
+            });
+          }
+        }
+      } catch {}
     }
 
-    const { products: pimProducts, total: pimTotal } = await PimService.getProducts(tenantSlug, {
-      category,
-      search,
-      status,
-      brandId,
-      minCompleteness,
-      minQuality,
-      page,
-      limit,
-    });
+    let finalProducts = dbProducts;
 
-    // Merge MongoDB products and PIM products (dedup by slug / id)
-    const existingSlugs = new Set<string>();
-    const merged: any[] = [];
-
-    for (const p of dbProducts) {
-      if (p.slug && !existingSlugs.has(p.slug)) {
-        existingSlugs.add(p.slug);
-        merged.push(p);
-      }
-    }
-
-    for (const p of pimProducts) {
-      if (p.slug && !existingSlugs.has(p.slug)) {
-        existingSlugs.add(p.slug);
-        merged.push(p);
-      }
+    // Only if database returned zero products AND tenant is demo, fall back to PimService
+    if (finalProducts.length === 0 && (!tenantSlug || tenantSlug === 'demo')) {
+      const { products: pimProducts } = await PimService.getProducts(tenantSlug || 'demo', {
+        category,
+        search,
+        status,
+        brandId,
+        minCompleteness,
+        minQuality,
+        page,
+        limit,
+      });
+      finalProducts = pimProducts;
     }
 
     return NextResponse.json(
       {
-        data: merged,
-        total: merged.length,
+        data: finalProducts,
+        total: finalProducts.length,
         page,
         limit,
-        source: 'pim_authoritative',
+        source: 'authoritative_db',
       },
       { headers: corsHeaders() }
     );

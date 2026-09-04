@@ -61,6 +61,7 @@ export interface Product {
   tags: string[];
   fit?: string;
   modelInfo?: string;
+  status?: 'published' | 'draft' | 'archived' | string;
 }
 
 export type SortOption = 'recommended' | 'featured' | 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'rating-desc' | 'popular';
@@ -97,6 +98,8 @@ export interface ProductQueryParams {
   sort?: SortOption;
   page?: number;
   limit?: number;
+  status?: string;
+  tenant?: string;
 }
 
 export interface ProductListResponse {

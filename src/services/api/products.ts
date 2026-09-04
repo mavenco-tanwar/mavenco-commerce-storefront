@@ -15,6 +15,21 @@ export class ProductApiService {
       if (params.limit) qs.append('limit', params.limit.toString());
       if (params.search) qs.append('search', params.search);
 
+      // Storefront must only query published products by default
+      qs.append('status', params.status || 'published');
+
+      // Scope to store tenant if available in params or current storefront path
+      let resolvedTenant = params.tenant;
+      if (!resolvedTenant && typeof window !== 'undefined') {
+        const storeMatch = window.location.pathname.match(/^\/stores\/([a-zA-Z0-9_-]+)/);
+        if (storeMatch && storeMatch[1]) {
+          resolvedTenant = storeMatch[1];
+        }
+      }
+      if (resolvedTenant) {
+        qs.append('tenant', resolvedTenant);
+      }
+
       // Sort translation
       if (params.sort) {
         if (params.sort === 'price-asc') qs.append('sort', 'price');
@@ -31,6 +46,9 @@ export class ProductApiService {
       const res = await apiClient.get<any[]>(`/api/v1/products${queryString}`);
 
       let products: Product[] = (res.data || []).map((p) => mapCmsProductToStorefrontProduct(p));
+
+      // Guard: Customers on public storefront must NEVER see draft or archived items
+      products = products.filter((p) => p.status !== 'draft' && p.status !== 'archived');
 
       // Client-side refinement for fine-grained options (sizes, colors, price range) if needed
       if (params.department) {
@@ -103,7 +121,11 @@ export class ProductApiService {
     try {
       const res = await apiClient.get<any>(`/api/v1/products/${encodeURIComponent(slug)}`);
       if (res.data) {
-        return { data: mapCmsProductToStorefrontProduct(res.data) };
+        const mapped = mapCmsProductToStorefrontProduct(res.data);
+        if (mapped.status === 'draft' || mapped.status === 'archived') {
+          return { data: null };
+        }
+        return { data: mapped };
       }
     } catch {
       // Zero fallback rule: Return null
@@ -118,7 +140,11 @@ export class ProductApiService {
     try {
       const res = await apiClient.get<any>(`/api/v1/products/${encodeURIComponent(id)}`);
       if (res.data) {
-        return { data: mapCmsProductToStorefrontProduct(res.data) };
+        const mapped = mapCmsProductToStorefrontProduct(res.data);
+        if (mapped.status === 'draft' || mapped.status === 'archived') {
+          return { data: null };
+        }
+        return { data: mapped };
       }
     } catch {
       // Zero fallback rule: Return null
@@ -129,33 +155,33 @@ export class ProductApiService {
   /**
    * Searches products by text query with debouncing support.
    */
-  public static async search(query: string, limit: number = 8): Promise<{ data: Product[] }> {
+  public static async search(query: string, limit: number = 8, tenant?: string): Promise<{ data: Product[] }> {
     if (!query.trim()) return { data: [] };
-    const res = await this.getProducts({ search: query.trim(), limit });
+    const res = await this.getProducts({ search: query.trim(), limit, tenant });
     return { data: res.data.products.slice(0, limit) };
   }
 
   /**
    * Retrieves trending showcase products.
    */
-  public static async getTrending(department?: 'women' | 'kids', limit: number = 8): Promise<{ data: Product[] }> {
-    const res = await this.getProducts({ department, limit });
+  public static async getTrending(department?: 'women' | 'kids', limit: number = 8, tenant?: string): Promise<{ data: Product[] }> {
+    const res = await this.getProducts({ department, limit, tenant });
     return { data: res.data.products.slice(0, limit) };
   }
 
   /**
    * Retrieves new arrivals.
    */
-  public static async getNewArrivals(limit: number = 6): Promise<{ data: Product[] }> {
-    const res = await this.getProducts({ isNewArrival: true, limit });
+  public static async getNewArrivals(limit: number = 6, tenant?: string): Promise<{ data: Product[] }> {
+    const res = await this.getProducts({ isNewArrival: true, limit, tenant });
     return { data: res.data.products.slice(0, limit) };
   }
 
   /**
    * Retrieves best seller products.
    */
-  public static async getBestSellers(limit: number = 4): Promise<{ data: Product[] }> {
-    const res = await this.getProducts({ limit: 12 });
+  public static async getBestSellers(limit: number = 4, tenant?: string): Promise<{ data: Product[] }> {
+    const res = await this.getProducts({ limit: 12, tenant });
     const best = res.data.products.filter((p) => p.isBestSeller);
     return { data: (best.length > 0 ? best : res.data.products).slice(0, limit) };
   }
@@ -163,8 +189,8 @@ export class ProductApiService {
   /**
    * Retrieves related products for a given product ID.
    */
-  public static async getRelatedProducts(productId: string, limit: number = 4): Promise<{ data: Product[] }> {
-    const res = await this.getProducts({ limit: 10 });
+  public static async getRelatedProducts(productId: string, limit: number = 4, tenant?: string): Promise<{ data: Product[] }> {
+    const res = await this.getProducts({ limit: 10, tenant });
     const related = res.data.products.filter((p) => p.id !== productId);
     return { data: related.slice(0, limit) };
   }

@@ -124,6 +124,7 @@ export function mapCmsProductToStorefrontProduct(cms: any): Product {
     tags: Array.isArray(cms.tags) ? cms.tags : [],
     fit: custom.fit || 'Regular fit, true to size',
     modelInfo: custom.modelInfo || 'Model is 5ft 8in wearing size S',
+    status: cms.status || 'published',
   };
 }
 
