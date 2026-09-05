@@ -174,6 +174,37 @@ export async function DELETE(
       });
     }
 
+    // 2. Automatically unassign deleted category from any products in the database
+    const deletedIdentifiers = [
+      id,
+      targetCat?.id,
+      targetCat?.slug,
+      targetCat?._id?.toString(),
+      `cat_${id}`,
+    ].filter(Boolean);
+
+    await db.collection('products').updateMany(
+      {
+        $or: [
+          { categoryIds: { $in: deletedIdentifiers } },
+          { categoryId: { $in: deletedIdentifiers } },
+          { department: { $in: deletedIdentifiers } },
+          { category: { $in: deletedIdentifiers } },
+          { categorySlug: { $in: deletedIdentifiers } },
+        ],
+      },
+      {
+        $pull: { categoryIds: { $in: deletedIdentifiers } } as any,
+        $set: {
+          category: null,
+          categoryName: null,
+          categorySlug: null,
+          department: null,
+          categoryId: null,
+        },
+      }
+    );
+
     return NextResponse.json(
       { success: true, message: 'Category deleted successfully from MongoDB' },
       { headers: corsHeaders() }

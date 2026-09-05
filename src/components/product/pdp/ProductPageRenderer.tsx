@@ -124,10 +124,17 @@ export function ProductPageRenderer({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <Breadcrumbs
           items={[
-            {
-              label: product.categoryName || 'Collection',
-              href: formatTenantHref(`/${product.category || 'all'}`, activeTenant.slug),
-            },
+            ...(product.category &&
+            product.categoryName &&
+            product.category !== 'all' &&
+            product.category !== 'collection'
+              ? [
+                  {
+                    label: product.categoryName,
+                    href: formatTenantHref(`/${product.category}`, activeTenant.slug),
+                  },
+                ]
+              : []),
             { label: product.title },
           ]}
         />

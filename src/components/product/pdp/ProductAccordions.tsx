@@ -100,12 +100,17 @@ export function ProductAccordions({ product, className = "" }: ProductAccordions
         {openSections.spec && (
           <div className="px-6 pb-6 text-xs border-t border-[#EFE8E2] pt-4">
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
-              <div className="flex justify-between py-1.5 border-b border-[#EFE8E2]">
-                <dt className="text-slate-500 font-medium">Category</dt>
-                <dd className="font-bold text-slate-900 capitalize">
-                  {product.categoryName || product.category || "Collection"}
-                </dd>
-              </div>
+              {product.categoryName &&
+              product.category &&
+              product.category !== "all" &&
+              product.category !== "collection" ? (
+                <div className="flex justify-between py-1.5 border-b border-[#EFE8E2]">
+                  <dt className="text-slate-500 font-medium">Category</dt>
+                  <dd className="font-bold text-slate-900 capitalize">
+                    {product.categoryName}
+                  </dd>
+                </div>
+              ) : null}
 
               {product.fabric && (
                 <div className="flex justify-between py-1.5 border-b border-[#EFE8E2]">

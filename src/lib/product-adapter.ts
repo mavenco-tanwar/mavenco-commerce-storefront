@@ -200,10 +200,11 @@ export function normalizeProduct(
     (raw.category && typeof raw.category === "object" ? raw.category.slug : undefined) ||
     (typeof raw.category === "string" ? raw.category : undefined) ||
     (raw.department && !raw.department.startsWith("cat_") ? raw.department : undefined) ||
-    (Array.isArray(raw.categories) && raw.categories[0] ? raw.categories[0] : undefined);
+    (Array.isArray(raw.categories) && raw.categories[0] && !['general', 'all', 'collection', 'none'].includes(String(raw.categories[0]).toLowerCase().trim()) ? raw.categories[0] : undefined);
 
-  const categoryName = rawCatName || cleanCategoryLabel(rawCatId) || cleanCategoryLabel(rawCatSlug) || "Collection";
-  const category = cleanCategorySlug(rawCatSlug || rawCatId || "all");
+  const hasCategory = Boolean(rawCatSlug || (rawCatId && rawCatId !== 'null' && rawCatId !== 'undefined') || rawCatName);
+  const categoryName = hasCategory ? (rawCatName || cleanCategoryLabel(rawCatId) || cleanCategoryLabel(rawCatSlug)) : undefined;
+  const category = hasCategory ? cleanCategorySlug(rawCatSlug || rawCatId) : undefined;
 
   // Extract fabric and care instructions intelligently from description if not directly provided
   let fabric = raw.fabric || raw.material || undefined;

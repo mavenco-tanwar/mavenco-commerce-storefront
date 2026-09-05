@@ -65,7 +65,7 @@ export async function fetchRawProduct(productSlug: string, explicitTenant?: stri
       }
 
       if (rawProduct) {
-        // Resolve exact category name & slug from categories collection if needed
+        // Resolve exact category name & slug from categories collection
         const catSearchIds = [
           ...(Array.isArray(rawProduct.categoryIds) ? rawProduct.categoryIds : []),
           rawProduct.categoryId,
@@ -73,14 +73,25 @@ export async function fetchRawProduct(productSlug: string, explicitTenant?: stri
           rawProduct.category,
         ].filter(Boolean);
 
+        let validCategory: any = null;
         if (catSearchIds.length > 0) {
-          const catDoc = await db.collection('categories').findOne({
+          validCategory = await db.collection('categories').findOne({
             $or: [{ id: { $in: catSearchIds } }, { slug: { $in: catSearchIds } }],
           });
-          if (catDoc) {
-            rawProduct.categoryName = catDoc.name;
-            rawProduct.category = catDoc.slug || catDoc.id;
-          }
+        }
+
+        if (validCategory) {
+          rawProduct.categoryName = validCategory.name;
+          rawProduct.category = validCategory.slug || validCategory.id;
+        } else {
+          // Category does not exist in categories collection (deleted or unassigned)
+          rawProduct.categoryName = null;
+          rawProduct.category = null;
+          rawProduct.categorySlug = null;
+          rawProduct.department = null;
+          rawProduct.categoryId = null;
+          rawProduct.categoryIds = [];
+          rawProduct.categories = [];
         }
       }
     }
@@ -159,8 +170,32 @@ export async function RenderProductDetailPage({
 
   // Ensure normalized product gets proper category slug
   const normalized = normalizeProduct(rawProduct);
-  if (categorySlug && categorySlug !== 'all') {
-    normalized.category = cleanCategorySlug(categorySlug);
+  if (categorySlug && categorySlug !== 'all' && categorySlug !== 'collection') {
+    // Only apply categorySlug from URL if it actually exists in the categories collection
+    try {
+      const db = await getDatabase();
+      if (db) {
+        const catExists = await db.collection('categories').findOne({
+          $or: [
+            { slug: categorySlug },
+            { id: categorySlug },
+            { id: `cat_${categorySlug}` },
+            { id: new RegExp(`^cat_${categorySlug}(_|$)`, 'i') },
+            { slug: new RegExp(`^${categorySlug}$`, 'i') },
+          ],
+        });
+        if (catExists) {
+          normalized.category = cleanCategorySlug(catExists.slug || catExists.id);
+          normalized.categoryName = catExists.name;
+        } else {
+          normalized.category = undefined;
+          normalized.categoryName = undefined;
+        }
+      }
+    } catch {}
+  } else if (!rawProduct.category) {
+    normalized.category = undefined;
+    normalized.categoryName = undefined;
   }
 
   const activeTenantSlug =
