@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import { mapCmsProductToStorefrontProduct } from './adapters';
 import { Product, ProductQueryParams, ProductListResponse } from '@/types/product';
+import { cleanCategorySlug } from '@/lib/tenant-config';
 
 export class ProductApiService {
   /**
@@ -54,20 +55,37 @@ export class ProductApiService {
       products = products.filter((p) => p.status !== 'draft' && p.status !== 'archived');
 
       // Client-side refinement for fine-grained options (sizes, colors, price range) if needed
-      if (params.department) {
-        products = products.filter((p) => p.department === params.department);
+      if (params.department && params.department !== 'all') {
+        const deptTarget = cleanCategorySlug(params.department);
+        products = products.filter((p) => {
+          const pDept = cleanCategorySlug(p.department);
+          const pCat = cleanCategorySlug(p.category);
+          return (
+            pDept === deptTarget ||
+            pCat === deptTarget ||
+            p.department === params.department ||
+            p.department?.toLowerCase() === params.department.toLowerCase()
+          );
+        });
       }
 
       if (params.category && params.category !== 'all') {
-        const catTarget = params.category.toLowerCase().trim();
-        products = products.filter(
-          (p) =>
-            p.category?.toLowerCase() === catTarget ||
-            p.department?.toLowerCase() === catTarget ||
-            (p as any).categorySlug?.toLowerCase() === catTarget ||
-            p.categoryName?.toLowerCase() === catTarget ||
+        const catTarget = cleanCategorySlug(params.category);
+        products = products.filter((p) => {
+          const pCat = cleanCategorySlug(p.category);
+          const pDept = cleanCategorySlug(p.department);
+          const pCatSlug = cleanCategorySlug((p as any).categorySlug);
+          const pCatName = (p.categoryName || '').toLowerCase().trim();
+          const pCatIds = Array.isArray(p.categoryIds) ? p.categoryIds.map((id) => cleanCategorySlug(id)) : [];
+          return (
+            pCat === catTarget ||
+            pDept === catTarget ||
+            pCatSlug === catTarget ||
+            pCatName === catTarget ||
+            pCatIds.includes(catTarget) ||
             p.slug.includes(catTarget)
-        );
+          );
+        });
       }
 
       if (params.minPrice !== undefined) {

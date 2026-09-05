@@ -85,9 +85,10 @@ export function ProductListingView({
     async function loadFilteredProducts() {
       setIsLoading(true);
       try {
+        const activeCategory = filters.categories.length === 1 ? filters.categories[0] : (initialCategory || undefined);
         const res = await ProductService.getProducts({
-          department,
-          category: filters.categories.length === 1 ? filters.categories[0] : undefined,
+          department: department && department !== activeCategory ? department : undefined,
+          category: activeCategory,
           search: urlSearch,
           isSale: filters.onSaleOnly,
           isNewArrival: filters.isNewOnly,

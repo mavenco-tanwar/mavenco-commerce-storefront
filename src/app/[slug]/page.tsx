@@ -138,7 +138,7 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
           slug: catDoc.slug || slug,
           description: catDoc.description || '',
           imageUrl: catDoc.imageUrl || '',
-          department: catDoc.department || 'women',
+          department: catDoc.department || catDoc.slug,
           subcategories: (childCats && childCats.length > 0)
             ? childCats.map((s) => ({ slug: s.slug || s.id, name: s.name, itemCount: s.productCount || 12 }))
             : (catDoc.children || []),
@@ -182,7 +182,7 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
         }
       >
         <ProductListingView
-          department={category.department || 'women'}
+          department={category.department ? (category.department as any) : undefined}
           initialCategory={category.slug}
           pageTitle={category.name}
           pageSubtitle={category.description || 'Artisanal tailoring and modern silhouettes handcrafted for effortless luxury.'}

@@ -147,6 +147,7 @@ async function handleUpdate(
         ...body,
         updatedAt: new Date().toISOString(),
       };
+      delete updatePayload._id;
 
       if (body.badges && typeof body.badges === 'object') {
         updatePayload['flags.isFeatured'] = Boolean(body.badges.isFeatured);

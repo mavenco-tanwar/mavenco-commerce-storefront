@@ -57,7 +57,22 @@ export async function GET(request: NextRequest) {
       }
 
       if (category && category !== 'all') {
-        const catFilter = [{ categoryIds: category }, { category: category }, { categories: category }];
+        const cleanCat = category.replace(/^cat_/, '').replace(/_[a-z0-9-]+$/, '').trim().toLowerCase();
+        const catFilter: any[] = [
+          { categoryIds: category },
+          { categoryIds: cleanCat },
+          { categoryIds: `cat_${cleanCat}_${tenantSlug}` },
+          { category: category },
+          { category: cleanCat },
+          { categorySlug: category },
+          { categorySlug: cleanCat },
+          { categoryName: { $regex: cleanCat, $options: 'i' } },
+          { department: category },
+          { department: cleanCat },
+          { department: `cat_${cleanCat}_${tenantSlug}` },
+          { categories: category },
+          { categories: cleanCat },
+        ];
         if (query.$and) {
           query.$and.push({ $or: catFilter });
         } else {
