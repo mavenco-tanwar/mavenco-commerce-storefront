@@ -1,7 +1,6 @@
 import React from 'react';
 import { CmsApiService } from '@/services/api/cms';
 import { DynamicSectionRenderer } from '@/components/home/DynamicSectionRenderer';
-import { ValueProps } from '@/components/home/ValueProps';
 import { checkTenantValidityDb } from '@/lib/server/tenant-db';
 import { StoreUnavailableView } from '@/components/ui/StoreUnavailableView';
 import { getDatabase } from '@/lib/mongodb';
@@ -62,9 +61,6 @@ export default async function StorePage({ params, searchParams }: StorePageProps
     <div className="flex flex-col">
       {/* Dynamic CMS Sections Renderer with explicit tenantSlug */}
       <DynamicSectionRenderer sections={sections} initialSections={sections} tenantSlug={tenantSlug} />
-
-      {/* Brand Value Propositions */}
-      <ValueProps />
     </div>
   );
 }

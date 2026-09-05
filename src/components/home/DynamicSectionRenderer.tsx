@@ -282,11 +282,23 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
-                customCtaText={sData.ctaText || sData.buttonText}
-                customCtaUrl={sData.ctaUrl || sData.buttonUrl || sData.link}
+                customCtaText={sData.ctaText || sData.primaryBtnText || sData.buttonText}
+                customCtaUrl={sData.ctaUrl || sData.primaryBtnLink || sData.buttonUrl || sData.link}
                 customBannerImage={sData.bannerImage || sData.image || sData.backgroundImage}
                 customCollections={sData.collectionsList || sData.collections || sData.items}
                 tenantSlug={tenantSlug}
+              />
+            );
+
+          case 'value_props':
+          case 'value-props':
+          case 'valueprops':
+          case 'features':
+          case 'service_guarantees':
+            return (
+              <ValueProps
+                key={section.id}
+                customItems={sData.items || sData.promises}
               />
             );
 
@@ -302,20 +314,10 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
         }
       })}
 
-      {/* Auto-render Collections & Lookbooks showcase if not already explicitly added in CMS layout */}
-      {!activeSections.some(
-        (sec: any) =>
-          sec.type === 'collections' ||
-          sec.type === 'collection' ||
-          sec.type === 'lookbook' ||
-          sec.type === 'lookbooks' ||
-          sec.type === 'collections-grid' ||
-          sec.type === 'collections_grid' ||
-          sec.type === 'collections_showcase' ||
-          sec.type === 'curated-collections' ||
-          sec.type === 'curated_collection' ||
-          sec.type === 'curated-collection'
-      ) && <CollectionsShowcase key="sec_auto_collections" tenantSlug={tenantSlug} />}
+      {/* Auto-render Collections & Lookbooks showcase only if unconfigured fallback (e.g. 0 active sections) */}
+      {activeSections.length === 0 && (
+        <CollectionsShowcase key="sec_auto_collections" tenantSlug={tenantSlug} />
+      )}
     </>
   );
 }
