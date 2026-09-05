@@ -42,12 +42,19 @@ export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }
     );
   }
 
+  // Determine active tenant slug deterministically on SSR and client
+  const activeTenantSlug =
+    (pathname.startsWith('/stores/') || pathname.startsWith('/tenant/')
+      ? pathname.split('/')[2]?.toLowerCase()
+      : tenantQuery?.toLowerCase()) ||
+    'demo';
+
   // Otherwise, render the dynamic merchant store header and layout
   return (
     <div className="min-h-screen flex flex-col bg-[#FFFDFC] text-[#111111] antialiased">
-      <DynamicHeader />
+      <DynamicHeader tenantSlug={activeTenantSlug} />
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer tenantSlug={activeTenantSlug} />
       <MiniCartDrawer />
       <ToastContainer />
     </div>

@@ -11,7 +11,7 @@ import { CollectionToolbar } from './CollectionToolbar';
 import { CollectionFilterSidebar, FilterState } from './CollectionFilterSidebar';
 import { CollectionFilterDrawer } from './CollectionFilterDrawer';
 import { ProductGrid } from '@/components/product/ProductGrid';
-import { resolveTenant } from '@/lib/tenant-config';
+import { resolveTenant, resolveActiveTenantSlug } from '@/lib/tenant-config';
 
 export interface CollectionListingPageProps {
   initialProducts: Product[];
@@ -21,25 +21,28 @@ export interface CollectionListingPageProps {
   templateOverride?: Partial<CollectionPageConfig>;
   breadcrumbs?: Array<{ label: string; href?: string }>;
   availableCategories?: Array<{ slug: string; name: string }>;
+  tenantSlug?: string;
 }
 
 function CollectionListingPageContent({
   initialProducts,
-  collectionTitle,
+  collectionTitle = 'All Collections',
   collectionDescription,
   collectionBannerImage,
   templateOverride,
   breadcrumbs = [{ label: 'Collections', href: '/collections' }],
   availableCategories,
+  tenantSlug: propTenantSlug,
 }: CollectionListingPageProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeTenant = resolveTenant();
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
+  const activeTenant = resolveTenant(activeTenantSlug);
 
   // Load Base Configuration
   const [config, setConfig] = useState<CollectionPageConfig>(() => ({
-    ...getDefaultCollectionPageConfig(activeTenant.slug || 'lumina'),
+    ...getDefaultCollectionPageConfig(activeTenant.slug || 'demo'),
     ...(templateOverride || {}),
   }));
 
@@ -47,7 +50,7 @@ function CollectionListingPageContent({
   useEffect(() => {
     async function loadTemplate() {
       try {
-        const slug = activeTenant.slug || 'lumina';
+        const slug = activeTenant.slug || 'demo';
         const res = await fetch(`/api/v1/content/collection-page?tenant=${slug}&template=default_fashion`);
         const json = await res.json();
         if (json.success && json.data) {

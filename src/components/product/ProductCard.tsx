@@ -10,7 +10,8 @@ import { RatingStars } from '@/components/ui/RatingStars';
 import { Badge } from '@/components/ui/Badge';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { resolveTenant, formatProductHref } from '@/lib/tenant-config';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { resolveTenant, resolveActiveTenantSlug, formatProductHref } from '@/lib/tenant-config';
 import { ProductCardConfig } from '@/types/product-card.types';
 import { getDefaultProductCardConfig } from '@/lib/product-card-presets';
 
@@ -21,10 +22,15 @@ export interface ProductCardProps {
 }
 
 export function ProductCard({ product, config: customConfig, className = '' }: ProductCardProps) {
+  const pathname = usePathname() || '/';
+  const searchParams = useSearchParams();
   const [isHovered, setIsHovered] = useState(false);
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name || '');
   const [showQuickSizes, setShowQuickSizes] = useState(false);
-  const activeTenant = resolveTenant();
+  
+  const productTenant = (product as any).tenantSlug || (product as any).storeSlug;
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, productTenant);
+  const activeTenant = resolveTenant(activeTenantSlug);
   const rawCategory = product.category || (product as any).categorySlug || (product as any).department;
   const productUrl = formatProductHref(product.slug, rawCategory, activeTenant.slug);
 

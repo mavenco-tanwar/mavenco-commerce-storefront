@@ -4,19 +4,21 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Phone, Sparkles, Globe } from 'lucide-react';
-import { resolveTenant, TenantBrandConfig, formatTenantHref } from '@/lib/tenant-config';
+import { resolveTenant, resolveActiveTenantSlug, TenantBrandConfig, formatTenantHref } from '@/lib/tenant-config';
 
-export function AnnouncementBar() {
-  const pathname = usePathname();
+export function AnnouncementBar({ tenantSlug: propTenantSlug }: { tenantSlug?: string }) {
+  const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
-  const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
+  const [tenant, setTenant] = useState<TenantBrandConfig>(() => resolveTenant(activeTenantSlug));
 
   useEffect(() => {
-    const t = resolveTenant();
+    const t = resolveTenant(activeTenantSlug);
     setTenant(t);
 
-    if (t?.slug) {
-      fetch(`/api/v1/tenant-config?tenant=${t.slug}`)
+    const targetSlug = t?.slug || activeTenantSlug;
+    if (targetSlug && targetSlug !== 'demo') {
+      fetch(`/api/v1/tenant-config?tenant=${targetSlug}`)
         .then((res) => (res.ok ? res.json() : null))
         .then((json) => {
           if (json?.data?.name) {
@@ -25,7 +27,7 @@ export function AnnouncementBar() {
         })
         .catch(() => {});
     }
-  }, [pathname, searchParams]);
+  }, [activeTenantSlug, pathname, searchParams]);
 
   const ann = tenant.announcements;
 

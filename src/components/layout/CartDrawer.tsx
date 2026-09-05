@@ -13,9 +13,15 @@ import { PriceDisplay } from '@/components/ui/PriceDisplay';
 import { FreeShippingBar } from '@/components/cart/FreeShippingBar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { formatCurrency } from '@/lib/utils';
-import { formatTenantHref, formatProductHref, resolveTenant } from '@/lib/tenant-config';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { formatTenantHref, formatProductHref, resolveTenant, resolveActiveTenantSlug } from '@/lib/tenant-config';
 
 export function CartDrawer() {
+  const pathname = usePathname() || '/';
+  const searchParams = useSearchParams();
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams);
+  const activeTenant = resolveTenant(activeTenantSlug);
+
   const {
     items,
     summary,
@@ -31,8 +37,6 @@ export function CartDrawer() {
 
   const [inputCoupon, setInputCoupon] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-
-  const activeTenant = resolveTenant();
 
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { resolveTenant } from '@/lib/tenant-config';
+import { resolveTenant, resolveActiveTenantSlug } from '@/lib/tenant-config';
 import { HeaderConfig, getDefaultHeaderConfig } from '@/lib/header-config';
 import { DynamicAnnouncementBar } from './DynamicAnnouncementBar';
 import { DynamicMainHeader } from './DynamicMainHeader';
@@ -20,14 +20,8 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
 
-  // Determine active tenant
-  const activeTenantSlug =
-    propTenantSlug ||
-    (pathname.startsWith('/stores/')
-      ? pathname.split('/')[2]?.toLowerCase()
-      : searchParams.get('tenant')?.toLowerCase()) ||
-    resolveTenant().slug ||
-    'lumina';
+  // Determine active tenant deterministically on SSR and client
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
 
   const [config, setConfig] = useState<HeaderConfig>(
     initialConfig || getDefaultHeaderConfig(activeTenantSlug)

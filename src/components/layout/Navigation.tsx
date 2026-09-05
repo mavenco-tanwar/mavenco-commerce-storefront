@@ -9,12 +9,13 @@ import { CategoryService } from '@/services/categories';
 import { CmsApiService, CmsMenuItem } from '@/services/api/cms';
 import { Category, Collection } from '@/types/category';
 
-import { resolveTenant, TenantBrandConfig, formatTenantHref } from '@/lib/tenant-config';
+import { resolveTenant, resolveActiveTenantSlug, TenantBrandConfig, formatTenantHref } from '@/lib/tenant-config';
 
-export function Navigation() {
-  const pathname = usePathname();
+export function Navigation({ tenantSlug: propTenantSlug }: { tenantSlug?: string }) {
+  const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
-  const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
+  const [tenant, setTenant] = useState<TenantBrandConfig>(() => resolveTenant(activeTenantSlug));
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -27,24 +28,25 @@ export function Navigation() {
   ]);
 
   useEffect(() => {
-    const t = resolveTenant();
+    const t = resolveTenant(activeTenantSlug);
     setTenant(t);
-    CmsApiService.getMenu('header-menu', t.slug).then((items) => {
+    const targetSlug = t?.slug || activeTenantSlug;
+    CmsApiService.getMenu('header-menu', targetSlug).then((items) => {
       if (items && items.length > 0) {
         setMenuItems(items);
       }
     });
-    CategoryService.getCategories(undefined, t.slug).then((res) => {
+    CategoryService.getCategories(undefined, targetSlug).then((res) => {
       if (res.data && res.data.length > 0) {
         setCategories(res.data);
       }
     });
-    CategoryService.getCollections(t.slug).then((res) => {
+    CategoryService.getCollections(targetSlug).then((res) => {
       if (res.data && res.data.length > 0) {
         setCollections(res.data);
       }
     });
-  }, [pathname, searchParams]);
+  }, [activeTenantSlug, pathname, searchParams]);
 
   // Render tenant-configured custom navigation if provided
   if (tenant.navLinks && tenant.navLinks.length > 0) {

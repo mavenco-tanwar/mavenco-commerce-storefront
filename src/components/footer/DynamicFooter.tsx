@@ -2,31 +2,31 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { resolveTenant } from '@/lib/tenant-config';
+import { resolveTenant, resolveActiveTenantSlug, formatStoreName } from '@/lib/tenant-config';
 import { FooterConfig, getDefaultFooterConfig } from '@/lib/footer-config';
 import { FooterBlockRenderer } from './FooterBlockRenderer';
 
 interface DynamicFooterProps {
   initialConfig?: FooterConfig | null;
+  tenantSlug?: string;
 }
 
-export function DynamicFooter({ initialConfig }: DynamicFooterProps) {
-  const pathname = usePathname();
+export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: DynamicFooterProps) {
+  const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
 
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
+
   const [mounted, setMounted] = useState(false);
-  const [tenantSlug, setTenantSlug] = useState<string>(() => {
-    return resolveTenant().slug;
-  });
+  const [tenantSlug, setTenantSlug] = useState<string>(activeTenantSlug);
   const [config, setConfig] = useState<FooterConfig>(() => {
-    const t = resolveTenant();
-    return initialConfig || getDefaultFooterConfig(t.slug, t.name);
+    return initialConfig || getDefaultFooterConfig(activeTenantSlug, formatStoreName(activeTenantSlug));
   });
 
   useEffect(() => {
     setMounted(true);
-    const t = resolveTenant();
-    const slug = (t.slug || 'jq-trends').toLowerCase().trim();
+    const t = resolveTenant(activeTenantSlug);
+    const slug = (t.slug || activeTenantSlug || 'demo').toLowerCase().trim();
     setTenantSlug(slug);
 
     // Fetch published configuration from API
@@ -36,13 +36,13 @@ export function DynamicFooter({ initialConfig }: DynamicFooterProps) {
         if (json?.data?.sections && json.data.sections.length > 0) {
           setConfig(json.data);
         } else {
-          setConfig(getDefaultFooterConfig(slug, t.name));
+          setConfig(getDefaultFooterConfig(slug, t.name || formatStoreName(slug)));
         }
       })
       .catch((err) => {
         console.warn('[DynamicFooter] Falling back to default seed:', err);
       });
-  }, [pathname, searchParams]);
+  }, [activeTenantSlug, pathname, searchParams]);
 
   if (!config || !config.sections || config.sections.length === 0) {
     return null;

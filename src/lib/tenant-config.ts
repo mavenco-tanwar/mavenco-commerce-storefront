@@ -420,6 +420,29 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
   return getTenantConfig('demo');
 }
 
+export function resolveActiveTenantSlug(
+  pathname?: string | null,
+  searchParams?: { get: (k: string) => string | null } | null,
+  explicitSlug?: string | null
+): string {
+  if (explicitSlug && explicitSlug.trim()) {
+    return explicitSlug.toLowerCase().trim();
+  }
+  if (pathname) {
+    const pathMatch = pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+    if (pathMatch && pathMatch[2]) {
+      return pathMatch[2].toLowerCase().trim();
+    }
+  }
+  if (searchParams) {
+    const q = searchParams.get('tenant');
+    if (q && q.trim()) {
+      return q.toLowerCase().trim();
+    }
+  }
+  return 'demo';
+}
+
 /**
  * Automatically scopes internal storefront links to the active tenant store
  * (e.g. /collections/festive -> /stores/demo/collections/festive)

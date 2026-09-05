@@ -12,6 +12,7 @@ import { formatTenantHref, formatProductHref, resolveTenant } from '@/lib/tenant
 interface SearchOverlayProps {
   isOpen: boolean;
   onClose: () => void;
+  tenantSlug?: string;
 }
 
 const POPULAR_SEARCHES = [
@@ -23,12 +24,16 @@ const POPULAR_SEARCHES = [
   { label: 'Rose Gold Bags', query: 'bag' },
 ];
 
-export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
+export function SearchOverlay({ isOpen, onClose, tenantSlug: propTenantSlug }: SearchOverlayProps) {
+  const pathname = usePathname() || '/';
+  const searchParams = useSearchParams();
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
+  const activeTenant = resolveTenant(activeTenantSlug);
+
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const activeTenant = resolveTenant();
 
   useEffect(() => {
     if (isOpen) {
@@ -59,7 +64,6 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     setIsLoading(true);
     const timeoutId = setTimeout(async () => {
       try {
-        const activeTenant = resolveTenant();
         const res = await ProductService.search(query, 8, activeTenant.slug);
         setResults(res.data);
       } catch (err) {

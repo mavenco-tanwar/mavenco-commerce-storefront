@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
+import { resolveTenant, resolveActiveTenantSlug, TenantBrandConfig } from '@/lib/tenant-config';
 
 interface BrandLogoProps {
   variant?: 'dark' | 'light' | 'monochrome';
   size?: 'sm' | 'md' | 'lg';
   showTagline?: boolean;
   className?: string;
+  tenantSlug?: string;
 }
 
 export function BrandLogo({
@@ -17,17 +18,21 @@ export function BrandLogo({
   size = 'md',
   showTagline = true,
   className = '',
+  tenantSlug: propTenantSlug,
 }: BrandLogoProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
-  const [tenant, setTenant] = useState<TenantBrandConfig>(resolveTenant());
+
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
+  const [tenant, setTenant] = useState<TenantBrandConfig>(() => resolveTenant(activeTenantSlug));
 
   useEffect(() => {
-    const t = resolveTenant();
+    const t = resolveTenant(activeTenantSlug);
     setTenant(t);
 
-    if (t?.slug) {
-      fetch(`/api/v1/tenant-config?tenant=${t.slug}`)
+    const targetSlug = t?.slug || activeTenantSlug;
+    if (targetSlug && targetSlug !== 'demo') {
+      fetch(`/api/v1/tenant-config?tenant=${targetSlug}`)
         .then((res) => (res.ok ? res.json() : null))
         .then((json) => {
           if (json?.data?.name) {
@@ -36,7 +41,7 @@ export function BrandLogo({
         })
         .catch(() => {});
     }
-  }, [pathname, searchParams]);
+  }, [activeTenantSlug, pathname, searchParams]);
 
   const isLight = variant === 'light';
   const textColor = isLight ? '#FFFFFF' : '#111111';

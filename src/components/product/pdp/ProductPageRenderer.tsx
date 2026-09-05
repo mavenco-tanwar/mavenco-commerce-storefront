@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { SizeGuideModal } from '@/components/product/SizeGuideModal';
@@ -16,7 +16,7 @@ import {
   ProductPageConfig,
 } from '@/types/pdp-template.types';
 import { getDefaultPdpConfig } from '@/lib/pdp-presets';
-import { resolveTenant, formatTenantHref, cleanCategorySlug } from '@/lib/tenant-config';
+import { resolveTenant, resolveActiveTenantSlug, formatTenantHref, cleanCategorySlug } from '@/lib/tenant-config';
 import { Product } from '@/types/product';
 import { useCart } from '@/context/CartContext';
 
@@ -33,13 +33,17 @@ export function ProductPageRenderer({
   relatedProducts = [],
   recommendedProducts = [],
 }: ProductPageRendererProps) {
-  const activeTenant = resolveTenant();
+  const pathname = usePathname() || '/';
+  const searchParams = useSearchParams();
+  const productTenant = (product as any).tenantSlug || (product as any).storeSlug;
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, productTenant);
+  const activeTenant = resolveTenant(activeTenantSlug);
   const { addItem } = useCart();
   const router = useRouter();
 
   // Load Active PDP Configuration (Fallback to preset or template override)
   const [config, setConfig] = useState<ProductPageConfig>(() => ({
-    ...getDefaultPdpConfig(activeTenant.slug || 'jq-trends'),
+    ...getDefaultPdpConfig(activeTenant.slug || 'demo'),
     ...(templateConfig || {}),
   }));
 
