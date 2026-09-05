@@ -70,12 +70,12 @@ export function CollectionFilterDrawer({
                   onClick={() => onFilterChange('category', cat.slug)}
                   className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between ${
                     filterState.category === cat.slug
-                      ? 'bg-rose-50 text-rose-600 font-bold'
+                      ? 'bg-[#F8F1EA] text-[#B77A68] font-bold'
                       : 'text-slate-600'
                   }`}
                 >
                   <span>{cat.name}</span>
-                  {filterState.category === cat.slug && <Check className="w-3.5 h-3.5 text-rose-600" />}
+                  {filterState.category === cat.slug && <Check className="w-3.5 h-3.5 text-[#B77A68]" />}
                 </button>
               ))}
             </div>
@@ -91,7 +91,7 @@ export function CollectionFilterDrawer({
                   onClick={() => onFilterChange('size', filterState.size === s ? 'all' : s)}
                   className={`py-1.5 text-xs font-bold rounded-lg border ${
                     filterState.size === s
-                      ? 'bg-rose-600 text-white border-rose-600'
+                      ? 'bg-[#B77A68] text-white border-[#B77A68]'
                       : 'border-slate-200 text-slate-700'
                   }`}
                 >
@@ -105,7 +105,7 @@ export function CollectionFilterDrawer({
           <div className="space-y-2 pt-2 border-t border-slate-200">
             <div className="flex justify-between text-xs font-bold">
               <span>Max Price</span>
-              <span className="text-rose-600">{formatPrice ? formatPrice(filterState.maxPrice) : `₹${filterState.maxPrice}`}</span>
+              <span className="text-[#B77A68]">{formatPrice ? formatPrice(filterState.maxPrice) : `₹${filterState.maxPrice}`}</span>
             </div>
             <input
               type="range"
@@ -114,7 +114,7 @@ export function CollectionFilterDrawer({
               step={maxPriceLimit > 2000 ? '100' : '50'}
               value={filterState.maxPrice}
               onChange={(e) => onFilterChange('maxPrice', Number(e.target.value))}
-              className="w-full accent-rose-600"
+              className="w-full accent-[#B77A68]"
             />
           </div>
         </div>
@@ -123,13 +123,13 @@ export function CollectionFilterDrawer({
         <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex gap-2">
           <button
             onClick={onReset}
-            className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50"
+            className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
           >
             Reset
           </button>
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-bold hover:bg-rose-500 shadow-md"
+            className="flex-1 py-2.5 rounded-xl bg-[#B77A68] text-white text-xs font-bold hover:bg-[#A36655] shadow-md cursor-pointer"
           >
             Apply Filters
           </button>

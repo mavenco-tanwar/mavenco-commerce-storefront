@@ -42,13 +42,14 @@ export function MobileNavigation({ isOpen, onClose, onOpenSearch }: MobileNaviga
   const { wishlistCount } = useWishlist();
 
   useEffect(() => {
-    CategoryService.getCategories().then((res) => {
+    const t = resolveTenant();
+    CategoryService.getCategories(undefined, t.slug).then((res) => {
       if (res.data) setCategories(res.data);
     });
-    CategoryService.getCollections().then((res) => {
+    CategoryService.getCollections(t.slug).then((res) => {
       if (res.data) setCollections(res.data);
     });
-  }, []);
+  }, [isOpen]);
 
   const toggleAccordion = (key: string) => {
     setOpenAccordions((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -158,7 +159,7 @@ export function MobileNavigation({ isOpen, onClose, onOpenSearch }: MobileNaviga
         <div className="p-4 border-t border-[#E8DED8] bg-[#FAF6F2] space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <Link
-              href={isAuthenticated ? '/account' : '/login'}
+              href={formatTenantHref(isAuthenticated ? '/account' : '/login')}
               onClick={onClose}
               className="flex items-center justify-center gap-2 p-2.5 bg-[#FFFDFC] border border-[#E8DED8] text-xs font-semibold text-[#111111] hover:border-[#B77A68] transition-colors"
             >

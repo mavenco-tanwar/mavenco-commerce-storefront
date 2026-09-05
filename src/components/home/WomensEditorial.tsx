@@ -19,6 +19,7 @@ interface WomensEditorialProps {
   customCtaText?: string;
   customCtaUrl?: string;
   customCategories?: WomensCategoryItem[];
+  tenantSlug?: string;
 }
 
 const DEFAULT_WOMENS_CATEGORIES: WomensCategoryItem[] = [
@@ -68,6 +69,7 @@ export function WomensEditorial({
   customCtaText = 'Explore Complete Collection',
   customCtaUrl = '/women',
   customCategories,
+  tenantSlug,
 }: WomensEditorialProps = {}) {
   const title = customTitle || "Women's Collection";
   const subtitle =
@@ -101,7 +103,7 @@ export function WomensEditorial({
           </div>
 
           <Link
-            href={formatTenantHref(customCtaUrl)}
+            href={formatTenantHref(customCtaUrl, tenantSlug)}
             className="text-xs uppercase font-bold tracking-widest text-[#111111] hover:text-[#B77A68] flex items-center gap-1.5 transition-colors group"
           >
             <span>{customCtaText}</span>
@@ -114,7 +116,7 @@ export function WomensEditorial({
           {categories.map((cat, idx) => (
             <Link
               key={idx}
-              href={formatTenantHref(cat.href || '/women')}
+              href={formatTenantHref(cat.href || '/women', tenantSlug)}
               className="group flex flex-col bg-[#FAF6F2] border border-[#E8DED8] p-3 luxury-card-shadow transition-all duration-300 hover:border-[#B77A68]"
             >
               <div className="relative aspect-3/4 w-full overflow-hidden bg-[#F8F1EA] mb-3">

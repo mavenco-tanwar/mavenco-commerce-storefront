@@ -20,6 +20,7 @@ interface NewArrivalsStudioProps {
   customCtaText?: string;
   customCtaUrl?: string;
   customLimit?: number;
+  tenantSlug?: string;
 }
 
 export function NewArrivalsStudio({
@@ -32,9 +33,19 @@ export function NewArrivalsStudio({
   customCtaText = 'Explore New Arrivals',
   customCtaUrl = '/new-arrivals',
   customLimit = 4,
+  tenantSlug,
 }: NewArrivalsStudioProps = {}) {
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const currentSlug =
+    tenantSlug ||
+    (typeof window !== 'undefined'
+      ? window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/)?.[2] ||
+        new URLSearchParams(window.location.search).get('tenant') ||
+        ''
+      : '') ||
+    '';
 
   const title = customTitle || 'Fresh From The Studio';
   const subtitle = customSubtitle || 'Hand-finished designs released fresh this week in limited boutique runs.';
@@ -50,7 +61,7 @@ export function NewArrivalsStudio({
   useEffect(() => {
     async function loadNewArrivals() {
       try {
-        const res = await ProductService.getNewArrivals(customLimit);
+        const res = await ProductService.getNewArrivals(customLimit, currentSlug || undefined);
         setNewArrivals(res.data);
       } catch (e) {
         console.error('Failed to load new arrivals', e);
@@ -59,7 +70,11 @@ export function NewArrivalsStudio({
       }
     }
     loadNewArrivals();
-  }, [customLimit]);
+  }, [customLimit, currentSlug]);
+
+  if (!isLoading && newArrivals.length === 0 && currentSlug && currentSlug !== 'demo') {
+    return null;
+  }
 
   return (
     <section className="py-16 md:py-24 bg-[#FAF6F2] border-y border-[#E8DED8] select-none">
@@ -79,7 +94,7 @@ export function NewArrivalsStudio({
           </div>
 
           <Link
-            href={formatTenantHref(customCtaUrl)}
+            href={formatTenantHref(customCtaUrl, currentSlug)}
             className="text-xs uppercase font-bold tracking-widest text-[#111111] hover:text-[#B77A68] flex items-center gap-1.5 transition-colors group"
           >
             <span>{customCtaText}</span>
@@ -116,7 +131,7 @@ export function NewArrivalsStudio({
               <p className="text-xs text-[#E8DED8] leading-relaxed font-sans font-normal">
                 {bannerSubtitle}
               </p>
-              <Link href={formatTenantHref(customCtaUrl)} className="block pt-2">
+              <Link href={formatTenantHref(customCtaUrl, currentSlug)} className="block pt-2">
                 <Button variant="luxury-gold" size="md" className="w-full">
                   Explore Studio Edit &rarr;
                 </Button>

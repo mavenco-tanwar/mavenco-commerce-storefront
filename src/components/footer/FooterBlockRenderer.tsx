@@ -23,7 +23,7 @@ export function FooterBlockRenderer({
   block,
   device = 'desktop',
   tenantSlug,
-  themeAccent = '#E11D48',
+  themeAccent = '#B77A68',
 }: FooterBlockRendererProps) {
   if (block.enabled === false) return null;
 
@@ -164,7 +164,7 @@ export function FooterBlockRenderer({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={content.placeholder || 'Enter your email...'}
-                className="flex-1 px-3.5 py-2.5 rounded-lg text-xs bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition-colors"
+                className="flex-1 px-3.5 py-2.5 rounded-lg text-xs bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-[#B77A68] transition-colors"
                 required
               />
               <button
@@ -205,7 +205,7 @@ export function FooterBlockRenderer({
               href={p.url || '#'}
               target="_blank"
               rel="noreferrer"
-              className="w-8 h-8 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:border-rose-500 hover:bg-rose-500/20 transition-all text-xs font-bold"
+              className="w-8 h-8 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-slate-400 hover:text-white hover:border-[#B77A68] hover:bg-[#B77A68]/20 transition-all text-xs font-bold"
               title={p.name}
             >
               {p.name.charAt(0)}
@@ -229,13 +229,13 @@ export function FooterBlockRenderer({
         <ul className="space-y-2 text-xs text-slate-400">
           {phone && (
             <li className="flex items-center gap-2.5">
-              <Phone className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+              <Phone className="w-3.5 h-3.5 text-[#B77A68] shrink-0" />
               <span>{phone}</span>
             </li>
           )}
           {email && (
             <li className="flex items-center gap-2.5">
-              <Mail className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+              <Mail className="w-3.5 h-3.5 text-[#B77A68] shrink-0" />
               <a href={`mailto:${email}`} className="hover:text-white transition-colors">
                 {email}
               </a>
@@ -249,7 +249,7 @@ export function FooterBlockRenderer({
           )}
           {address && (
             <li className="flex items-start gap-2.5">
-              <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
+              <MapPin className="w-3.5 h-3.5 text-[#B77A68] shrink-0 mt-0.5" />
               <span>{address}</span>
             </li>
           )}

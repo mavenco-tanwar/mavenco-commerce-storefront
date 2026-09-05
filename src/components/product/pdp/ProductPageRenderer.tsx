@@ -39,7 +39,7 @@ export function ProductPageRenderer({
 
   // Load Active PDP Configuration (Fallback to preset or template override)
   const [config, setConfig] = useState<ProductPageConfig>(() => ({
-    ...getDefaultPdpConfig(activeTenant.slug || 'lumina'),
+    ...getDefaultPdpConfig(activeTenant.slug || 'jq-trends'),
     ...(templateConfig || {}),
   }));
 
@@ -47,7 +47,7 @@ export function ProductPageRenderer({
   useEffect(() => {
     async function loadTemplate() {
       try {
-        const slug = activeTenant.slug || 'lumina';
+        const slug = activeTenant.slug || 'jq-trends';
         const res = await fetch(`/api/v1/content/product-page?tenant=${slug}&template=default_fashion`);
         const json = await res.json();
         if (json.success && json.data) {

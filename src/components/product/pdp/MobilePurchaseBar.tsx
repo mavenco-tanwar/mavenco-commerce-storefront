@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { ShoppingBag, Zap } from 'lucide-react';
 import { NormalizedProduct } from '@/types/pdp-template.types';
 import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/lib/currency-context';
 
 export interface MobilePurchaseBarProps {
   product: NormalizedProduct;
@@ -25,7 +26,16 @@ export function MobilePurchaseBar({
 }: MobilePurchaseBarProps) {
   if (!enabled) return null;
 
+  const { formatPrice } = useCurrency();
   const thumb = product.media[0]?.url || 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=200';
+
+  const formatMoney = (val: number) => {
+    try {
+      return formatPrice(val);
+    } catch {
+      return formatCurrency(val);
+    }
+  };
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-3 shadow-2xl safe-bottom">
@@ -48,7 +58,7 @@ export function MobilePurchaseBar({
             </h4>
             <div className="flex items-baseline gap-2">
               <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">
-                {formatCurrency(product.price)}
+                {formatMoney(product.price)}
               </span>
               {(selectedColor || selectedSize) && (
                 <span className="text-[10px] text-slate-400 truncate">
@@ -73,7 +83,7 @@ export function MobilePurchaseBar({
           <button
             type="button"
             onClick={onBuyNow}
-            className="px-4 py-2.5 rounded-xl bg-rose-600 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md active:scale-95 transition-transform"
+            className="px-4 py-2.5 rounded-xl bg-[#B77A68] hover:bg-[#A36655] text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md active:scale-95 transition-transform"
           >
             <Zap className="w-3.5 h-3.5 fill-white" />
             <span>Buy</span>

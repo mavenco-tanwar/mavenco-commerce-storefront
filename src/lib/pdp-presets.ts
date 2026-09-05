@@ -94,7 +94,7 @@ export const PDP_PRESET_TEMPLATES: Record<string, { name: string; description: s
         enableJsonLd: true,
         canonicalStrategy: 'base-product',
       },
-      accentColor: '#E11D48',
+      accentColor: '#B77A68',
     },
   },
 

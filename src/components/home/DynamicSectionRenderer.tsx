@@ -142,6 +142,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customLimit={sData.limit || 8}
                 customCtaText={sData.primaryBtnText || sData.ctaText || sData.primaryCtaText || 'Explore All'}
                 customCtaUrl={sData.primaryBtnLink || sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
+                tenantSlug={tenantSlug}
               />
             );
 
@@ -158,6 +159,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customImage={image}
                 customCtaText={sData.btnText || sData.ctaText || sData.primaryCtaText || 'Read Our Story'}
                 customCtaUrl={sData.btnLink || sData.ctaUrl || sData.primaryCtaUrl || '/about'}
+                tenantSlug={tenantSlug}
               />
             );
 
@@ -172,6 +174,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customLimit={sData.limit || 6}
+                tenantSlug={tenantSlug}
               />
             );
 
@@ -184,6 +187,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customBadge={badge}
                 customCtaText={sData.ctaText || sData.primaryCtaText}
                 customCtaUrl={sData.ctaUrl || sData.primaryCtaUrl}
+                tenantSlug={tenantSlug}
               />
             );
 
@@ -195,6 +199,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customLimit={sData.limit || 4}
+                tenantSlug={tenantSlug}
               />
             );
 
@@ -248,6 +253,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customBadge={badge}
                 customPrimaryCtaText={sData.btnText || sData.ctaText || sData.primaryCtaText || 'Claim Privilege'}
                 customPrimaryCtaUrl={sData.btnLink || sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
+                tenantSlug={tenantSlug}
               />
             );
 

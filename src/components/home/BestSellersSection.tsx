@@ -15,6 +15,7 @@ interface BestSellersSectionProps {
   customLimit?: number;
   customCtaText?: string;
   customCtaUrl?: string;
+  tenantSlug?: string;
 }
 
 export function BestSellersSection({
@@ -24,9 +25,19 @@ export function BestSellersSection({
   customLimit = 4,
   customCtaText = 'View All Best Sellers',
   customCtaUrl = '/women?sort=popular',
+  tenantSlug,
 }: BestSellersSectionProps = {}) {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const currentSlug =
+    tenantSlug ||
+    (typeof window !== 'undefined'
+      ? window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/)?.[2] ||
+        new URLSearchParams(window.location.search).get('tenant') ||
+        ''
+      : '') ||
+    '';
 
   const title = customTitle || 'Our Best Sellers';
   const subtitle = customSubtitle || 'The iconic styles our community can\'t get enough of.';
@@ -35,7 +46,7 @@ export function BestSellersSection({
   useEffect(() => {
     async function loadBestSellers() {
       try {
-        const res = await ProductService.getBestSellers(customLimit);
+        const res = await ProductService.getBestSellers(customLimit, currentSlug || undefined);
         setBestSellers(res.data);
       } catch (err) {
         console.error('Failed to load best sellers', err);
@@ -44,7 +55,11 @@ export function BestSellersSection({
       }
     }
     loadBestSellers();
-  }, [customLimit]);
+  }, [customLimit, currentSlug]);
+
+  if (!isLoading && bestSellers.length === 0 && currentSlug && currentSlug !== 'demo') {
+    return null;
+  }
 
   return (
     <section className="py-16 md:py-24 bg-[#FAF6F2] border-b border-[#E8DED8] select-none">
@@ -64,7 +79,7 @@ export function BestSellersSection({
           </div>
 
           <Link
-            href={formatTenantHref(customCtaUrl)}
+            href={formatTenantHref(customCtaUrl, currentSlug)}
             className="text-xs uppercase font-bold tracking-widest text-[#111111] hover:text-[#B77A68] flex items-center gap-1.5 transition-colors group"
           >
             <span>{customCtaText}</span>

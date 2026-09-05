@@ -1,6 +1,6 @@
 import { ProductCardConfig } from '../types/product-card.types';
 
-export function getDefaultProductCardConfig(tenantId: string = 'lumina'): ProductCardConfig {
+export function getDefaultProductCardConfig(tenantId: string = 'jq-trends'): ProductCardConfig {
   return {
     id: `pc_config_${tenantId}`,
     tenantId,
@@ -35,7 +35,7 @@ export function getDefaultProductCardConfig(tenantId: string = 'lumina'): Produc
       position: 'top-right',
       iconStyle: 'heart',
       color: '#111827',
-      activeColor: '#E11D48',
+      activeColor: '#B77A68',
     },
     quickView: {
       enabled: true,
@@ -55,7 +55,7 @@ export function getDefaultProductCardConfig(tenantId: string = 'lumina'): Produc
       fontSize: '14px',
       fontWeight: '600',
       color: '#18181B',
-      hoverColor: '#E11D48',
+      hoverColor: '#B77A68',
     },
     subtitle: {
       enabled: false,
@@ -98,7 +98,7 @@ export function getDefaultProductCardConfig(tenantId: string = 'lumina'): Produc
       background: '#FFFFFF',
       border: 'solid',
       borderWidth: '1px',
-      borderColor: '#F4F4F5',
+      borderColor: '#E8DED8',
       borderRadius: '12px',
       shadow: '0 1px 3px rgba(0,0,0,0.05)',
       hoverShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',

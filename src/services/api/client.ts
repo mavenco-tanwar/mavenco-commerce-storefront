@@ -117,12 +117,17 @@ class ApiClient {
 
     let activeTenantSlug = '';
     if (typeof window !== 'undefined') {
-      const storeMatch = window.location.pathname.match(/^\/stores\/([a-zA-Z0-9_-]+)/);
-      if (storeMatch && storeMatch[1]) {
-        activeTenantSlug = storeMatch[1];
+      const storeMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+      if (storeMatch && storeMatch[2]) {
+        activeTenantSlug = storeMatch[2];
       } else {
-        const stored = localStorage.getItem('jq_active_store_slug');
-        activeTenantSlug = stored && stored !== 'all' ? stored : 'jq-trends';
+        const urlTenant = new URLSearchParams(window.location.search).get('tenant');
+        if (urlTenant) {
+          activeTenantSlug = urlTenant.toLowerCase().trim();
+        } else {
+          const stored = localStorage.getItem('jq_active_tenant') || localStorage.getItem('jq_active_store_slug');
+          activeTenantSlug = stored && stored !== 'all' ? stored : 'jq-trends';
+        }
       }
     }
 

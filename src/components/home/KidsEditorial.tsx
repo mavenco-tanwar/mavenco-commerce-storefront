@@ -19,6 +19,7 @@ interface KidsEditorialProps {
   customCtaText?: string;
   customCtaUrl?: string;
   customCategories?: KidsCategoryItem[];
+  tenantSlug?: string;
 }
 
 const DEFAULT_KIDS_CATEGORIES: KidsCategoryItem[] = [
@@ -59,6 +60,7 @@ export function KidsEditorial({
   customCtaText = 'Explore All Kids Styles',
   customCtaUrl = '/kids',
   customCategories,
+  tenantSlug,
 }: KidsEditorialProps = {}) {
   const title = customTitle || 'Little Looks, Big Style';
   const subtitle = customSubtitle || '“Comfort meets adorable.”';
@@ -87,7 +89,7 @@ export function KidsEditorial({
           </div>
 
           <Link
-            href={formatTenantHref(customCtaUrl)}
+            href={formatTenantHref(customCtaUrl, tenantSlug)}
             className="text-xs uppercase font-bold tracking-widest text-[#111111] hover:text-[#B77A68] flex items-center gap-1.5 transition-colors group"
           >
             <span>{customCtaText}</span>
@@ -100,7 +102,7 @@ export function KidsEditorial({
           {categories.map((cat, idx) => (
             <Link
               key={idx}
-              href={formatTenantHref(cat.href || '/kids')}
+              href={formatTenantHref(cat.href || '/kids', tenantSlug)}
               className="group relative aspect-4/5 overflow-hidden bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow"
             >
               <Image

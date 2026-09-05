@@ -231,9 +231,10 @@ export class CmsApiService {
   /**
    * Retrieves footer layout configuration from the CMS database.
    */
-  public static async getFooterConfig(): Promise<CmsFooterConfig | null> {
+  public static async getFooterConfig(tenant?: string): Promise<CmsFooterConfig | null> {
     try {
-      const res = await apiClient.get<CmsFooterConfig>('/api/v1/content/footer');
+      const query = tenant ? `?tenant=${encodeURIComponent(tenant)}` : '';
+      const res = await apiClient.get<CmsFooterConfig>(`/api/v1/content/footer${query}`);
       if (res.data) {
         return res.data;
       }
@@ -246,9 +247,10 @@ export class CmsApiService {
   /**
    * Retrieves navigation menu items by menu code strictly from API.
    */
-  public static async getMenu(code: string): Promise<CmsMenuItem[]> {
+  public static async getMenu(code: string, tenant?: string): Promise<CmsMenuItem[]> {
     try {
-      const res = await apiClient.get<CmsMenu>(`/api/v1/content/menus/code/${code}`);
+      const query = tenant ? `?tenant=${encodeURIComponent(tenant)}` : '';
+      const res = await apiClient.get<CmsMenu>(`/api/v1/content/menus/code/${code}${query}`);
       if (res.data?.items && Array.isArray(res.data.items) && res.data.items.length > 0) {
         return res.data.items.filter((i) => i.isVisible !== false);
       }

@@ -14,6 +14,7 @@ interface PromotionalBannerProps {
   customPrimaryCtaUrl?: string;
   customSecondaryCtaText?: string;
   customSecondaryCtaUrl?: string;
+  tenantSlug?: string;
 }
 
 export function PromotionalBanner({
@@ -25,6 +26,7 @@ export function PromotionalBanner({
   customPrimaryCtaUrl = '/women',
   customSecondaryCtaText = 'View Offers',
   customSecondaryCtaUrl = '/sale',
+  tenantSlug,
 }: PromotionalBannerProps = {}) {
   const title = customTitle || 'NEW SEASON. NEW YOU.';
   const subtitle =
@@ -70,7 +72,7 @@ export function PromotionalBanner({
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-4">
-            <Link href={formatTenantHref(customPrimaryCtaUrl)}>
+            <Link href={formatTenantHref(customPrimaryCtaUrl, tenantSlug)}>
               <Button variant="luxury-gold" size="lg" className="min-w-[180px] group">
                 <span>{customPrimaryCtaText}</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -78,7 +80,7 @@ export function PromotionalBanner({
             </Link>
 
             {customSecondaryCtaText && (
-              <Link href={formatTenantHref(customSecondaryCtaUrl)}>
+              <Link href={formatTenantHref(customSecondaryCtaUrl, tenantSlug)}>
                 <Button
                   variant="outline"
                   size="lg"

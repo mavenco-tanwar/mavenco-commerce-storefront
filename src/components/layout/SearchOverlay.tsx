@@ -28,6 +28,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const [results, setResults] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const activeTenant = resolveTenant();
 
   useEffect(() => {
     if (isOpen) {
@@ -58,7 +59,8 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
     setIsLoading(true);
     const timeoutId = setTimeout(async () => {
       try {
-        const res = await ProductService.search(query);
+        const activeTenant = resolveTenant();
+        const res = await ProductService.search(query, 8, activeTenant.slug);
         setResults(res.data);
       } catch (err) {
         console.error('Search error', err);
@@ -144,7 +146,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                   {results.map((product) => (
                     <Link
                       key={product.id}
-                      href={formatProductHref(product.slug, product.category)}
+                      href={formatProductHref(product.slug, product.category, activeTenant.slug)}
                       onClick={onClose}
                       className="group flex flex-col bg-[#FAF6F2] border border-[#E8DED8] p-2 hover:border-[#B77A68] transition-all"
                     >

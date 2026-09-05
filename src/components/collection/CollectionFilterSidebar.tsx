@@ -59,7 +59,7 @@ export function CollectionFilterSidebar({
         </h3>
         <button
           onClick={onReset}
-          className="text-[11px] font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 transition-colors"
+          className="text-[11px] font-bold text-[#B77A68] hover:text-[#A36655] flex items-center gap-1 transition-colors cursor-pointer"
         >
           <RotateCcw className="w-3 h-3" />
           <span>Reset All</span>
@@ -78,12 +78,12 @@ export function CollectionFilterSidebar({
               onClick={() => onFilterChange('category', cat.slug)}
               className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-between transition-colors ${
                 filterState.category === cat.slug
-                  ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold'
+                  ? 'bg-[#F8F1EA] text-[#B77A68] font-bold'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
               }`}
             >
               <span>{cat.name}</span>
-              {filterState.category === cat.slug && <Check className="w-3.5 h-3.5 text-rose-600" />}
+              {filterState.category === cat.slug && <Check className="w-3.5 h-3.5 text-[#B77A68]" />}
             </button>
           ))}
         </div>
@@ -110,7 +110,7 @@ export function CollectionFilterSidebar({
               key={c.name}
               onClick={() => onFilterChange('color', c.name)}
               className={`w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center transition-transform ${
-                filterState.color === c.name ? 'ring-2 ring-rose-500 scale-110' : ''
+                filterState.color === c.name ? 'ring-2 ring-[#B77A68] scale-110' : ''
               }`}
               style={{ backgroundColor: c.hex }}
               title={c.name}
@@ -133,7 +133,7 @@ export function CollectionFilterSidebar({
               onClick={() => onFilterChange('size', filterState.size === s ? 'all' : s)}
               className={`py-1.5 text-xs font-bold rounded-lg border transition-colors ${
                 filterState.size === s
-                  ? 'bg-rose-600 text-white border-rose-600 shadow-xs'
+                  ? 'bg-[#B77A68] text-white border-[#B77A68] shadow-xs'
                   : 'border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-400'
               }`}
             >
@@ -147,7 +147,7 @@ export function CollectionFilterSidebar({
       <div className="space-y-2.5 pt-2 border-t border-[#E8DED8] dark:border-slate-800">
         <div className="flex justify-between text-xs">
           <span className="font-bold text-slate-900 dark:text-white">Max Price</span>
-          <span className="font-bold text-rose-600">{formatPrice ? formatPrice(filterState.maxPrice) : `₹${filterState.maxPrice}`}</span>
+          <span className="font-bold text-[#B77A68]">{formatPrice ? formatPrice(filterState.maxPrice) : `₹${filterState.maxPrice}`}</span>
         </div>
         <input
           type="range"
@@ -156,7 +156,7 @@ export function CollectionFilterSidebar({
           step={maxPriceLimit > 2000 ? '100' : '50'}
           value={filterState.maxPrice}
           onChange={(e) => onFilterChange('maxPrice', Number(e.target.value))}
-          className="w-full accent-rose-600 cursor-pointer"
+          className="w-full accent-[#B77A68] cursor-pointer"
         />
       </div>
 
@@ -167,7 +167,7 @@ export function CollectionFilterSidebar({
           type="checkbox"
           checked={filterState.inStockOnly}
           onChange={(e) => onFilterChange('inStockOnly', e.target.checked)}
-          className="w-4 h-4 accent-rose-600 rounded cursor-pointer"
+          className="w-4 h-4 accent-[#B77A68] rounded cursor-pointer"
         />
       </div>
     </aside>

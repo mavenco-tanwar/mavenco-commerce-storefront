@@ -3,23 +3,42 @@ import { mapCmsCategoryToStorefrontCategory } from './adapters';
 import { Category, Collection } from '@/types/category';
 
 export class CategoryApiService {
-  private static cachedCategories: Category[] | null = null;
+  private static cachedCategoriesMap = new Map<string, Category[]>();
   private static cachedCollections: Collection[] | null = null;
 
   /**
    * Retrieves all active store categories strictly from database API.
    * Never falls back to static categories arrays.
    */
-  public static async getCategories(department?: 'women' | 'kids'): Promise<{ data: Category[] }> {
+  public static async getCategories(department?: 'women' | 'kids', tenant?: string): Promise<{ data: Category[] }> {
     try {
-      const res = await apiClient.get<any[]>('/api/v1/categories');
+      let resolvedTenant = tenant;
+      if (!resolvedTenant && typeof window !== 'undefined') {
+        const storeMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+        if (storeMatch && storeMatch[2]) {
+          resolvedTenant = storeMatch[2];
+        } else {
+          const urlTenant = new URLSearchParams(window.location.search).get('tenant');
+          if (urlTenant) {
+            resolvedTenant = urlTenant;
+          }
+        }
+      }
+
+      const queryParams = new URLSearchParams();
+      if (resolvedTenant) queryParams.set('tenant', resolvedTenant);
+      if (department) queryParams.set('department', department);
+      const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+
+      const res = await apiClient.get<any[]>(`/api/v1/categories${queryString}`);
       const allCms = res.data || [];
       if (allCms.length > 0) {
         const parentCategories = allCms.filter((c: any) => !c.parentId);
         const categories: Category[] = parentCategories.map((p) =>
           mapCmsCategoryToStorefrontCategory(p, allCms)
         );
-        this.cachedCategories = categories;
+        const cacheKey = `${resolvedTenant || 'default'}_${department || 'all'}`;
+        this.cachedCategoriesMap.set(cacheKey, categories);
 
         if (department) {
           return { data: categories.filter((c) => c.department === department) };
@@ -30,11 +49,13 @@ export class CategoryApiService {
       console.warn('[CategoryApiService] Category API fetch error:', err);
     }
 
-    if (this.cachedCategories) {
+    const cacheKey = `${tenant || 'default'}_${department || 'all'}`;
+    const cached = this.cachedCategoriesMap.get(cacheKey);
+    if (cached && cached.length > 0) {
       if (department) {
-        return { data: this.cachedCategories.filter((c) => c.department === department) };
+        return { data: cached.filter((c) => c.department === department) };
       }
-      return { data: this.cachedCategories };
+      return { data: cached };
     }
 
     // Zero fallback rule: Return empty array when unconfigured

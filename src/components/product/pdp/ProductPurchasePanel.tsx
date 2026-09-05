@@ -24,6 +24,7 @@ import {
 import { ProductVariantSelector } from './ProductVariantSelector';
 import { PincodeChecker } from '../PincodeChecker';
 import { formatCurrency } from '@/lib/utils';
+import { useCurrency } from '@/lib/currency-context';
 
 export interface ProductPurchasePanelProps {
   product: NormalizedProduct;
@@ -58,10 +59,15 @@ export function ProductPurchasePanel({
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const { formatPrice } = useCurrency();
 
   // Format currency helper
   const formatMoney = (amount: number) => {
-    return formatCurrency(amount);
+    try {
+      return formatPrice(amount);
+    } catch {
+      return formatCurrency(amount);
+    }
   };
 
   const handleAddToCart = () => {
@@ -280,7 +286,7 @@ export function ProductPurchasePanel({
                     className={`flex-1 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer ${
                       isAddedToCart
                         ? 'bg-emerald-600 text-white'
-                        : 'bg-[#0A0D14] hover:bg-rose-600 text-white'
+                        : 'bg-[#111111] hover:bg-[#B77A68] text-white'
                     }`}
                   >
                     {isAddedToCart ? (
@@ -301,7 +307,7 @@ export function ProductPurchasePanel({
                   <button
                     type="button"
                     onClick={handleBuyNow}
-                    className="flex-1 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-rose-600 hover:bg-rose-500 text-white transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                    className="flex-1 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#B77A68] hover:bg-[#A36655] text-white transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                   >
                     <Zap className="w-4 h-4 fill-white" />
                     <span>Instant Buy</span>
@@ -317,11 +323,11 @@ export function ProductPurchasePanel({
                     onClick={onToggleWishlist}
                     className={`flex items-center gap-1.5 font-bold transition-colors cursor-pointer ${
                       isWishlisted
-                        ? 'text-rose-600'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'text-[#B77A68]'
+                        : 'text-slate-600 hover:text-[#111111]'
                     }`}
                   >
-                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-600 text-rose-600' : ''}`} />
+                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-[#B77A68] text-[#B77A68]' : ''}`} />
                     <span>{isWishlisted ? 'Saved in Wishlist' : 'Add to Wishlist'}</span>
                   </button>
                 )}

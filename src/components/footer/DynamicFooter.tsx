@@ -15,15 +15,18 @@ export function DynamicFooter({ initialConfig }: DynamicFooterProps) {
   const searchParams = useSearchParams();
 
   const [mounted, setMounted] = useState(false);
-  const [tenantSlug, setTenantSlug] = useState<string>('lumina');
+  const [tenantSlug, setTenantSlug] = useState<string>(() => {
+    return resolveTenant().slug;
+  });
   const [config, setConfig] = useState<FooterConfig>(() => {
-    return initialConfig || getDefaultFooterConfig('lumina', 'STOREFRONT');
+    const t = resolveTenant();
+    return initialConfig || getDefaultFooterConfig(t.slug, t.name);
   });
 
   useEffect(() => {
     setMounted(true);
     const t = resolveTenant();
-    const slug = (t.slug || 'lumina').toLowerCase().trim();
+    const slug = (t.slug || 'jq-trends').toLowerCase().trim();
     setTenantSlug(slug);
 
     // Fetch published configuration from API
@@ -51,8 +54,8 @@ export function DynamicFooter({ initialConfig }: DynamicFooterProps) {
     <footer
       suppressHydrationWarning
       style={{
-        backgroundColor: theme?.backgroundColor || '#07090E',
-        color: theme?.textColor || '#F8FAFC',
+        backgroundColor: theme?.backgroundColor || '#111111',
+        color: theme?.textColor || '#FAF6F2',
         fontFamily: theme?.fontFamily,
       }}
       className="border-t border-white/10 select-none pt-12 pb-10 transition-colors duration-300"
@@ -92,7 +95,7 @@ export function DynamicFooter({ initialConfig }: DynamicFooterProps) {
                       key={block.id}
                       block={block}
                       tenantSlug={tenantSlug}
-                      themeAccent={theme?.accentColor || '#E11D48'}
+                      themeAccent={theme?.accentColor || '#B77A68'}
                     />
                   ))}
               </div>

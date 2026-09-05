@@ -32,6 +32,8 @@ export function CartDrawer() {
   const [inputCoupon, setInputCoupon] = useState('');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
 
+  const activeTenant = resolveTenant();
+
   const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputCoupon.trim()) return;
@@ -66,7 +68,7 @@ export function CartDrawer() {
           title="Your Bag is Empty"
           description="Looks like you haven't added any beautiful pieces yet. Discover our new arrivals and trending collections."
           actionText="Explore New Arrivals"
-          actionHref={formatTenantHref('/new-arrivals')}
+          actionHref={formatTenantHref('/new-arrivals', activeTenant.slug)}
           onActionClick={closeDrawer}
         />
       ) : (
@@ -84,7 +86,7 @@ export function CartDrawer() {
                 <div key={item.id} className="py-4 flex gap-3.5 group">
                   {/* Thumbnail */}
                   <Link
-                    href={formatProductHref(item.product.slug, item.product.category)}
+                    href={formatProductHref(item.product.slug, item.product.category, activeTenant.slug)}
                     onClick={closeDrawer}
                     className="relative w-20 aspect-3/4 shrink-0 overflow-hidden bg-[#FAF6F2] border border-[#E8DED8]"
                   >

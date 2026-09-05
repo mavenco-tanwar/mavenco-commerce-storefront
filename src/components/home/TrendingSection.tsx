@@ -16,6 +16,7 @@ interface TrendingSectionProps {
   customLimit?: number;
   customCtaText?: string;
   customCtaUrl?: string;
+  tenantSlug?: string;
 }
 
 export function TrendingSection({
@@ -25,10 +26,20 @@ export function TrendingSection({
   customLimit = 8,
   customCtaText = 'Explore All Trending',
   customCtaUrl = '/women',
+  tenantSlug,
 }: TrendingSectionProps = {}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'women' | 'kids'>('all');
   const [isLoading, setIsLoading] = useState(true);
+
+  const currentSlug =
+    tenantSlug ||
+    (typeof window !== 'undefined'
+      ? window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/)?.[2] ||
+        new URLSearchParams(window.location.search).get('tenant') ||
+        ''
+      : '') ||
+    '';
 
   const title = customTitle || 'Trending Now';
   const subtitle = customSubtitle || 'Styles everyone is talking about this season.';
@@ -38,7 +49,7 @@ export function TrendingSection({
     async function loadTrending() {
       setIsLoading(true);
       try {
-        const res = await ProductService.getTrending();
+        const res = await ProductService.getTrending(undefined, customLimit, currentSlug || undefined);
         setProducts(res.data);
       } catch (err) {
         console.error('Failed to load trending products', err);
@@ -47,13 +58,17 @@ export function TrendingSection({
       }
     }
     loadTrending();
-  }, []);
+  }, [customLimit, currentSlug]);
 
   const filtered = products.filter((p) => {
     if (activeTab === 'all') return true;
-    return p.department === activeTab;
+    return p.department === activeTab || p.category === activeTab;
   });
   const displayedProducts = filtered.length > 0 ? filtered : products;
+
+  if (!isLoading && products.length === 0 && currentSlug && currentSlug !== 'demo') {
+    return null;
+  }
 
   return (
     <section className="py-16 md:py-24 bg-[#FAF6F2] border-y border-[#E8DED8] select-none">
@@ -117,7 +132,7 @@ export function TrendingSection({
 
         {/* View All CTA */}
         <div className="mt-12 text-center">
-          <Link href={formatTenantHref(customCtaUrl)}>
+          <Link href={formatTenantHref(customCtaUrl, currentSlug)}>
             <Button
               variant="outline"
               size="lg"

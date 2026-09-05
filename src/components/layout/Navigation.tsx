@@ -29,12 +29,12 @@ export function Navigation() {
   useEffect(() => {
     const t = resolveTenant();
     setTenant(t);
-    CmsApiService.getMenu('header-menu').then((items) => {
+    CmsApiService.getMenu('header-menu', t.slug).then((items) => {
       if (items && items.length > 0) {
         setMenuItems(items);
       }
     });
-    CategoryService.getCategories().then((res) => {
+    CategoryService.getCategories(undefined, t.slug).then((res) => {
       if (res.data && res.data.length > 0) {
         setCategories(res.data);
       }
@@ -226,7 +226,7 @@ export function Navigation() {
               onMouseEnter={() => setActiveMenu('kids')}
             >
               <Link
-                href={url}
+                href={formatTenantHref(url, tenant?.slug)}
                 className={`transition-colors flex items-center gap-1 ${
                   activeMenu === 'kids' ? 'text-[#B77A68]' : 'hover:text-[#B77A68]'
                 }`}
@@ -400,7 +400,7 @@ export function Navigation() {
           return (
             <Link
               key={item.id}
-              href={url}
+              href={formatTenantHref(url, tenant?.slug)}
               className="py-4 text-[#C98282] hover:text-[#A75F5F] font-bold transition-colors"
             >
               {item.label}
@@ -412,7 +412,7 @@ export function Navigation() {
         return (
           <Link
             key={item.id}
-            href={url}
+            href={formatTenantHref(url, tenant?.slug)}
             className="py-4 hover:text-[#B77A68] transition-colors relative flex items-center gap-1"
           >
             <span>{item.label}</span>

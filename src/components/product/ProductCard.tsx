@@ -29,7 +29,7 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
   const productUrl = formatProductHref(product.slug, rawCategory, activeTenant.slug);
 
   const cfg: ProductCardConfig = {
-    ...getDefaultProductCardConfig(activeTenant.slug || 'lumina'),
+    ...getDefaultProductCardConfig(activeTenant.slug || 'jq-trends'),
     ...(customConfig || {}),
   };
 
@@ -155,7 +155,7 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
           >
             <Heart
               className={`w-4 h-4 transition-colors ${
-                isSaved ? 'fill-rose-600 text-rose-600' : 'text-[#111111]'
+                isSaved ? 'fill-[#B77A68] text-[#B77A68]' : 'text-[#111111]'
               }`}
             />
           </button>
@@ -205,7 +205,7 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
           {cfg.title.enabled && (
             <Link href={productUrl} className="block group/title">
               <h3
-                className={`font-semibold text-slate-900 group-hover/title:text-rose-600 transition-colors ${
+                className={`font-semibold text-slate-900 group-hover/title:text-[#B77A68] transition-colors ${
                   cfg.title.maxLines === 1
                     ? 'truncate'
                     : cfg.title.maxLines === 2
@@ -258,7 +258,7 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
                 <button
                   key={i}
                   className={`w-3.5 h-3.5 rounded-full border border-slate-300 transition-transform ${
-                    selectedColor === c.name ? 'ring-2 ring-rose-500 scale-110' : ''
+                    selectedColor === c.name ? 'ring-2 ring-[#B77A68] scale-110' : ''
                   }`}
                   style={{ backgroundColor: c.hex }}
                   title={c.name}
@@ -280,7 +280,7 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
                   addItem(product, selectedColor || product.colors?.[0]?.name || 'Standard', 'M', 1);
                 }
               }}
-              className="w-full py-2.5 rounded-lg bg-slate-950 hover:bg-rose-600 text-white text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+              className="w-full py-2.5 rounded-lg bg-[#111111] hover:bg-[#B77A68] text-white text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
               style={{ borderRadius: cfg.addToCart.borderRadius || '8px' }}
             >
               <ShoppingBag className="w-3.5 h-3.5" />
