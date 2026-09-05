@@ -7,7 +7,7 @@ import { Search, X, TrendingUp, ArrowRight, Loader2 } from 'lucide-react';
 import { ProductService } from '@/services/products';
 import { Product } from '@/types/product';
 import { PriceDisplay } from '@/components/ui/PriceDisplay';
-import { formatTenantHref, formatProductHref } from '@/lib/tenant-config';
+import { formatTenantHref, formatProductHref, resolveTenant } from '@/lib/tenant-config';
 
 interface SearchOverlayProps {
   isOpen: boolean;

@@ -13,7 +13,7 @@ import { PriceDisplay } from '@/components/ui/PriceDisplay';
 import { FreeShippingBar } from '@/components/cart/FreeShippingBar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { formatCurrency } from '@/lib/utils';
-import { formatTenantHref, formatProductHref } from '@/lib/tenant-config';
+import { formatTenantHref, formatProductHref, resolveTenant } from '@/lib/tenant-config';
 
 export function CartDrawer() {
   const {
