@@ -19,6 +19,7 @@ import { useCurrency, CURRENCIES, CurrencyCode } from '@/lib/currency-context';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface DynamicMobileDrawerProps {
   isOpen: boolean;

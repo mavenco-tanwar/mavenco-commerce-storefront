@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { HeaderBlock } from '@/lib/header-config';
 import { HeaderBlockRenderer, getResponsiveVisibilityClass } from './HeaderBlockRenderer';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 interface DynamicAnnouncementBarProps {
   blocks: HeaderBlock[];
