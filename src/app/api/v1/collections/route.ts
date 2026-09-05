@@ -36,32 +36,53 @@ export async function GET(req: NextRequest) {
     if (db) {
       const collection = db.collection('collections');
 
-      // Resolve tenant aliases from tenants collection (e.g. gever <-> store__ever_6477)
+      // Resolve tenant aliases from tenants collection and platform_tenants_registry
+      if (cleanTenant && cleanTenant !== 'all') {
+        const collectionsToInspect = ['tenants', 'platform_tenants_registry'];
+        for (const collName of collectionsToInspect) {
+          try {
+            const tenantDocs = await db.collection(collName).find({
+              $or: [
+                { slug: cleanTenant },
+                { tenantId: cleanTenant },
+                { id: cleanTenant },
+                { id: `store_${cleanTenant}` },
+                { id: `store__${cleanTenant}` },
+                { slug: new RegExp(cleanTenant, 'i') },
+                { id: new RegExp(cleanTenant, 'i') },
+              ],
+            }).toArray();
+            for (const tDoc of tenantDocs) {
+              if (tDoc.slug) tenantAliases.add(tDoc.slug.toLowerCase());
+              if (tDoc.tenantId) tenantAliases.add(tDoc.tenantId.toLowerCase());
+              if (tDoc.id) {
+                const idStr = String(tDoc.id).toLowerCase();
+                tenantAliases.add(idStr);
+                tenantAliases.add(idStr.replace(/^store_/, ''));
+                tenantAliases.add(idStr.replace(/^store__/, ''));
+              }
+            }
+          } catch (err) {
+            console.warn(`[Collections API] Error reading ${collName}:`, err);
+          }
+        }
+      }
+
+      // Also find products belonging to this tenant to match any collections containing them
+      let tenantProductIds: string[] = [];
       if (cleanTenant && cleanTenant !== 'all') {
         try {
-          const tenantDoc = await db.collection('tenants').findOne({
+          const aliasArr = Array.from(tenantAliases);
+          const tProds = await db.collection('products').find({
             $or: [
-              { slug: cleanTenant },
-              { tenantId: cleanTenant },
-              { id: cleanTenant },
-              { id: `store_${cleanTenant}` },
-              { id: `store__${cleanTenant}` },
-              { slug: new RegExp(cleanTenant, 'i') },
-              { id: new RegExp(cleanTenant, 'i') },
+              { tenantId: { $in: aliasArr } },
+              { storeSlug: { $in: aliasArr } },
+              { storeId: { $in: aliasArr } },
             ],
-          });
-          if (tenantDoc) {
-            if (tenantDoc.slug) tenantAliases.add(tenantDoc.slug.toLowerCase());
-            if (tenantDoc.tenantId) tenantAliases.add(tenantDoc.tenantId.toLowerCase());
-            if (tenantDoc.id) {
-              const idStr = String(tenantDoc.id).toLowerCase();
-              tenantAliases.add(idStr);
-              tenantAliases.add(idStr.replace(/^store_/, ''));
-              tenantAliases.add(idStr.replace(/^store__/, ''));
-            }
-          }
+          }).project({ id: 1 }).toArray();
+          tenantProductIds = tProds.map(p => p.id).filter(Boolean);
         } catch (err) {
-          console.warn('[Collections API] Tenant alias resolution warning:', err);
+          console.warn('[Collections API] Error finding tenant products:', err);
         }
       }
 
@@ -82,6 +103,9 @@ export async function GET(req: NextRequest) {
             { storeSlug: `store__${a}` }
           );
         }
+        if (tenantProductIds.length > 0) {
+          orConditions.push({ productIds: { $in: tenantProductIds } });
+        }
         query = { $or: orConditions };
       }
 
@@ -92,25 +116,35 @@ export async function GET(req: NextRequest) {
         docs = await collection.find({}).sort({ createdAt: -1 }).toArray();
       }
 
-      // Enrich collections with real assigned product images if available
+      // Enrich collections with real assigned product images
       for (const doc of docs) {
         if (Array.isArray(doc.productIds) && doc.productIds.length > 0) {
           try {
-            const firstProd = await db.collection('products').findOne({
+            const assignedProds = await db.collection('products').find({
               $or: [
                 { id: { $in: doc.productIds } },
                 { slug: { $in: doc.productIds } },
               ],
-            });
-            if (firstProd) {
-              const prodImg =
-                Array.isArray(firstProd.images) && firstProd.images.length > 0
-                  ? (typeof firstProd.images[0] === 'string' ? firstProd.images[0] : firstProd.images[0]?.url)
-                  : firstProd.image;
-              if (prodImg) {
-                (doc as any).productImage = prodImg;
-                if (!doc.imageUrl || doc.imageUrl.includes('unsplash.com')) {
-                  doc.imageUrl = prodImg;
+            }).toArray();
+
+            if (assignedProds.length > 0) {
+              const assignedImages: string[] = [];
+              for (const p of assignedProds) {
+                const img =
+                  Array.isArray(p.images) && p.images.length > 0
+                    ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url)
+                    : p.image;
+                if (img && !assignedImages.includes(img)) {
+                  assignedImages.push(img);
+                }
+              }
+
+              if (assignedImages.length > 0) {
+                (doc as any).assignedProductImages = assignedImages;
+                (doc as any).productImage = assignedImages[0];
+                // If no custom image was uploaded, use the real assigned product image!
+                if (!doc.imageUrl || doc.imageUrl.includes('photo-1490481651871-ab68de25d43d')) {
+                  doc.imageUrl = assignedImages[0];
                 }
               }
             }

@@ -16,6 +16,7 @@ export interface CollectionItem {
   bannerImage?: string;
   image?: string;
   productImage?: string;
+  assignedProductImages?: string[];
   productIds?: string[];
   productCount?: number;
   type?: string;
@@ -102,7 +103,8 @@ export function CollectionsShowcase({
               title: c.title || c.name || 'Collection',
               slug: c.slug || c.id,
               description: c.description || '',
-              imageUrl: c.imageUrl || c.productImage || c.bannerImage || c.image || customBannerImage || '',
+              imageUrl: (Array.isArray(c.assignedProductImages) && c.assignedProductImages[0]) || c.productImage || c.imageUrl || c.bannerImage || c.image || '',
+              assignedProductImages: Array.isArray(c.assignedProductImages) && c.assignedProductImages.length > 0 ? c.assignedProductImages : (c.productImage ? [c.productImage] : (c.imageUrl ? [c.imageUrl] : [])),
               productIds: Array.isArray(c.productIds) ? c.productIds : [],
               productCount: typeof c.productCount === 'number' ? c.productCount : (c.productIds?.length || 0),
               type: c.type || 'manual',
@@ -184,7 +186,7 @@ export function CollectionsShowcase({
                   src={
                     collections[0].imageUrl ||
                     customBannerImage ||
-                    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1000&auto=format&fit=crop&q=80'
+                    'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=1000&auto=format&fit=crop&q=80'
                   }
                   alt={collections[0].title || 'Lookbook Collection'}
                   fill
@@ -194,7 +196,7 @@ export function CollectionsShowcase({
                 <div className="absolute top-4 left-4 flex items-center gap-2">
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-[#111111]/85 text-white backdrop-blur-md text-[10px] font-bold tracking-widest uppercase">
                     <BookOpen className="w-3 h-3" />
-                    <span>Lookbook</span>
+                    <span>{collections[0].type === 'automated' ? 'Automated' : 'Lookbook'}</span>
                   </span>
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FFFDFC]/90 dark:bg-black/80 text-[#111111] dark:text-white border border-[#E8DED8] dark:border-white/10 text-[10px] font-medium">
                     <Layers className="w-3 h-3 text-[#B77A68]" />
@@ -220,6 +222,25 @@ export function CollectionsShowcase({
                     {collections[0].description ||
                       'Discover our curated seasonal assortment of bespoke luxury garments crafted for timeless elegance.'}
                   </p>
+
+                  {/* Assigned Products Thumbnails */}
+                  {collections[0].assignedProductImages && collections[0].assignedProductImages.length > 0 && (
+                    <div className="pt-2">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-[#999999] block mb-2">
+                        Assigned Items ({collections[0].productCount || collections[0].assignedProductImages.length})
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {collections[0].assignedProductImages.slice(0, 5).map((thumb, tIdx) => (
+                          <div
+                            key={tIdx}
+                            className="relative w-12 h-12 rounded border border-[#E8DED8] dark:border-white/10 overflow-hidden bg-[#F5EFEA]"
+                          >
+                            <Image src={thumb} alt="Assigned Item" fill sizes="48px" className="object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-8 mt-8 border-t border-[#E8DED8] dark:border-white/10 flex flex-wrap items-center gap-4">
@@ -251,7 +272,7 @@ export function CollectionsShowcase({
         {collections.length > 1 && (
           <div
             className={`grid grid-cols-1 ${
-              collections.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' : 'md:grid-cols-2 lg:grid-cols-3'
+              collections.length === 2 ? 'md:grid-cols-2 max-w-5xl mx-auto' : 'md:grid-cols-2 lg:grid-cols-3'
             } gap-8`}
           >
             {collections.map((col, index) => {
@@ -264,11 +285,11 @@ export function CollectionsShowcase({
                   className="group flex flex-col bg-[#FFFDFC] dark:bg-[#1A1816] border border-[#E8DED8] dark:border-white/10 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300"
                 >
                   {/* Card Media */}
-                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#FAF6F2] dark:bg-black/30">
+                  <div className="relative aspect-[4/3] sm:aspect-[3/4] w-full overflow-hidden bg-[#FAF6F2] dark:bg-black/30">
                     <Image
                       src={
                         col.imageUrl ||
-                        'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=900&auto=format&fit=crop&q=80'
+                        'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=900&auto=format&fit=crop&q=80'
                       }
                       alt={col.title || 'Lookbook Collection'}
                       fill
@@ -280,7 +301,7 @@ export function CollectionsShowcase({
                     <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#111111]/85 text-white backdrop-blur-md text-[10px] font-bold tracking-widest uppercase">
                         <BookOpen className="w-3 h-3" />
-                        <span>Lookbook</span>
+                        <span>{col.type === 'automated' ? 'Automated' : 'Manual'}</span>
                       </span>
 
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FFFDFC]/90 dark:bg-black/80 text-[#111111] dark:text-white border border-[#E8DED8] dark:border-white/10 text-[10px] font-medium">
@@ -292,21 +313,49 @@ export function CollectionsShowcase({
 
                   {/* Card Details */}
                   <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                    <div>
+                    <div className="space-y-2">
                       <h3 className="text-xl font-serif font-bold text-[#111111] dark:text-white group-hover:text-[#B77A68] transition-colors leading-snug">
                         {col.title}
                       </h3>
-                      <p className="mt-1.5 text-xs text-[#777777] dark:text-slate-400 font-sans line-clamp-2 leading-relaxed">
-                        {col.description || 'Curated seasonal assortment of signature garments and styling.'}
+                      <p className="text-xs text-[#777777] dark:text-slate-400 font-sans line-clamp-2 leading-relaxed">
+                        {col.description || 'No collection description provided.'}
                       </p>
+
+                      {/* Assigned Items Thumbnails Preview */}
+                      {col.assignedProductImages && col.assignedProductImages.length > 0 && (
+                        <div className="pt-3 mt-2 border-t border-[#E8DED8]/60 dark:border-white/5">
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-[#999999] block mb-2">
+                            Assigned Items ({count})
+                          </span>
+                          <div className="flex items-center gap-2">
+                            {col.assignedProductImages.slice(0, 4).map((thumb, tIdx) => (
+                              <div
+                                key={tIdx}
+                                className="relative w-10 h-10 rounded border border-[#E8DED8] dark:border-white/10 overflow-hidden bg-[#FAF6F2] shadow-xs"
+                              >
+                                <Image
+                                  src={thumb}
+                                  alt="Assigned Product"
+                                  fill
+                                  sizes="40px"
+                                  className="object-cover"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="pt-4 border-t border-[#E8DED8] dark:border-white/10 flex items-center justify-between">
+                      <span className="text-[11px] text-[#999999] font-mono">
+                        /{col.slug}
+                      </span>
                       <Link
                         href={collectionHref}
                         className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#111111] dark:text-white group-hover:text-[#B77A68] transition-colors"
                       >
-                        <span>Explore Lookbook</span>
+                        <span>Explore Collection</span>
                         <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                       </Link>
                     </div>
