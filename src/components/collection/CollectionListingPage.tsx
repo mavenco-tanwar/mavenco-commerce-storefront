@@ -147,11 +147,18 @@ function CollectionListingPageContent({
     let result = [...initialProducts];
 
     if (filterState.category !== 'all') {
-      result = result.filter(
-        (p) =>
-          p.category?.toLowerCase() === filterState.category.toLowerCase() ||
-          p.department?.toLowerCase() === filterState.category.toLowerCase()
-      );
+      const target = filterState.category.toLowerCase().trim();
+      result = result.filter((p) => {
+        const pCat = (p.category || '').toLowerCase().trim();
+        const pDept = (p.department || '').toLowerCase().trim();
+        const pSlug = ((p as any).categorySlug || '').toLowerCase().trim();
+        const pName = (p.categoryName || '').toLowerCase().trim();
+        const inIds = Array.isArray(p.categoryIds) && p.categoryIds.some((id: string) => {
+          const clean = id.toLowerCase().replace(/^cat_/, '').replace(/_[a-z0-9-]+$/, '');
+          return clean === target || id.toLowerCase() === target;
+        });
+        return pCat === target || pDept === target || pSlug === target || pName === target || inIds;
+      });
     }
 
     if (filterState.color !== 'all') {

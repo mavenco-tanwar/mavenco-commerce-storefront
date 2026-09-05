@@ -21,9 +21,12 @@ export class ProductApiService {
       // Scope to store tenant if available in params or current storefront path
       let resolvedTenant = params.tenant;
       if (!resolvedTenant && typeof window !== 'undefined') {
-        const storeMatch = window.location.pathname.match(/^\/stores\/([a-zA-Z0-9_-]+)/);
-        if (storeMatch && storeMatch[1]) {
-          resolvedTenant = storeMatch[1];
+        const storeMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+        if (storeMatch && storeMatch[2]) {
+          resolvedTenant = storeMatch[2];
+        } else {
+          const qTenant = new URLSearchParams(window.location.search).get('tenant');
+          if (qTenant && qTenant !== 'all') resolvedTenant = qTenant;
         }
       }
       if (resolvedTenant) {
@@ -56,7 +59,15 @@ export class ProductApiService {
       }
 
       if (params.category && params.category !== 'all') {
-        products = products.filter((p) => p.category === params.category || p.slug.includes(params.category!));
+        const catTarget = params.category.toLowerCase().trim();
+        products = products.filter(
+          (p) =>
+            p.category?.toLowerCase() === catTarget ||
+            p.department?.toLowerCase() === catTarget ||
+            (p as any).categorySlug?.toLowerCase() === catTarget ||
+            p.categoryName?.toLowerCase() === catTarget ||
+            p.slug.includes(catTarget)
+        );
       }
 
       if (params.minPrice !== undefined) {

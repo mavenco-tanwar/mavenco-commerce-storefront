@@ -18,15 +18,62 @@ import { CmsApiService } from '@/services/api/cms';
 import { CategoryApiService } from '@/services/api/categories';
 import { ProductListingView } from '@/components/plp/ProductListingView';
 import { Button } from '@/components/ui/Button';
+import { getDatabase } from '@/lib/mongodb';
+import { headers, cookies } from 'next/headers';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ tenant?: string; [key: string]: string | string[] | undefined }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+async function resolveTenant(searchParams?: Promise<{ tenant?: string }>): Promise<string> {
+  const sp = searchParams ? await searchParams : {};
+  if (sp.tenant) return sp.tenant.toLowerCase().trim();
 
-  // 1. Check Category
+  try {
+    const h = await headers();
+    const headerTenant = h.get('x-tenant-slug');
+    if (headerTenant) return headerTenant.toLowerCase().trim();
+  } catch {}
+
+  try {
+    const c = await cookies();
+    const cookieTenant = c.get('jq_active_tenant')?.value;
+    if (cookieTenant) return cookieTenant.toLowerCase().trim();
+  } catch {}
+
+  return 'jq-trends';
+}
+
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const tenant = await resolveTenant(searchParams);
+
+  // 1. Check Category from MongoDB
+  try {
+    const db = await getDatabase();
+    if (db) {
+      const catDoc = await db.collection('categories').findOne({
+        $or: [
+          { slug },
+          { id: slug },
+          { id: `cat_${slug}_${tenant}` },
+          { id: `cat_${slug}` },
+        ],
+      });
+      if (catDoc) {
+        return {
+          title: `${catDoc.name} Collection | Luxury Boutique`,
+          description: catDoc.description || `Shop ${catDoc.name} collections.`,
+        };
+      }
+    }
+  } catch {}
+
+  // 2. Check Category Service
   try {
     const catRes = await CategoryApiService.getCategoryBySlug(slug);
     if (catRes?.data) {
@@ -37,7 +84,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   } catch { }
 
-  // 2. Check CMS Page
+  // 3. Check CMS Page
   try {
     const page = await CmsApiService.getPageBySlug(slug);
     if (page) {
@@ -53,23 +100,59 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function DynamicSlugPage({ params }: PageProps) {
+export default async function DynamicSlugPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
+  const tenantSlug = await resolveTenant(searchParams);
 
-  // 1. Check if slug matches a Category (e.g. 'r', 'dresses', 'kurtis', 'co-ords', etc.)
-  let category = null;
+  // 1. Direct MongoDB lookup for category
+  let category: any = null;
   try {
-    const catRes = await CategoryApiService.getCategoryBySlug(slug);
-    if (catRes?.data) {
-      category = catRes.data;
-    } else {
-      // Check in all categories list
-      const allCats = await CategoryApiService.getCategories();
-      const found = allCats.data?.find((c) => c.slug === slug);
-      if (found) category = found;
+    const db = await getDatabase();
+    if (db) {
+      const catMatches = [
+        { slug },
+        { id: slug },
+        { id: `cat_${slug}_${tenantSlug}` },
+        { id: `cat_${slug}` },
+      ];
+
+      const catDoc = (await db.collection('categories').findOne({
+        $and: [
+          ...(tenantSlug && tenantSlug !== 'all' ? [{ $or: [{ tenantSlug }, { storeSlug: tenantSlug }, { tenantId: tenantSlug }, { tenantId: `store_${tenantSlug}` }] }] : []),
+          { $or: catMatches },
+        ],
+      })) || (await db.collection('categories').findOne({ $or: catMatches }));
+
+      if (catDoc) {
+        category = {
+          id: catDoc.id || catDoc._id.toString(),
+          name: catDoc.name,
+          slug: catDoc.slug || slug,
+          description: catDoc.description || '',
+          imageUrl: catDoc.imageUrl || '',
+          department: catDoc.department || 'women',
+          subcategories: catDoc.children || [],
+        };
+      }
     }
   } catch (err) {
-    console.warn(`[DynamicSlugPage] Category lookup for slug "${slug}" fallback:`, err);
+    console.warn(`[DynamicSlugPage] Direct DB category lookup for slug "${slug}" fallback:`, err);
+  }
+
+  // 2. Service fallback
+  if (!category) {
+    try {
+      const catRes = await CategoryApiService.getCategoryBySlug(slug);
+      if (catRes?.data) {
+        category = catRes.data;
+      } else {
+        const allCats = await CategoryApiService.getCategories();
+        const found = allCats.data?.find((c) => c.slug === slug);
+        if (found) category = found;
+      }
+    } catch (err) {
+      console.warn(`[DynamicSlugPage] Category lookup for slug "${slug}" fallback:`, err);
+    }
   }
 
   // Render Category Catalog View if category matches

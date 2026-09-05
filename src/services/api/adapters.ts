@@ -13,6 +13,7 @@ import { Product, ProductImage, ProductSize, ProductColor, Department } from '@/
 import { Category } from '@/types/category';
 import { Order, OrderStatus, TrackingStep, ShippingAddress, PaymentDetails } from '@/types/order';
 import { UserProfile, Address } from '@/types/auth';
+import { cleanCategorySlug } from '@/lib/tenant-config';
 
 /**
  * Maps a CMS Product response to the Storefront Product model.
@@ -135,8 +136,8 @@ export function mapCmsProductToStorefrontProduct(cms: any): Product {
     slug: cms.slug,
     sku: cms.sku || `JQT-${cms.id}`,
     department,
-    category: cms.category?.slug || (Array.isArray(cms.categoryIds) && cms.categoryIds[0] ? cms.categoryIds[0].replace(/^cat_/, "").replace(/_gever$|_jq-trends$/, "") : cms.categoryId) || 'all',
-    categoryName: cms.category?.name || cms.categoryName || (Array.isArray(cms.categoryIds) && cms.categoryIds[0] ? cleanCategoryLabel(cms.categoryIds[0]) : 'Collection'),
+    category: ((typeof cms.category === 'string' ? cms.category : cms.category?.slug) || cms.categorySlug || (Array.isArray(cms.categoryIds) && cms.categoryIds[0] ? cleanCategorySlug(cms.categoryIds[0]) : cms.categoryId) || '') as any,
+    categoryName: cms.categoryName || (typeof cms.category === 'object' ? cms.category?.name : undefined) || (typeof cms.category === 'string' ? cleanCategoryLabel(cms.category) : undefined) || (Array.isArray(cms.categoryIds) && cms.categoryIds[0] ? cleanCategoryLabel(cms.categoryIds[0]) : ''),
     price,
     compareAtPrice,
     discountPercent,
