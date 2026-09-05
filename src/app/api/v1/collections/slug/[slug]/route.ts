@@ -15,9 +15,14 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders() });
 }
 
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { slug: string } | Promise<{ slug: string }> }
+) {
   try {
-    const { slug } = params;
+    const resolvedParams = await params;
+    const rawSlug = resolvedParams?.slug;
+    const slug = decodeURIComponent(rawSlug || '').trim();
     const db = await getDatabase();
     if (db) {
       const col = await db.collection('collections').findOne({

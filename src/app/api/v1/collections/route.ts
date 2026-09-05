@@ -25,28 +25,43 @@ export async function GET(req: NextRequest) {
       req.headers.get('x-tenant') ||
       req.headers.get('X-Tenant-Slug');
 
-    const tenantSlug = rawTenant ? rawTenant.replace(/^store_/, '').trim().toLowerCase() : undefined;
+    const tenantSlug = rawTenant ? rawTenant.trim().toLowerCase() : undefined;
+    const cleanTenant = tenantSlug ? tenantSlug.replace(/^(store_|_)/, '').trim().toLowerCase() : undefined;
 
     const db = await getDatabase();
     if (db) {
       const collection = db.collection('collections');
 
       let query: Record<string, any> = {};
-      if (tenantSlug && tenantSlug !== 'all') {
+      if (cleanTenant && cleanTenant !== 'all') {
         query = {
           $or: [
             { tenantId: tenantSlug },
             { tenantId: `store_${tenantSlug}` },
-            { tenantId: new RegExp(tenantSlug, 'i') },
-            { storeSlug: tenantSlug },
+            { tenantId: cleanTenant },
+            { tenantId: `store_${cleanTenant}` },
+            { tenantId: new RegExp(cleanTenant, 'i') },
             { tenantSlug: tenantSlug },
+            { tenantSlug: cleanTenant },
+            { tenantSlug: new RegExp(cleanTenant, 'i') },
+            { storeSlug: tenantSlug },
+            { storeSlug: cleanTenant },
           ],
         };
       }
 
-      const docs = await collection.find(query).sort({ createdAt: -1 }).toArray();
-      const clean = docs.map(({ _id, ...rest }) => rest);
-      return NextResponse.json({ success: true, data: clean }, { headers: corsHeaders() });
+      let docs = await collection.find(query).sort({ createdAt: -1 }).toArray();
+
+      // If no tenant-specific collection found and looking for demo/all, fallback to all collections
+      if (docs.length === 0 && (!cleanTenant || cleanTenant === 'all' || cleanTenant === 'demo' || cleanTenant === 'jq-trends')) {
+        docs = await collection.find({}).sort({ createdAt: -1 }).toArray();
+      }
+
+      const clean = docs.map(({ _id, ...rest }) => ({
+        ...rest,
+        id: rest.id || _id?.toString(),
+      }));
+      return NextResponse.json({ success: true, data: clean, count: clean.length }, { headers: corsHeaders() });
     }
 
     return NextResponse.json({ success: true, data: [] }, { headers: corsHeaders() });

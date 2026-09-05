@@ -22,7 +22,7 @@ export function Navigation() {
     { id: 'nav_1', label: 'Women', url: '/women', isVisible: true },
     { id: 'nav_2', label: 'Kids', url: '/kids', isVisible: true },
     { id: 'nav_3', label: 'New In', url: '/new-arrivals', isVisible: true },
-    { id: 'nav_4', label: 'Collections', url: '/collections/festive-elegance', isVisible: true },
+    { id: 'nav_4', label: 'Collections', url: '/collections', isVisible: true },
     { id: 'nav_5', label: 'Sale', url: '/sale', isVisible: true },
   ]);
 
@@ -39,7 +39,7 @@ export function Navigation() {
         setCategories(res.data);
       }
     });
-    CategoryService.getCollections().then((res) => {
+    CategoryService.getCollections(t.slug).then((res) => {
       if (res.data && res.data.length > 0) {
         setCollections(res.data);
       }
@@ -340,38 +340,54 @@ export function Navigation() {
               className="relative py-4"
               onMouseEnter={() => setActiveMenu('collections')}
             >
-              <button
-                type="button"
+              <Link
+                href={formatTenantHref('/collections', tenant?.slug)}
                 className={`transition-colors uppercase tracking-widest font-semibold flex items-center gap-1 ${
                   activeMenu === 'collections' ? 'text-[#B77A68]' : 'hover:text-[#B77A68]'
                 }`}
               >
                 {item.label}
-              </button>
+              </Link>
 
               {activeMenu === 'collections' && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-[480px] bg-[#FFFDFC] border border-[#E8DED8] shadow-2xl p-5 z-50 animate-in fade-in slide-in-from-top-2 duration-200 space-y-3">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#B77A68] pb-1 border-b border-[#E8DED8]">
-                    Curated Studio Lookbooks
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[#B77A68] pb-1 border-b border-[#E8DED8] flex items-center justify-between">
+                    <span>Curated Studio Lookbooks</span>
+                    <span className="text-[9px] text-[#888888] font-normal">{collections.length} Lookbooks</span>
                   </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    {collections.map((col) => (
-                      <Link
-                        key={col.id}
-                        href={formatTenantHref(`/collections/${col.slug}`)}
-                        className="p-2.5 bg-[#FAF6F2] hover:bg-[#F3ECE6] transition-colors flex items-center justify-between group"
-                      >
-                        <div>
-                          <h5 className="text-xs font-bold font-serif text-[#111111] normal-case">
-                            {col.name}
-                          </h5>
-                          <p className="text-[11px] text-[#777777] font-sans normal-case line-clamp-1">
-                            {col.description}
-                          </p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-[#777777] group-hover:text-[#B77A68] group-hover:translate-x-1 transition-all shrink-0" />
-                      </Link>
-                    ))}
+                  <div className="grid grid-cols-1 gap-2 max-h-72 overflow-y-auto pr-1">
+                    {collections.length > 0 ? (
+                      collections.map((col) => (
+                        <Link
+                          key={col.id}
+                          href={formatTenantHref(`/collections/${col.slug}`, tenant?.slug)}
+                          className="p-2.5 bg-[#FAF6F2] hover:bg-[#F3ECE6] transition-colors flex items-center justify-between group rounded-lg"
+                        >
+                          <div>
+                            <h5 className="text-xs font-bold font-serif text-[#111111] normal-case">
+                              {col.name}
+                            </h5>
+                            <p className="text-[11px] text-[#777777] font-sans normal-case line-clamp-1">
+                              {col.description || 'Curated seasonal lookbook & boutique assortment.'}
+                            </p>
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-[#777777] group-hover:text-[#B77A68] group-hover:translate-x-1 transition-all shrink-0" />
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="py-4 text-center text-xs text-[#777777]">
+                        Explore our seasonal edits and handcrafted silhouettes.
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-2 border-t border-[#E8DED8] flex items-center justify-between text-[11px]">
+                    <Link
+                      href={formatTenantHref('/collections', tenant?.slug)}
+                      className="font-bold text-[#B77A68] hover:underline flex items-center gap-1.5"
+                    >
+                      <span>Explore All Collections &amp; Lookbooks</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 </div>
               )}

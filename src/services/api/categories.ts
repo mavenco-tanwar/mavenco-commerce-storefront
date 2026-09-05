@@ -59,9 +59,18 @@ export class CategoryApiService {
   /**
    * Retrieves lookbook collections strictly from API.
    */
-  public static async getCollections(): Promise<{ data: Collection[] }> {
+  public static async getCollections(tenant?: string): Promise<{ data: Collection[] }> {
     try {
-      const res = await apiClient.get<any[]>('/api/v1/collections');
+      let resolvedTenant = tenant;
+      if (!resolvedTenant && typeof window !== 'undefined') {
+        const storeMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+        if (storeMatch && storeMatch[2]) {
+          resolvedTenant = storeMatch[2];
+        }
+      }
+
+      const query = resolvedTenant ? `?tenant=${encodeURIComponent(resolvedTenant)}` : '';
+      const res = await apiClient.get<any[]>(`/api/v1/collections${query}`);
       if (res.data && res.data.length > 0) {
         const collections: Collection[] = res.data.map((c: any) => ({
           id: c.id,
@@ -69,32 +78,35 @@ export class CategoryApiService {
           slug: c.slug,
           subtitle: 'Studio Exclusive Lookbook',
           description: c.description || '',
-          bannerImage: c.imageUrl || '',
+          bannerImage: c.imageUrl || c.bannerImage || '',
           badge: 'Lookbook',
           productIds: Array.isArray(c.productIds) ? c.productIds : [],
         }));
 
-        this.cachedCollections = collections;
         return { data: collections };
       }
     } catch (err) {
       console.warn('[CategoryApiService] Collection API fetch error:', err);
     }
 
-    if (this.cachedCollections) {
-      return { data: this.cachedCollections };
-    }
-
-    // Zero fallback rule: Return empty list
     return { data: [] };
   }
 
   /**
    * Retrieves a single collection by slug strictly from API.
    */
-  public static async getCollectionBySlug(slug: string): Promise<{ data: Collection | null }> {
+  public static async getCollectionBySlug(slug: string, tenant?: string): Promise<{ data: Collection | null }> {
     try {
-      const res = await apiClient.get<any>(`/api/v1/collections/slug/${encodeURIComponent(slug)}`);
+      let resolvedTenant = tenant;
+      if (!resolvedTenant && typeof window !== 'undefined') {
+        const storeMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+        if (storeMatch && storeMatch[2]) {
+          resolvedTenant = storeMatch[2];
+        }
+      }
+
+      const query = resolvedTenant ? `?tenant=${encodeURIComponent(resolvedTenant)}` : '';
+      const res = await apiClient.get<any>(`/api/v1/collections/slug/${encodeURIComponent(slug)}${query}`);
       if (res.data) {
         const c = res.data;
         return {
@@ -104,7 +116,7 @@ export class CategoryApiService {
             slug: c.slug,
             subtitle: 'Studio Exclusive Lookbook',
             description: c.description || '',
-            bannerImage: c.imageUrl || '',
+            bannerImage: c.imageUrl || c.bannerImage || '',
             badge: 'Lookbook',
             productIds: Array.isArray(c.productIds) ? c.productIds : [],
           },

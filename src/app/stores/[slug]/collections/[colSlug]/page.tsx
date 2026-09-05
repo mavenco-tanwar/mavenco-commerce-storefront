@@ -1,49 +1,48 @@
 import React from 'react';
-import { CategoryApiService } from '@/services/api/categories';
-import { ProductApiService } from '@/services/api/products';
-import { CollectionListingPage } from '@/components/collection/CollectionListingPage';
-
 import { getDatabase } from '@/lib/mongodb';
+import { ProductApiService } from '@/services/api/products';
+import { CategoryApiService } from '@/services/api/categories';
+import { CollectionListingPage } from '@/components/collection/CollectionListingPage';
 import { mapCmsProductToStorefrontProduct } from '@/services/api/adapters';
 import { formatTenantHref } from '@/lib/tenant-config';
 
-interface CollectionPageProps {
-  params: Promise<{ slug: string }>;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+interface TenantCollectionLookbookPageProps {
+  params: Promise<{ slug: string; colSlug: string }>;
 }
 
-export async function generateMetadata({ params }: CollectionPageProps) {
+export async function generateMetadata({ params }: TenantCollectionLookbookPageProps) {
   const resolved = await params;
-  const rawSlug = decodeURIComponent(resolved.slug || '').trim();
+  const rawColSlug = decodeURIComponent(resolved.colSlug || '').trim();
 
   try {
     const db = await getDatabase();
     if (db) {
       const col = await db.collection('collections').findOne({
-        $or: [{ slug: rawSlug }, { id: rawSlug }],
+        $or: [{ slug: rawColSlug }, { id: rawColSlug }],
       });
       if (col) {
         const title = col.title || col.name || 'Lookbook Collection';
         return {
-          title: `${title} Lookbook | Boutique Atelier`,
-          description: col.description || 'Explore our seasonal lookbook collection.',
+          title: `${title} | Boutique Lookbook`,
+          description: col.description || 'Explore our curated seasonal assortment of signature boutique garments.',
         };
       }
     }
   } catch {}
 
-  const colRes = await CategoryApiService.getCollectionBySlug(rawSlug);
-  const col = colRes.data;
-
-  if (!col) return { title: 'Designer Collection | Boutique Atelier' };
   return {
-    title: `${col.name} Lookbook | Boutique Atelier`,
-    description: col.description || 'Explore our seasonal lookbook collection.',
+    title: `${rawColSlug.replace(/-/g, ' ').toUpperCase()} | Lookbook Collection`,
+    description: 'Explore our curated seasonal assortment of signature boutique garments.',
   };
 }
 
-export default async function CollectionPage({ params }: CollectionPageProps) {
+export default async function TenantCollectionLookbookPage({ params }: TenantCollectionLookbookPageProps) {
   const resolved = await params;
-  const rawSlug = decodeURIComponent(resolved.slug || '').trim();
+  const tenantSlug = (resolved.slug || 'demo').toLowerCase().trim();
+  const rawColSlug = decodeURIComponent(resolved.colSlug || '').trim();
 
   let col: any = null;
   let productsToRender: any[] = [];
@@ -54,11 +53,11 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
       const { ObjectId } = await import('mongodb');
       let objId = null;
       try {
-        if (ObjectId.isValid(rawSlug) && rawSlug.length === 24) objId = new ObjectId(rawSlug);
+        if (ObjectId.isValid(rawColSlug) && rawColSlug.length === 24) objId = new ObjectId(rawColSlug);
       } catch {}
 
       col = await db.collection('collections').findOne({
-        $or: [{ slug: rawSlug }, { id: rawSlug }, ...(objId ? [{ _id: objId }] : [])],
+        $or: [{ slug: rawColSlug }, { id: rawColSlug }, ...(objId ? [{ _id: objId }] : [])],
       });
 
       if (col) {
@@ -85,17 +84,17 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
       }
     }
   } catch (err) {
-    console.warn('[CollectionPage] Direct DB fetch error:', err);
+    console.warn('[TenantCollectionLookbookPage] Direct DB fetch error:', err);
   }
 
-  // Fallback to API service if not found in direct DB
+  // Fallback to API service
   if (!col) {
-    const colRes = await CategoryApiService.getCollectionBySlug(rawSlug);
+    const colRes = await CategoryApiService.getCollectionBySlug(rawColSlug, tenantSlug);
     col = colRes.data;
   }
 
-  const collectionTitle = col ? (col.title || col.name) : rawSlug.replace(/-/g, ' ').toUpperCase();
-  const collectionDesc = col ? (col.description || col.subtitle || 'Explore our curated seasonal assortment of bespoke luxury garments.') : 'Explore our curated seasonal assortment of bespoke luxury garments.';
+  const collectionTitle = col ? (col.title || col.name) : rawColSlug.replace(/-/g, ' ').toUpperCase();
+  const collectionDesc = col ? (col.description || col.subtitle || 'Explore our curated seasonal assortment of signature boutique garments.') : 'Explore our curated seasonal assortment of signature boutique garments.';
   const bannerImg = col ? (col.imageUrl || col.bannerImage || col.image) : undefined;
 
   if (productsToRender.length === 0 && col && Array.isArray(col.productIds) && col.productIds.length > 0) {
@@ -103,6 +102,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
       const prodRes = await ProductApiService.getProducts({
         ids: col.productIds.join(','),
         limit: 50,
+        tenant: tenantSlug,
       } as any);
       productsToRender = prodRes.data?.products || [];
     } catch {}
@@ -110,7 +110,7 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
 
   if (productsToRender.length === 0) {
     try {
-      const prodRes = await ProductApiService.getProducts({ category: rawSlug, limit: 30 });
+      const prodRes = await ProductApiService.getProducts({ category: rawColSlug, limit: 30, tenant: tenantSlug });
       productsToRender = prodRes.data?.products || [];
     } catch {}
   }
@@ -122,7 +122,8 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
       collectionDescription={collectionDesc}
       collectionBannerImage={bannerImg}
       breadcrumbs={[
-        { label: 'Collections', href: formatTenantHref('/collections') },
+        { label: 'Store', href: formatTenantHref('/', tenantSlug) },
+        { label: 'Collections', href: formatTenantHref('/collections', tenantSlug) },
         { label: collectionTitle },
       ]}
       availableCategories={[

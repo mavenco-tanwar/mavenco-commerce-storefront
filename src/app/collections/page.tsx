@@ -5,6 +5,7 @@ import { getDatabase } from '@/lib/mongodb';
 import { mapCmsProductToStorefrontProduct } from '@/services/api/adapters';
 import { headers, cookies } from 'next/headers';
 import { Product } from '@/types/product';
+import { CollectionsShowcase } from '@/components/home/CollectionsShowcase';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -109,12 +110,21 @@ export default async function AllCollectionsPage({ searchParams }: AllCollection
   }
 
   return (
-    <CollectionListingPage
-      initialProducts={products}
-      collectionTitle="All Boutique Collections"
-      collectionDescription="Discover our complete catalog of handcrafted silhouettes engineered for timeless grace."
-      breadcrumbs={[{ label: 'All Collections' }]}
-      availableCategories={availableCategories}
-    />
+    <div className="flex flex-col">
+      <CollectionsShowcase
+        customTitle="Collections & Lookbooks"
+        customSubtitle="Curate seasonal edits, attach lookbook products, and organize fashion stories for your boutique."
+        customBadge="CURATED ATELIER STORIES"
+        tenantSlug={tenantSlug}
+      />
+
+      <CollectionListingPage
+        initialProducts={products}
+        collectionTitle="All Boutique Collections"
+        collectionDescription="Discover our complete catalog of handcrafted silhouettes engineered for timeless grace."
+        breadcrumbs={[{ label: 'All Collections' }]}
+        availableCategories={availableCategories}
+      />
+    </div>
   );
 }

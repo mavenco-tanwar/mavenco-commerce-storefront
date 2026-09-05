@@ -15,6 +15,7 @@ import { InstagramFeed } from './InstagramFeed';
 import { NewsletterSection } from './NewsletterSection';
 import { PromotionalBanner } from './PromotionalBanner';
 import { ValueProps } from './ValueProps';
+import { CollectionsShowcase } from './CollectionsShowcase';
 
 interface DynamicSectionRendererProps {
   sections?: CmsHomepageSection[];
@@ -259,6 +260,25 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
               />
             );
 
+          case 'collections':
+          case 'collection':
+          case 'lookbook':
+          case 'lookbooks':
+          case 'collections-grid':
+          case 'collections_grid':
+          case 'collections_showcase':
+          case 'curated-collections':
+            return (
+              <CollectionsShowcase
+                key={section.id}
+                customTitle={title}
+                customSubtitle={subtitle}
+                customBadge={badge}
+                customCollections={sData.collectionsList || sData.collections || sData.items}
+                tenantSlug={tenantSlug}
+              />
+            );
+
           case 'divider':
             return (
               <div key={section.id} className="max-w-7xl mx-auto px-6 py-4">
@@ -270,6 +290,19 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
             return null;
         }
       })}
+
+      {/* Auto-render Collections & Lookbooks showcase if not already explicitly added in CMS layout */}
+      {!activeSections.some(
+        (sec: any) =>
+          sec.type === 'collections' ||
+          sec.type === 'collection' ||
+          sec.type === 'lookbook' ||
+          sec.type === 'lookbooks' ||
+          sec.type === 'collections-grid' ||
+          sec.type === 'collections_grid' ||
+          sec.type === 'collections_showcase' ||
+          sec.type === 'curated-collections'
+      ) && <CollectionsShowcase key="sec_auto_collections" tenantSlug={tenantSlug} />}
     </>
   );
 }
