@@ -8,6 +8,7 @@ import { PlatformNavbar } from './PlatformNavbar';
 import { PlatformFooter } from './PlatformFooter';
 import { ToastContainer } from './ToastContainer';
 import { MiniCartDrawer } from '@/components/cart/MiniCartDrawer';
+import { resolveActiveTenantSlug } from '@/lib/tenant-config';
 
 export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/';
@@ -43,11 +44,7 @@ export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }
   }
 
   // Determine active tenant slug deterministically on SSR and client
-  const activeTenantSlug =
-    (pathname.startsWith('/stores/') || pathname.startsWith('/tenant/')
-      ? pathname.split('/')[2]?.toLowerCase()
-      : tenantQuery?.toLowerCase()) ||
-    'demo';
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams);
 
   // Otherwise, render the dynamic merchant store header and layout
   return (

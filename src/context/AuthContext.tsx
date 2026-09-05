@@ -57,6 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await AuthService.login({ email, password: password || 'demo123' });
         setUser(res.user);
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(res.user));
+        if (res.user.tenantSlug) {
+          localStorage.setItem('jq_active_tenant', res.user.tenantSlug);
+          if (typeof document !== 'undefined') {
+            document.cookie = `jq_active_tenant=${res.user.tenantSlug}; path=/; max-age=31536000`;
+          }
+        }
         showToast('Welcome Back!', `Signed in as ${res.user.name}`, 'success');
         return true;
       } catch (err: any) {
@@ -76,7 +82,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const res = await AuthService.register({ name, email, phone, password: password || 'welcome123' });
         setUser(res.user);
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(res.user));
-        showToast('Account Created!', `Welcome to JQ Trends, ${name}`, 'success');
+        if (res.user.tenantSlug) {
+          localStorage.setItem('jq_active_tenant', res.user.tenantSlug);
+          if (typeof document !== 'undefined') {
+            document.cookie = `jq_active_tenant=${res.user.tenantSlug}; path=/; max-age=31536000`;
+          }
+        }
+        showToast('Account Created!', `Welcome, ${name}`, 'success');
         return true;
       } catch (err: any) {
         showToast('Registration Error', err.message || 'Unable to create account', 'error');

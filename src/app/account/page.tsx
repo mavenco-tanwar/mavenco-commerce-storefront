@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import {
   Package,
   MapPin,
@@ -31,7 +31,7 @@ import {
   Bell,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { formatTenantHref } from '@/lib/tenant-config';
+import { formatTenantHref, resolveActiveTenantSlug } from '@/lib/tenant-config';
 import { useWishlist } from '@/context/WishlistContext';
 import { useToast } from '@/context/ToastContext';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
@@ -114,6 +114,19 @@ function AccountDashboardContent() {
   const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
 
   const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, user?.tenantSlug);
+
+  // If user belongs to an active tenant store and landed on un-scoped /account,
+  // transparently preserve store context in URL (/stores/[tenant]/account)
+  useEffect(() => {
+    if (activeTenantSlug && activeTenantSlug !== 'demo' && !pathname.startsWith('/stores/')) {
+      const q = searchParams.toString();
+      router.replace(`/stores/${activeTenantSlug}/account${q ? `?${q}` : ''}`);
+    }
+  }, [activeTenantSlug, pathname, router, searchParams]);
+
   const { wishlistCount } = useWishlist();
   const { showToast } = useToast();
   const { addItem } = useCart();
@@ -121,14 +134,18 @@ function AccountDashboardContent() {
   const loadData = async () => {
     setIsLoadingOrders(true);
     try {
-      const email = user?.email || 'aanya.kapoor@example.com';
+      const email = user?.email;
+      if (!email) {
+        setIsLoadingOrders(false);
+        return;
+      }
       // Load orders
-      const res = await fetch(`/api/v1/customer/orders?tenant=lumina&email=${encodeURIComponent(email)}`);
+      const res = await fetch(`/api/v1/customer/orders?tenant=${encodeURIComponent(activeTenantSlug)}&email=${encodeURIComponent(email)}`);
       const json = await res.json();
       if (json.success && json.data) setOrders(json.data);
 
       // Load returns
-      const retRes = await fetch(`/api/v1/customer/returns?tenant=lumina&email=${encodeURIComponent(email)}`);
+      const retRes = await fetch(`/api/v1/customer/returns?tenant=${encodeURIComponent(activeTenantSlug)}&email=${encodeURIComponent(email)}`);
       const retJson = await retRes.json();
       if (retJson.success && retJson.data) setReturns(retJson.data);
     } catch (err) {
@@ -140,7 +157,7 @@ function AccountDashboardContent() {
 
   useEffect(() => {
     loadData();
-  }, [user?.email]);
+  }, [user?.email, activeTenantSlug]);
 
   const handlePrintInvoice = (order: OrderRecord) => {
     const printWindow = window.open('', '_blank');
@@ -273,7 +290,7 @@ function AccountDashboardContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenant: 'lumina',
+          tenant: activeTenantSlug,
           orderNumber: returnOrder.orderNumber,
           orderId: returnOrder.id,
           customerName: user?.name || returnOrder.shippingAddress?.fullName || 'Customer',
@@ -341,7 +358,7 @@ function AccountDashboardContent() {
 
           <div className="flex items-center gap-3 self-start sm:self-auto">
             <Link
-              href={formatTenantHref('/wishlist')}
+              href={formatTenantHref('/wishlist', activeTenantSlug)}
               className="text-xs px-4 py-2.5 bg-white border border-[#EFE8E2] text-slate-900 font-bold rounded-xl flex items-center gap-1.5 hover:border-rose-300 transition-colors shadow-2xs"
             >
               <Heart className="w-4 h-4 text-rose-600" />
@@ -505,7 +522,7 @@ function AccountDashboardContent() {
                     <h3 className="text-sm font-bold text-slate-900">No Orders Placed Yet</h3>
                     <p className="text-xs text-slate-500">Explore our luxury fashion collections to place your first order.</p>
                     <Link
-                      href={formatTenantHref('/collections')}
+                      href={formatTenantHref('/collections', activeTenantSlug)}
                       className="inline-block px-5 py-2.5 rounded-xl bg-slate-950 text-white text-xs font-bold uppercase tracking-wider hover:bg-rose-600 transition-colors"
                     >
                       Start Shopping

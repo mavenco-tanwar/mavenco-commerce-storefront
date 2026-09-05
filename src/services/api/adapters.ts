@@ -344,6 +344,8 @@ export function mapCmsCustomerToStorefrontUser(cms: any): UserProfile {
     name: `${cms.firstName || ''} ${cms.lastName || ''}`.trim() || 'Valued Customer',
     email: cms.email,
     phone: cms.phone || '',
+    tenantSlug: cms.tenantSlug || cms.storeSlug || '',
+    storeSlug: cms.storeSlug || cms.tenantSlug || '',
     defaultAddressId: addresses[0]?.id || 'addr_1',
     savedAddresses: addresses.map((a: any, idx: number) => ({
       id: a.id || `addr_${idx + 1}`,

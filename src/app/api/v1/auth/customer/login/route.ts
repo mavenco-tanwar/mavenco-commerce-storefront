@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
       tenantSlug: safeCustomer.tenantSlug || tenantSlug,
     });
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         data: {
           token,
@@ -127,6 +127,8 @@ export async function POST(req: NextRequest) {
       },
       { headers: corsHeaders() }
     );
+    response.cookies.set('jq_active_tenant', safeCustomer.tenantSlug || tenantSlug, { path: '/' });
+    return response;
   } catch (error: any) {
     console.error('[CustomerLogin] Error:', error);
     return NextResponse.json(

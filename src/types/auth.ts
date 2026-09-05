@@ -7,6 +7,8 @@ export interface UserProfile {
   phone: string;
   avatarUrl?: string;
   defaultAddressId?: string;
+  tenantSlug?: string;
+  storeSlug?: string;
   savedAddresses: (ShippingAddress & { id: string })[];
   createdAt?: string;
 }

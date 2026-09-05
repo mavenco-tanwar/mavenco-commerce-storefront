@@ -1,30 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Mail, Lock, Sparkles, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
-import { formatTenantHref } from '@/lib/tenant-config';
+import { formatTenantHref, resolveActiveTenantSlug } from '@/lib/tenant-config';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const success = await login(email, password);
-    if (success) router.push('/account');
+    if (success) {
+      router.push(formatTenantHref('/account', activeTenantSlug));
+    }
   };
 
   const handleDemoLogin = async () => {
     setEmail('aanya.kapoor@example.com');
     setPassword('••••••••');
     const success = await login('aanya.kapoor@example.com', 'demo123');
-    if (success) router.push('/account');
+    if (success) {
+      router.push(formatTenantHref('/account', activeTenantSlug));
+    }
   };
 
   return (
@@ -113,11 +120,28 @@ export default function LoginPage() {
 
         <div className="pt-4 border-t border-[#E8DED8] text-center text-xs text-[#777777]">
           <span>Don&apos;t have an account yet? </span>
-          <Link href={formatTenantHref('/register')} className="font-bold text-[#111111] hover:text-[#B77A68] underline underline-offset-2">
+          <Link
+            href={formatTenantHref('/register', activeTenantSlug)}
+            className="font-bold text-[#111111] hover:text-[#B77A68] underline underline-offset-2"
+          >
             Create an Account
           </Link>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[75vh] flex items-center justify-center py-12 px-4 bg-[#FAF6F2]">
+          <div className="w-8 h-8 border-2 border-[#B77A68] border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

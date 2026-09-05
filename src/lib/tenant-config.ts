@@ -440,6 +440,32 @@ export function resolveActiveTenantSlug(
       return q.toLowerCase().trim();
     }
   }
+  if (typeof window !== 'undefined') {
+    try {
+      const cookies = document.cookie.split(';');
+      for (const cookie of cookies) {
+        const [name, val] = cookie.trim().split('=');
+        if (name === 'jq_active_tenant' && val && val !== 'all' && val !== 'demo') {
+          return val.toLowerCase().trim();
+        }
+      }
+    } catch {}
+    try {
+      const stored = localStorage.getItem('jq_active_tenant') || localStorage.getItem('jq_saas_active_tenant_slug');
+      if (stored && stored !== 'all' && stored !== 'demo') {
+        return stored.toLowerCase().trim();
+      }
+    } catch {}
+    try {
+      const rawUser = localStorage.getItem('jq_trends_auth_user_v2');
+      if (rawUser) {
+        const parsed = JSON.parse(rawUser);
+        if (parsed?.tenantSlug && parsed.tenantSlug !== 'all' && parsed.tenantSlug !== 'demo') {
+          return parsed.tenantSlug.toLowerCase().trim();
+        }
+      }
+    } catch {}
+  }
   return 'demo';
 }
 
@@ -469,6 +495,37 @@ export function formatTenantHref(href?: string, explicitTenant?: string): string
     } else {
       const qTenant = new URLSearchParams(window.location.search).get('tenant');
       if (qTenant) tenant = qTenant.toLowerCase().trim();
+    }
+    if (!tenant) {
+      try {
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+          const [name, val] = cookie.trim().split('=');
+          if (name === 'jq_active_tenant' && val && val !== 'all' && val !== 'demo') {
+            tenant = val.toLowerCase().trim();
+            break;
+          }
+        }
+      } catch {}
+    }
+    if (!tenant) {
+      try {
+        const stored = localStorage.getItem('jq_active_tenant') || localStorage.getItem('jq_saas_active_tenant_slug');
+        if (stored && stored !== 'all' && stored !== 'demo') {
+          tenant = stored.toLowerCase().trim();
+        }
+      } catch {}
+    }
+    if (!tenant) {
+      try {
+        const rawUser = localStorage.getItem('jq_trends_auth_user_v2');
+        if (rawUser) {
+          const parsed = JSON.parse(rawUser);
+          if (parsed?.tenantSlug && parsed.tenantSlug !== 'all' && parsed.tenantSlug !== 'demo') {
+            tenant = parsed.tenantSlug.toLowerCase().trim();
+          }
+        }
+      } catch {}
     }
   }
 
