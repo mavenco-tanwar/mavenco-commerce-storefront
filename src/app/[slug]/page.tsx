@@ -124,6 +124,14 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
       })) || (await db.collection('categories').findOne({ $or: catMatches }));
 
       if (catDoc) {
+        // Query child subcategories that have this category as parent
+        const childCats = await db.collection('categories').find({
+          $and: [
+            ...(tenantSlug && tenantSlug !== 'all' ? [{ $or: [{ tenantSlug }, { storeSlug: tenantSlug }, { tenantId: tenantSlug }, { tenantId: `store_${tenantSlug}` }] }] : []),
+            { parentId: { $in: [catDoc.id, catDoc.slug, `cat_${catDoc.slug}_${tenantSlug}`, `cat_${catDoc.slug}`] } },
+          ],
+        }).toArray();
+
         category = {
           id: catDoc.id || catDoc._id.toString(),
           name: catDoc.name,
@@ -131,7 +139,9 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
           description: catDoc.description || '',
           imageUrl: catDoc.imageUrl || '',
           department: catDoc.department || 'women',
-          subcategories: catDoc.children || [],
+          subcategories: (childCats && childCats.length > 0)
+            ? childCats.map((s) => ({ slug: s.slug || s.id, name: s.name, itemCount: s.productCount || 12 }))
+            : (catDoc.children || []),
         };
       }
     }

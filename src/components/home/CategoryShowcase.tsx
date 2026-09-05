@@ -77,7 +77,10 @@ export function CategoryShowcase({
 }: CategoryShowcaseProps = {}) {
   const [categories, setCategories] = useState<CategoryItem[]>(() => {
     if (customCategories && Array.isArray(customCategories) && customCategories.length > 0) {
-      return customCategories;
+      const depts = customCategories.filter(
+        (cat: any) => !cat.parentId || cat.parentId === '' || cat.parentId === 'none' || cat.parentId === null
+      );
+      return depts.length > 0 ? depts : customCategories;
     }
     return [];
   });
@@ -86,7 +89,10 @@ export function CategoryShowcase({
   useEffect(() => {
     // 1. If explicit custom categories are configured in CMS Visual Studio, prioritize them
     if (customCategories && Array.isArray(customCategories) && customCategories.length > 0) {
-      setCategories(customCategories);
+      const depts = customCategories.filter(
+        (cat: any) => !cat.parentId || cat.parentId === '' || cat.parentId === 'none' || cat.parentId === null
+      );
+      setCategories(depts.length > 0 ? depts : customCategories);
       setIsLoaded(true);
       return;
     }
@@ -106,12 +112,17 @@ export function CategoryShowcase({
       return;
     }
 
-    // 3. Dynamically fetch the store's real categories from MongoDB API
-    fetch(`/api/v1/categories?tenant=${encodeURIComponent(effectiveSlug)}`)
+    // 3. Dynamically fetch the store's real categories from MongoDB API (only top-level departments)
+    fetch(`/api/v1/categories?tenant=${encodeURIComponent(effectiveSlug)}&rootOnly=true`)
       .then((r) => r.json())
       .then((res) => {
         if (res && Array.isArray(res.data) && res.data.length > 0) {
-          const mapped: CategoryItem[] = res.data.map((cat: any) => ({
+          // Filter to ensure only top-level departments without parentId are displayed
+          const rootDepts = res.data.filter(
+            (cat: any) => !cat.parentId || cat.parentId === '' || cat.parentId === 'none' || cat.parentId === null
+          );
+          const toDisplay = rootDepts.length > 0 ? rootDepts : res.data;
+          const mapped: CategoryItem[] = toDisplay.map((cat: any) => ({
             id: cat.id || cat.slug,
             title: cat.name || cat.title || 'Category',
             tagline: cat.description || cat.tagline || 'Explore Collection',

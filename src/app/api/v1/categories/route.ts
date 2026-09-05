@@ -57,6 +57,17 @@ export async function GET(req: NextRequest) {
         query.department = department;
       }
 
+      if (searchParams.get('rootOnly') === 'true' || searchParams.get('departmentsOnly') === 'true') {
+        const rootConditions = [
+          { parentId: null },
+          { parentId: '' },
+          { parentId: 'none' },
+          { parentId: { $exists: false } },
+        ];
+        query.$and = [{ $or: tenantMatchConditions }, { $or: rootConditions }];
+        delete query.$or;
+      }
+
       const docs = await collection
         .find(query)
         .sort({ displayOrder: 1 })
