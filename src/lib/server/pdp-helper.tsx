@@ -8,6 +8,7 @@ import { getDatabase } from '@/lib/mongodb';
 import { getDefaultPdpConfig } from '@/lib/pdp-presets';
 import { resolveTenant, cleanCategorySlug } from '@/lib/tenant-config';
 import { ProductReviewsAndQA } from '@/components/pdp/ProductReviewsAndQA';
+import { mapCmsProductToStorefrontProduct } from '@/services/api/adapters';
 
 export async function getPdpTemplateConfig(tenantSlug: string = 'lumina') {
   try {
@@ -209,9 +210,86 @@ export async function RenderProductDetailPage({
 
   let relatedData: any[] = [];
   try {
-    const relatedRes = await ProductService.getRelatedProducts(rawProduct.id, 4);
-    relatedData = relatedRes.data || [];
-  } catch {}
+    const db = await getDatabase();
+    const resolvedSlug = (activeTenant.slug || activeTenantSlug || '').toLowerCase().trim();
+
+    if (db && resolvedSlug && resolvedSlug !== 'all') {
+      const tenantMatchConditions = [
+        { tenantSlug: resolvedSlug },
+        { storeSlug: resolvedSlug },
+        { tenantId: resolvedSlug },
+        { tenantId: `store_${resolvedSlug}` },
+      ];
+
+      const excludeSelf = {
+        id: { $ne: rawProduct.id },
+        slug: { $ne: rawProduct.slug },
+        status: { $in: ['published', 'active'] },
+      };
+
+      // 1. Try products from the same category first
+      const cleanCat = cleanCategorySlug(normalized.category || rawProduct.category);
+      let relatedDocs: any[] = [];
+
+      if (cleanCat && cleanCat !== 'collection' && cleanCat !== 'all') {
+        relatedDocs = await db
+          .collection('products')
+          .find({
+            $and: [
+              { $or: tenantMatchConditions },
+              excludeSelf,
+              {
+                $or: [
+                  { category: cleanCat },
+                  { categorySlug: cleanCat },
+                  { department: cleanCat },
+                  { categoryIds: cleanCat },
+                  { categoryIds: `cat_${cleanCat}_${resolvedSlug}` },
+                  { department: `cat_${cleanCat}_${resolvedSlug}` },
+                ],
+              },
+            ],
+          })
+          .limit(4)
+          .toArray();
+      }
+
+      // 2. If fewer than 4 items, backfill with other products strictly from the SAME tenant
+      if (relatedDocs.length < 4) {
+        const existingIds = new Set(relatedDocs.map((d) => d.id || d.slug));
+        const moreDocs = await db
+          .collection('products')
+          .find({
+            $and: [
+              { $or: tenantMatchConditions },
+              excludeSelf,
+              { id: { $nin: Array.from(existingIds) } },
+              { slug: { $nin: Array.from(existingIds) } },
+            ],
+          })
+          .limit(4 - relatedDocs.length)
+          .toArray();
+
+        relatedDocs = [...relatedDocs, ...moreDocs];
+      }
+
+      relatedData = relatedDocs.map((doc) => {
+        const { _id, ...clean } = doc;
+        return mapCmsProductToStorefrontProduct({ ...clean, id: clean.id || _id.toString() });
+      });
+    }
+
+    // Only fallback for flagship reference demo store
+    if (
+      relatedData.length === 0 &&
+      (!resolvedSlug || resolvedSlug === 'demo' || resolvedSlug === 'jq-trends')
+    ) {
+      const relatedRes = await ProductService.getRelatedProducts(rawProduct.id, 4, resolvedSlug);
+      relatedData = relatedRes.data || [];
+    }
+  } catch (err) {
+    console.warn('[RenderProductDetailPage] Failed to load tenant related products:', err);
+  }
 
   const jsonLd = generateProductJsonLd(normalized);
 

@@ -218,9 +218,28 @@ export class ProductApiService {
   /**
    * Retrieves related products for a given product ID.
    */
-  public static async getRelatedProducts(productId: string, limit: number = 4, tenant?: string): Promise<{ data: Product[] }> {
-    const res = await this.getProducts({ limit: 10, tenant });
-    const related = res.data.products.filter((p) => p.id !== productId);
+  public static async getRelatedProducts(
+    productId: string,
+    limit: number = 4,
+    tenant?: string,
+    category?: string
+  ): Promise<{ data: Product[] }> {
+    let resolvedTenant = tenant;
+    if (!resolvedTenant && typeof window !== 'undefined') {
+      const storeMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+      if (storeMatch && storeMatch[2]) {
+        resolvedTenant = storeMatch[2];
+      }
+    }
+
+    const res = await this.getProducts({ limit: 12, tenant: resolvedTenant, category });
+    let related = res.data.products.filter((p) => p.id !== productId && p.slug !== productId);
+
+    if (related.length === 0 && category) {
+      const allTenantRes = await this.getProducts({ limit: 12, tenant: resolvedTenant });
+      related = allTenantRes.data.products.filter((p) => p.id !== productId && p.slug !== productId);
+    }
+
     return { data: related.slice(0, limit) };
   }
 }

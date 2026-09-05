@@ -16,7 +16,7 @@ import {
   ProductPageConfig,
 } from '@/types/pdp-template.types';
 import { getDefaultPdpConfig } from '@/lib/pdp-presets';
-import { resolveTenant, formatTenantHref } from '@/lib/tenant-config';
+import { resolveTenant, formatTenantHref, cleanCategorySlug } from '@/lib/tenant-config';
 import { Product } from '@/types/product';
 import { useCart } from '@/context/CartContext';
 
@@ -215,7 +215,11 @@ export function ProductPageRenderer({
                 </h3>
               </div>
               <Link
-                href={formatTenantHref('/collections')}
+                href={
+                  product.category && product.category !== 'all' && product.category !== 'collection'
+                    ? formatTenantHref(`/${cleanCategorySlug(product.category)}`, activeTenant.slug)
+                    : formatTenantHref('/collections', activeTenant.slug)
+                }
                 className="text-xs font-bold text-slate-600 hover:text-rose-600 uppercase tracking-wider transition-colors"
               >
                 View All &rarr;
