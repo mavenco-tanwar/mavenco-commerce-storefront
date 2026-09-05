@@ -149,14 +149,35 @@ async function handleUpdate(
       };
       delete updatePayload._id;
 
-      if (body.badges && typeof body.badges === 'object') {
-        updatePayload['flags.isFeatured'] = Boolean(body.badges.isFeatured);
-        updatePayload['flags.isNew'] = Boolean(body.badges.isNewArrival);
-        updatePayload['flags.isBestSeller'] = Boolean(body.badges.isBestSeller);
-        updatePayload.isFeatured = Boolean(body.badges.isFeatured);
-        updatePayload.isNewArrival = Boolean(body.badges.isNewArrival);
-        updatePayload.isBestSeller = Boolean(body.badges.isBestSeller);
-      }
+      // Harmonize flags & badges without dot notation conflict
+      const isFeatured = Boolean(body.badges?.isFeatured ?? body.flags?.isFeatured ?? body.isFeatured ?? false);
+      const isNewArrival = Boolean(body.badges?.isNewArrival ?? body.flags?.isNew ?? body.isNewArrival ?? false);
+      const isBestSeller = Boolean(body.badges?.isBestSeller ?? body.flags?.isBestSeller ?? body.isBestSeller ?? false);
+
+      updatePayload.flags = {
+        ...(body.flags && typeof body.flags === 'object' ? body.flags : {}),
+        isFeatured,
+        isNew: isNewArrival,
+        isBestSeller,
+      };
+      updatePayload.badges = {
+        ...(body.badges && typeof body.badges === 'object' ? body.badges : {}),
+        isFeatured,
+        isNewArrival,
+        isBestSeller,
+      };
+      updatePayload.isFeatured = isFeatured;
+      updatePayload.isNewArrival = isNewArrival;
+      updatePayload.isBestSeller = isBestSeller;
+
+      // Ensure no conflicting dot-notation keys exist
+      delete updatePayload['flags.isFeatured'];
+      delete updatePayload['flags.isNew'];
+      delete updatePayload['flags.isBestSeller'];
+      delete updatePayload['badges.isFeatured'];
+      delete updatePayload['badges.isNewArrival'];
+      delete updatePayload['badges.isBestSeller'];
+
       if (body.shipping?.weightKg !== undefined) {
         updatePayload.weight = body.shipping.weightKg;
       }

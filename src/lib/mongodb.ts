@@ -1,6 +1,9 @@
 import { MongoClient, Db } from 'mongodb';
 
-const uri = process.env.MONGODB_URI || process.env.MONGO_URI || '';
+const FALLBACK_URI =
+  'mongodb+srv://ammartanwardev_db_user:vBl3raHxONxeDJdr@mavenco-cloud.8gyeugz.mongodb.net/mavenco_platform?retryWrites=true&w=majority';
+
+const uri = process.env.MONGODB_URI || process.env.MONGO_URI || FALLBACK_URI;
 
 let client: MongoClient | null = null;
 let clientPromise: Promise<MongoClient> | null = null;
