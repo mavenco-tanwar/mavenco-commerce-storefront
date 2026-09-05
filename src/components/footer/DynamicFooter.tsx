@@ -61,11 +61,11 @@ export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: Dyn
       className="border-t border-white/10 select-none pt-12 pb-10 transition-colors duration-300"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {sections
-          .filter((sec) => sec.enabled !== false)
+        {(sections || [])
+          .filter((sec) => sec && sec.enabled !== false)
           .sort((a, b) => (a.order || 0) - (b.order || 0))
           .map((section) => {
-            const cols = section.layout?.columns?.desktop || 4;
+            const cols = section?.layout?.columns?.desktop || 4;
             const gridClass =
               cols === 1
                 ? 'grid grid-cols-1'
@@ -81,14 +81,14 @@ export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: Dyn
               <div
                 key={section.id}
                 style={{
-                  borderColor: section.styles?.borderColor || 'rgba(255,255,255,0.08)',
-                  borderBottomWidth: section.styles?.borderBottomWidth || '0px',
-                  borderTopWidth: section.styles?.borderTopWidth || '0px',
+                  borderColor: section?.styles?.borderColor || 'rgba(255,255,255,0.08)',
+                  borderBottomWidth: section?.styles?.borderBottomWidth || '0px',
+                  borderTopWidth: section?.styles?.borderTopWidth || '0px',
                 }}
                 className={`py-4 ${gridClass}`}
               >
-                {section.blocks
-                  .filter((b) => b.enabled !== false)
+                {(section?.blocks || [])
+                  .filter((b) => b && b.enabled !== false)
                   .sort((a, b) => (a.order || 0) - (b.order || 0))
                   .map((block) => (
                     <FooterBlockRenderer

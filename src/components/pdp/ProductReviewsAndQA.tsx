@@ -161,13 +161,13 @@ export function ProductReviewsAndQA({
   };
 
   // Filtered reviews
-  let filteredReviews = reviews;
+  let filteredReviews = Array.isArray(reviews) ? reviews : [];
   if (filterRating) filteredReviews = filteredReviews.filter((r) => r.rating === filterRating);
   if (filterVerified) filteredReviews = filteredReviews.filter((r) => r.verificationStatus === 'verified_purchase');
   if (filterWithPhotos) filteredReviews = filteredReviews.filter((r) => r.media && r.media.length > 0);
 
   const avgRating = summary?.averageRating || 4.9;
-  const reviewCount = summary?.reviewCount || reviews.length;
+  const reviewCount = summary?.reviewCount || filteredReviews.length;
 
   return (
     <section className="py-12 border-t border-[#EFE8E2] select-none">

@@ -130,8 +130,8 @@ export function DynamicMobileDrawer({
 
         {/* Primary Navigation Links with Multi-Level Dropdowns */}
         <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {navigationMenu
-            .filter((item) => item.enabled !== false)
+          {(navigationMenu || [])
+            .filter((item) => item && item.enabled !== false)
             .sort((a, b) => (a.order || 0) - (b.order || 0))
             .map((item) => {
               const hasMega = !!item.megaMenu?.enabled;

@@ -70,9 +70,9 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
   const now = new Date();
 
   // Filter visible and scheduled sections, sorted by displayOrder / order
-  const activeSections = liveSections
+  const activeSections = (liveSections || [])
     .filter((sec: any) => {
-      if (sec.enabled === false || sec.isVisible === false) return false;
+      if (!sec || sec.enabled === false || sec.isVisible === false) return false;
 
       // Check scheduled visibility window if set
       if (sec.startDate && new Date(sec.startDate) > now) {

@@ -67,16 +67,16 @@ export function DynamicAnnouncementBar({
     return true;
   };
 
-  const leftBlocks = blocks
-    .filter((b) => b.zone === 'announcement.left' && isBlockVisible(b))
+  const leftBlocks = (blocks || [])
+    .filter((b) => b && b.zone === 'announcement.left' && isBlockVisible(b))
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  const centerBlocks = blocks
-    .filter((b) => b.zone === 'announcement.center' && isBlockVisible(b))
+  const centerBlocks = (blocks || [])
+    .filter((b) => b && b.zone === 'announcement.center' && isBlockVisible(b))
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  const rightBlocks = blocks
-    .filter((b) => b.zone === 'announcement.right' && isBlockVisible(b))
+  const rightBlocks = (blocks || [])
+    .filter((b) => b && b.zone === 'announcement.right' && isBlockVisible(b))
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   const [activeCenterIdx, setActiveCenterIdx] = useState(0);

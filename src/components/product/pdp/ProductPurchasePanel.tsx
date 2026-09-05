@@ -417,13 +417,13 @@ export function ProductPurchasePanel({
       } ${className}`}
     >
       {/* Ordered Elements Pipeline */}
-      {config.elementsOrder.map((key) => renderElement(key))}
+      {Array.isArray(config.elementsOrder) && config.elementsOrder.map((key) => renderElement(key))}
 
       {/* Trust Badges */}
-      {config.trustBadges && config.trustBadges.filter((b) => b.enabled).length > 0 && (
+      {Array.isArray(config.trustBadges) && config.trustBadges.filter((b) => b && b.enabled).length > 0 && (
         <div className="pt-4 border-t border-[#EFE8E2] grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {config.trustBadges
-            .filter((b) => b.enabled)
+          {(config.trustBadges || [])
+            .filter((b) => b && b.enabled)
             .map((b) => (
               <div key={b.id} className="flex items-start gap-2 text-xs">
                 <ShieldCheck className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />

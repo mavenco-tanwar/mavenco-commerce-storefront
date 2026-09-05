@@ -23,8 +23,8 @@ export function NavigationBlock({
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const s = block.settings || {};
-  const activeItems = navigationMenu
-    .filter((item) => item.enabled !== false)
+  const activeItems = (navigationMenu || [])
+    .filter((item) => item && item.enabled !== false)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   const splitSide = s.splitSide || 'all'; // 'all' | 'first-half' | 'second-half' | 'left' | 'right'

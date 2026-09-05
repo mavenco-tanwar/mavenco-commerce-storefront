@@ -53,16 +53,16 @@ export function DynamicMainHeader({
   hideOnTablet = false,
   responsive,
 }: DynamicMainHeaderProps) {
-  const leftBlocks = blocks
-    .filter((b) => b.zone === 'main.left' && b.enabled !== false)
+  const leftBlocks = (blocks || [])
+    .filter((b) => b && b.zone === 'main.left' && b.enabled !== false)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  const centerBlocks = blocks
-    .filter((b) => b.zone === 'main.center' && b.enabled !== false)
+  const centerBlocks = (blocks || [])
+    .filter((b) => b && b.zone === 'main.center' && b.enabled !== false)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  const rightBlocks = blocks
-    .filter((b) => b.zone === 'main.right' && b.enabled !== false)
+  const rightBlocks = (blocks || [])
+    .filter((b) => b && b.zone === 'main.right' && b.enabled !== false)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   const currentHeight = isScrolled ? scrolledHeight : height;

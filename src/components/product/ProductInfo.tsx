@@ -280,10 +280,10 @@ export function ProductInfo({ product, pdpConfig }: ProductInfoProps) {
       <PincodeChecker />
 
       {/* Trust Signals */}
-      {pdpConfig?.trustBadges && pdpConfig.trustBadges.filter((b) => b.enabled).length > 0 ? (
+      {Array.isArray(pdpConfig?.trustBadges) && pdpConfig.trustBadges.filter((b) => b && b.enabled).length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 py-4 border-y border-[#E8DED8]">
-          {pdpConfig.trustBadges
-            .filter((b) => b.enabled)
+          {(pdpConfig.trustBadges || [])
+            .filter((b) => b && b.enabled)
             .map((badge) => (
               <div key={badge.id} className="p-2.5 bg-[#FAF6F2] rounded-xl border border-[#E8DED8]/60 space-y-0.5 text-xs">
                 <div className="font-bold text-[#111111] flex items-center gap-1.5">

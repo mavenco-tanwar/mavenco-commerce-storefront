@@ -49,7 +49,7 @@ export function Navigation({ tenantSlug: propTenantSlug }: { tenantSlug?: string
   }, [activeTenantSlug, pathname, searchParams]);
 
   // Render tenant-configured custom navigation if provided
-  if (tenant.navLinks && tenant.navLinks.length > 0) {
+  if (Array.isArray(tenant?.navLinks) && tenant.navLinks.length > 0) {
     return (
       <nav suppressHydrationWarning className="hidden md:flex items-center justify-center gap-7 lg:gap-10 text-xs uppercase tracking-widest font-semibold select-none">
         {tenant.navLinks.map((link) => (
@@ -76,15 +76,15 @@ export function Navigation({ tenantSlug: propTenantSlug }: { tenantSlug?: string
     );
   }
 
-  const womenCat = categories.find((c) => c.slug === 'women') || categories[0];
-  const kidsCat = categories.find((c) => c.slug === 'kids') || categories[1];
+  const womenCat = (categories || []).find((c) => c.slug === 'women') || (categories || [])[0];
+  const kidsCat = (categories || []).find((c) => c.slug === 'kids') || (categories || [])[1];
 
   return (
     <nav
       className="hidden md:flex items-center justify-center gap-7 lg:gap-10 text-xs uppercase tracking-widest font-semibold text-[#111111] select-none"
       onMouseLeave={() => setActiveMenu(null)}
     >
-      {menuItems.map((item) => {
+      {(menuItems || []).map((item) => {
         const lowerLabel = item.label.toLowerCase();
         const url = item.url || '/';
 

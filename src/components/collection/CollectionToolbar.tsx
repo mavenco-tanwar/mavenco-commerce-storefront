@@ -33,7 +33,7 @@ export function CollectionToolbar({
   ],
   showViewToggle = true,
 }: CollectionToolbarProps) {
-  const enabledSorts = sortOptions.filter((s) => s.enabled !== false);
+  const enabledSorts = (sortOptions || []).filter((s) => s && s.enabled !== false);
 
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap bg-[#FAF6F2] dark:bg-slate-900/60 p-3.5 rounded-2xl border border-[#E8DED8] dark:border-slate-800 select-none">

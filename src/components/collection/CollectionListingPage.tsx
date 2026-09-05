@@ -154,7 +154,7 @@ function CollectionListingPageContent({
 
   // Filter & Sort Pipeline
   const filteredProducts = useMemo(() => {
-    let result = [...initialProducts];
+    let result = Array.isArray(initialProducts) ? [...initialProducts] : [];
 
     if (filterState.category !== 'all') {
       const target = filterState.category.toLowerCase().trim();

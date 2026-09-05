@@ -60,11 +60,12 @@ export function TrendingSection({
     loadTrending();
   }, [customLimit, currentSlug]);
 
-  const filtered = products.filter((p) => {
+  const filtered = (products || []).filter((p) => {
+    if (!p) return false;
     if (activeTab === 'all') return true;
     return p.department === activeTab || p.category === activeTab;
   });
-  const displayedProducts = filtered.length > 0 ? filtered : products;
+  const displayedProducts = filtered.length > 0 ? filtered : (products || []);
 
   if (!isLoading && products.length === 0 && currentSlug && currentSlug !== 'demo') {
     return null;
