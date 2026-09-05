@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, Check } from 'lucide-react';
 import { FilterState } from './CollectionFilterSidebar';
+import { useCurrency } from '@/lib/currency-context';
 
 export interface CollectionFilterDrawerProps {
   isOpen: boolean;
@@ -39,6 +40,8 @@ export function CollectionFilterDrawer({
   availableSizes = ['XS', 'S', 'M', 'L', 'XL'],
   maxPriceLimit = 1000,
 }: CollectionFilterDrawerProps) {
+  const { formatPrice } = useCurrency();
+
   if (!isOpen) return null;
 
   return (
@@ -102,13 +105,13 @@ export function CollectionFilterDrawer({
           <div className="space-y-2 pt-2 border-t border-slate-200">
             <div className="flex justify-between text-xs font-bold">
               <span>Max Price</span>
-              <span className="text-rose-600">${filterState.maxPrice}</span>
+              <span className="text-rose-600">{formatPrice ? formatPrice(filterState.maxPrice) : `₹${filterState.maxPrice}`}</span>
             </div>
             <input
               type="range"
               min="50"
               max={maxPriceLimit}
-              step="50"
+              step={maxPriceLimit > 2000 ? '100' : '50'}
               value={filterState.maxPrice}
               onChange={(e) => onFilterChange('maxPrice', Number(e.target.value))}
               className="w-full accent-rose-600"

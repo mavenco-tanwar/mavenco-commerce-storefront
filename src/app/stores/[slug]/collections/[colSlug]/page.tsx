@@ -128,10 +128,10 @@ export default async function TenantCollectionLookbookPage({ params }: TenantCol
       ]}
       availableCategories={[
         { slug: 'all', name: 'All in Collection' },
-        { slug: 'dresses', name: 'Dresses' },
-        { slug: 'co-ords', name: 'Co-Ords' },
-        { slug: 'kurtis', name: 'Kurtis' },
-        { slug: 'party-wear', name: 'Party Wear' },
+        ...Array.from(new Set(productsToRender.map((p) => p.category).filter(Boolean))).map((cat) => ({
+          slug: String(cat).toLowerCase().trim(),
+          name: String(cat).replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        })),
       ]}
     />
   );

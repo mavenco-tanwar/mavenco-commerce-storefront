@@ -64,11 +64,18 @@ function CollectionListingPageContent({
     loadTemplate();
   }, [activeTenant.slug, templateOverride]);
 
+  // Compute Dynamic Max Price from Loaded Products
+  const maxProductPrice = useMemo(() => {
+    if (!initialProducts || initialProducts.length === 0) return 5000;
+    const max = Math.max(...initialProducts.map((p) => Number(p.price) || 0));
+    return Math.max(Math.ceil(max * 1.25), 1000);
+  }, [initialProducts]);
+
   // URL State Initialization
   const initialCategory = searchParams.get('category') || 'all';
   const initialColor = searchParams.get('color') || 'all';
   const initialSize = searchParams.get('size') || 'all';
-  const initialMaxPrice = Number(searchParams.get('maxPrice')) || 1000;
+  const initialMaxPrice = Number(searchParams.get('maxPrice')) || maxProductPrice;
   const initialInStock = searchParams.get('inStock') === 'true';
   const initialSort = searchParams.get('sort') || config.sorting.defaultSort || 'featured';
   const initialView = (searchParams.get('view') as 'grid' | 'list') || config.toolbar.defaultView || 'grid';
@@ -99,7 +106,7 @@ function CollectionListingPageContent({
     if (newFilters.size && newFilters.size !== 'all') params.set('size', newFilters.size);
     else params.delete('size');
 
-    if (newFilters.maxPrice && newFilters.maxPrice < 1000) params.set('maxPrice', String(newFilters.maxPrice));
+    if (newFilters.maxPrice && newFilters.maxPrice < maxProductPrice) params.set('maxPrice', String(newFilters.maxPrice));
     else params.delete('maxPrice');
 
     if (newFilters.inStockOnly) params.set('inStock', 'true');
@@ -135,7 +142,7 @@ function CollectionListingPageContent({
       category: 'all',
       color: 'all',
       size: 'all',
-      maxPrice: 1000,
+      maxPrice: maxProductPrice,
       inStockOnly: false,
     };
     setFilterState(resetState);
@@ -179,7 +186,9 @@ function CollectionListingPageContent({
       );
     }
 
-    result = result.filter((p) => p.price <= filterState.maxPrice);
+    if (filterState.maxPrice && filterState.maxPrice < maxProductPrice) {
+      result = result.filter((p) => (Number(p.price) || 0) <= filterState.maxPrice);
+    }
 
     switch (sortBy) {
       case 'price_asc':
@@ -199,9 +208,61 @@ function CollectionListingPageContent({
     }
 
     return result;
-  }, [initialProducts, filterState, sortBy]);
+  }, [initialProducts, filterState, sortBy, maxProductPrice]);
 
   const displayedProducts = filteredProducts.slice(0, visibleCount);
+
+  const categoriesToUse = useMemo(() => {
+    if (availableCategories && availableCategories.length > 0) return availableCategories;
+    const cats: Array<{ slug: string; name: string }> = [{ slug: 'all', name: 'All in Collection' }];
+    const seen = new Set<string>();
+    for (const p of initialProducts) {
+      const rawCat = p.category || (p as any).categorySlug || '';
+      const catSlug = String(rawCat).toLowerCase().trim();
+      const catName = (p as any).categoryName || p.category || catSlug;
+      if (catSlug && !seen.has(catSlug)) {
+        seen.add(catSlug);
+        cats.push({
+          slug: catSlug,
+          name: String(catName).replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        });
+      }
+    }
+    return cats;
+  }, [availableCategories, initialProducts]);
+
+  const colorsToUse = useMemo(() => {
+    const list: Array<{ name: string; hex: string }> = [];
+    const seen = new Set<string>();
+    for (const p of initialProducts) {
+      if (Array.isArray(p.colors)) {
+        for (const c of p.colors) {
+          if (c?.name && !seen.has(c.name.toLowerCase())) {
+            seen.add(c.name.toLowerCase());
+            list.push({ name: c.name, hex: c.hex || '#B77A68' });
+          }
+        }
+      }
+    }
+    return list.length > 0 ? list : undefined;
+  }, [initialProducts]);
+
+  const sizesToUse = useMemo(() => {
+    const list: string[] = [];
+    const seen = new Set<string>();
+    for (const p of initialProducts) {
+      if (Array.isArray(p.sizes)) {
+        for (const s of p.sizes) {
+          const sName = typeof s === 'string' ? s : s?.size;
+          if (sName && !seen.has(sName)) {
+            seen.add(sName);
+            list.push(sName);
+          }
+        }
+      }
+    }
+    return list.length > 0 ? list : undefined;
+  }, [initialProducts]);
 
   return (
     <div className="min-h-screen bg-[#FFFDFC] text-slate-900 pb-20 space-y-8">
@@ -245,7 +306,10 @@ function CollectionListingPageContent({
                 filterState={filterState}
                 onFilterChange={handleFilterChange}
                 onReset={handleResetFilters}
-                availableCategories={availableCategories}
+                availableCategories={categoriesToUse}
+                availableColors={colorsToUse}
+                availableSizes={sizesToUse}
+                maxPriceLimit={maxProductPrice}
               />
             </div>
           )}
@@ -320,7 +384,10 @@ function CollectionListingPageContent({
         filterState={filterState}
         onFilterChange={handleFilterChange}
         onReset={handleResetFilters}
-        availableCategories={availableCategories}
+        availableCategories={categoriesToUse}
+        availableColors={colorsToUse}
+        availableSizes={sizesToUse}
+        maxPriceLimit={maxProductPrice}
       />
     </div>
   );

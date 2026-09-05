@@ -3,6 +3,7 @@
 import React from 'react';
 import { RotateCcw, Check } from 'lucide-react';
 import { FilterDefinition } from '@/types/collection-page.types';
+import { useCurrency } from '@/lib/currency-context';
 
 export interface FilterState {
   category: string;
@@ -47,6 +48,8 @@ export function CollectionFilterSidebar({
   maxPriceLimit = 1000,
   className = '',
 }: CollectionFilterSidebarProps) {
+  const { formatPrice } = useCurrency();
+
   return (
     <aside className={`space-y-6 p-5 rounded-2xl bg-white dark:bg-slate-900/40 border border-[#E8DED8] dark:border-slate-800 shadow-xs select-none ${className}`}>
       {/* Header */}
@@ -144,13 +147,13 @@ export function CollectionFilterSidebar({
       <div className="space-y-2.5 pt-2 border-t border-[#E8DED8] dark:border-slate-800">
         <div className="flex justify-between text-xs">
           <span className="font-bold text-slate-900 dark:text-white">Max Price</span>
-          <span className="font-bold text-rose-600">${filterState.maxPrice}</span>
+          <span className="font-bold text-rose-600">{formatPrice ? formatPrice(filterState.maxPrice) : `₹${filterState.maxPrice}`}</span>
         </div>
         <input
           type="range"
           min="50"
           max={maxPriceLimit}
-          step="50"
+          step={maxPriceLimit > 2000 ? '100' : '50'}
           value={filterState.maxPrice}
           onChange={(e) => onFilterChange('maxPrice', Number(e.target.value))}
           className="w-full accent-rose-600 cursor-pointer"
