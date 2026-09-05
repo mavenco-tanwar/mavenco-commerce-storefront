@@ -268,12 +268,17 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
           case 'collections_grid':
           case 'collections_showcase':
           case 'curated-collections':
+          case 'curated_collection':
+          case 'curated-collection':
             return (
               <CollectionsShowcase
                 key={section.id}
                 customTitle={title}
                 customSubtitle={subtitle}
                 customBadge={badge}
+                customCtaText={sData.ctaText || sData.buttonText}
+                customCtaUrl={sData.ctaUrl || sData.buttonUrl || sData.link}
+                customBannerImage={sData.bannerImage || sData.image || sData.backgroundImage}
                 customCollections={sData.collectionsList || sData.collections || sData.items}
                 tenantSlug={tenantSlug}
               />
@@ -301,7 +306,9 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
           sec.type === 'collections-grid' ||
           sec.type === 'collections_grid' ||
           sec.type === 'collections_showcase' ||
-          sec.type === 'curated-collections'
+          sec.type === 'curated-collections' ||
+          sec.type === 'curated_collection' ||
+          sec.type === 'curated-collection'
       ) && <CollectionsShowcase key="sec_auto_collections" tenantSlug={tenantSlug} />}
     </>
   );

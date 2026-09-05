@@ -28,26 +28,61 @@ export async function GET(req: NextRequest) {
     const tenantSlug = rawTenant ? rawTenant.trim().toLowerCase() : undefined;
     const cleanTenant = tenantSlug ? tenantSlug.replace(/^(store_|_)/, '').trim().toLowerCase() : undefined;
 
+    let tenantAliases = new Set<string>();
+    if (tenantSlug) tenantAliases.add(tenantSlug);
+    if (cleanTenant) tenantAliases.add(cleanTenant);
+
     const db = await getDatabase();
     if (db) {
       const collection = db.collection('collections');
 
+      // Resolve tenant aliases from tenants collection (e.g. gever <-> store__ever_6477)
+      if (cleanTenant && cleanTenant !== 'all') {
+        try {
+          const tenantDoc = await db.collection('tenants').findOne({
+            $or: [
+              { slug: cleanTenant },
+              { tenantId: cleanTenant },
+              { id: cleanTenant },
+              { id: `store_${cleanTenant}` },
+              { id: `store__${cleanTenant}` },
+              { slug: new RegExp(cleanTenant, 'i') },
+              { id: new RegExp(cleanTenant, 'i') },
+            ],
+          });
+          if (tenantDoc) {
+            if (tenantDoc.slug) tenantAliases.add(tenantDoc.slug.toLowerCase());
+            if (tenantDoc.tenantId) tenantAliases.add(tenantDoc.tenantId.toLowerCase());
+            if (tenantDoc.id) {
+              const idStr = String(tenantDoc.id).toLowerCase();
+              tenantAliases.add(idStr);
+              tenantAliases.add(idStr.replace(/^store_/, ''));
+              tenantAliases.add(idStr.replace(/^store__/, ''));
+            }
+          }
+        } catch (err) {
+          console.warn('[Collections API] Tenant alias resolution warning:', err);
+        }
+      }
+
       let query: Record<string, any> = {};
       if (cleanTenant && cleanTenant !== 'all') {
-        query = {
-          $or: [
-            { tenantId: tenantSlug },
-            { tenantId: `store_${tenantSlug}` },
-            { tenantId: cleanTenant },
-            { tenantId: `store_${cleanTenant}` },
-            { tenantId: new RegExp(cleanTenant, 'i') },
-            { tenantSlug: tenantSlug },
-            { tenantSlug: cleanTenant },
-            { tenantSlug: new RegExp(cleanTenant, 'i') },
-            { storeSlug: tenantSlug },
-            { storeSlug: cleanTenant },
-          ],
-        };
+        const aliasList = Array.from(tenantAliases);
+        const orConditions: any[] = [];
+        for (const a of aliasList) {
+          orConditions.push(
+            { tenantId: a },
+            { tenantId: `store_${a}` },
+            { tenantId: `store__${a}` },
+            { tenantSlug: a },
+            { tenantSlug: `store_${a}` },
+            { tenantSlug: `store__${a}` },
+            { storeSlug: a },
+            { storeSlug: `store_${a}` },
+            { storeSlug: `store__${a}` }
+          );
+        }
+        query = { $or: orConditions };
       }
 
       let docs = await collection.find(query).sort({ createdAt: -1 }).toArray();
@@ -55,6 +90,32 @@ export async function GET(req: NextRequest) {
       // If no tenant-specific collection found and looking for demo/all, fallback to all collections
       if (docs.length === 0 && (!cleanTenant || cleanTenant === 'all' || cleanTenant === 'demo' || cleanTenant === 'jq-trends')) {
         docs = await collection.find({}).sort({ createdAt: -1 }).toArray();
+      }
+
+      // Enrich collections with real assigned product images if available
+      for (const doc of docs) {
+        if (Array.isArray(doc.productIds) && doc.productIds.length > 0) {
+          try {
+            const firstProd = await db.collection('products').findOne({
+              $or: [
+                { id: { $in: doc.productIds } },
+                { slug: { $in: doc.productIds } },
+              ],
+            });
+            if (firstProd) {
+              const prodImg =
+                Array.isArray(firstProd.images) && firstProd.images.length > 0
+                  ? (typeof firstProd.images[0] === 'string' ? firstProd.images[0] : firstProd.images[0]?.url)
+                  : firstProd.image;
+              if (prodImg) {
+                (doc as any).productImage = prodImg;
+                if (!doc.imageUrl || doc.imageUrl.includes('unsplash.com')) {
+                  doc.imageUrl = prodImg;
+                }
+              }
+            }
+          } catch {}
+        }
       }
 
       const clean = docs.map(({ _id, ...rest }) => ({
