@@ -71,7 +71,7 @@ export class CategoryApiService {
           description: c.description || '',
           bannerImage: c.imageUrl || '',
           badge: 'Lookbook',
-          productIds: [],
+          productIds: Array.isArray(c.productIds) ? c.productIds : [],
         }));
 
         this.cachedCollections = collections;
@@ -106,7 +106,7 @@ export class CategoryApiService {
             description: c.description || '',
             bannerImage: c.imageUrl || '',
             badge: 'Lookbook',
-            productIds: [],
+            productIds: Array.isArray(c.productIds) ? c.productIds : [],
           },
         };
       }

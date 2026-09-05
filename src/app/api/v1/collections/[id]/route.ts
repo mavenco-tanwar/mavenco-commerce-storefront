@@ -15,15 +15,38 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders() });
 }
 
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+    const db = await getDatabase();
+    if (db) {
+      const col = await db.collection('collections').findOne({
+        $or: [{ id }, { slug: id }],
+      });
+      if (col) {
+        const { _id, ...clean } = col;
+        return NextResponse.json({ success: true, data: clean }, { headers: corsHeaders() });
+      }
+    }
+    return NextResponse.json({ success: false, error: 'Collection not found' }, { status: 404, headers: corsHeaders() });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
     const body = await req.json();
     const db = await getDatabase();
     if (db) {
+      const updateData: any = { ...body, updatedAt: new Date().toISOString() };
+      if (Array.isArray(body.productIds)) {
+        updateData.productCount = body.productIds.length;
+      }
       await db.collection('collections').updateOne(
-        { id },
-        { $set: { ...body, updatedAt: new Date().toISOString() } }
+        { $or: [{ id }, { slug: id }] },
+        { $set: updateData }
       );
     }
     return NextResponse.json({ success: true, message: 'Collection updated in MongoDB' }, { headers: corsHeaders() });
@@ -37,10 +60,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const { id } = params;
     const db = await getDatabase();
     if (db) {
-      await db.collection('collections').deleteOne({ id });
+      await db.collection('collections').deleteOne({ $or: [{ id }, { slug: id }] });
     }
     return NextResponse.json({ success: true, message: 'Collection deleted from MongoDB' }, { headers: corsHeaders() });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
   }
 }
+

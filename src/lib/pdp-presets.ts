@@ -66,7 +66,7 @@ export const PDP_PRESET_TEMPLATES: Record<string, { name: string; description: s
         showWishlist: true,
         showShare: true,
         showShippingInfo: true,
-        shippingText: 'Free express shipping on all orders above $100',
+        shippingText: 'Free express shipping on all orders above ₹999',
         deliveryEstimatorEnabled: true,
         defaultEstimatedDays: '2-4 Business Days',
         showReturnsInfo: true,

@@ -1,3 +1,14 @@
+function cleanCategoryLabel(idOrSlug?: string): string {
+  if (!idOrSlug) return "";
+  let clean = idOrSlug
+    .replace(/^cat_/, "")
+    .replace(/_gever$|_jq-trends$|_lumina$|_store$/, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
+  if (!clean) return "";
+  return clean.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 import { Product, ProductImage, ProductSize, ProductColor, Department } from '@/types/product';
 import { Category } from '@/types/category';
 import { Order, OrderStatus, TrackingStep, ShippingAddress, PaymentDetails } from '@/types/order';
@@ -124,15 +135,13 @@ export function mapCmsProductToStorefrontProduct(cms: any): Product {
     slug: cms.slug,
     sku: cms.sku || `JQT-${cms.id}`,
     department,
-    category: cms.category?.slug || cms.categoryId || 'dresses',
-    categoryName: cms.category?.name || 'Fashion Collection',
+    category: cms.category?.slug || (Array.isArray(cms.categoryIds) && cms.categoryIds[0] ? cms.categoryIds[0].replace(/^cat_/, "").replace(/_gever$|_jq-trends$/, "") : cms.categoryId) || 'all',
+    categoryName: cms.category?.name || cms.categoryName || (Array.isArray(cms.categoryIds) && cms.categoryIds[0] ? cleanCategoryLabel(cms.categoryIds[0]) : 'Collection'),
     price,
     compareAtPrice,
     discountPercent,
     shortDescription: cms.shortDescription || cms.title,
-    description: (cms.descriptionHtml || cms.shortDescription || '')
-      .replace(/<[^>]*>?/gm, '')
-      .trim(),
+    description: cms.description || cms.descriptionHtml || cms.shortDescription || '',
     features,
     fabric: custom.fabric || 'Pure breathable natural fabric with soft crepe lining',
     careInstructions,
@@ -150,6 +159,9 @@ export function mapCmsProductToStorefrontProduct(cms: any): Product {
     fit: custom.fit || 'Regular fit, true to size',
     modelInfo: custom.modelInfo || 'Model is 5ft 8in wearing size S',
     status: cms.status || 'published',
+    variants: cms.variants || [],
+    categoryIds: cms.categoryIds || [],
+    brand: cms.brand || cms.brandName,
   };
 }
 

@@ -15,6 +15,8 @@ export interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
+  const cleanItems = items.filter((item) => item.label && item.label.trim().toLowerCase() !== "home");
+
   return (
     <nav
       aria-label="Breadcrumbs"
@@ -30,8 +32,8 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
           </Link>
         </li>
 
-        {items.map((item, index) => {
-          const isLast = index === items.length - 1;
+        {cleanItems.map((item, index) => {
+          const isLast = index === cleanItems.length - 1;
 
           return (
             <li key={index} className="flex items-center gap-1.5">

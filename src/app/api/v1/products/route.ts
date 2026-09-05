@@ -20,6 +20,8 @@ export async function OPTIONS() {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category') || undefined;
+  const collection = searchParams.get('collection') || searchParams.get('collectionId') || undefined;
+  const ids = searchParams.get('ids') || undefined;
   const search = searchParams.get('search') || undefined;
   const status = searchParams.get('status') || undefined;
   const brandId = searchParams.get('brandId') || undefined;
@@ -45,8 +47,22 @@ export async function GET(request: NextRequest) {
 
       const query: Record<string, any> = tenantMatchConditions.length > 0 ? { $or: tenantMatchConditions } : {};
 
+      if (ids) {
+        const idList = ids.split(',').map((s) => s.trim()).filter(Boolean);
+        if (idList.length > 0) {
+          query.$or = [{ id: { $in: idList } }, { slug: { $in: idList } }, { sku: { $in: idList } }];
+        }
+      } else if (collection && collection !== 'all') {
+        query.$or = [{ collectionIds: collection }, { collections: collection }];
+      }
+
       if (category && category !== 'all') {
-        query.$and = [{ $or: [{ categoryIds: category }, { category: category }, { categories: category }] }];
+        const catFilter = [{ categoryIds: category }, { category: category }, { categories: category }];
+        if (query.$and) {
+          query.$and.push({ $or: catFilter });
+        } else {
+          query.$and = [{ $or: catFilter }];
+        }
       }
 
       if (status && status !== 'all') {

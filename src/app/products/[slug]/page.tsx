@@ -35,39 +35,50 @@ async function getPdpTemplateConfig(tenantSlug: string = 'lumina') {
 
 export async function generateMetadata({ params }: ProductPageProps) {
   const resolved = await params;
-  let product = (await ProductService.getProductBySlug(resolved.slug)).data;
+  let product: any = null;
+
+  try {
+    const db = await getDatabase();
+    if (db) {
+      const doc = await db.collection('products').findOne({
+        $or: [{ slug: resolved.slug }, { id: resolved.slug }],
+      });
+      if (doc) {
+        const { _id, ...clean } = doc;
+        product = clean;
+      }
+    }
+  } catch {}
 
   if (!product) {
-    try {
-      const db = await getDatabase();
-      if (db) {
-        const doc = await db.collection('products').findOne({
-          $or: [{ slug: resolved.slug }, { id: resolved.slug }],
-        });
-        if (doc) {
-          const { _id, ...clean } = doc;
-          product = clean as any;
-        }
-      }
-    } catch {}
+    product = (await ProductService.getProductBySlug(resolved.slug)).data;
   }
 
   if (!product) {
     return {
-      title: 'Product Not Found | Atelier',
+      title: 'Product Not Found',
     };
   }
 
-  const pName = product.name || (product as any).title || 'Garment';
-  const pDesc = product.shortDescription || product.description || '';
-  const firstImg = product.images?.[0] ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url) : undefined;
+  const pName = product.title || product.name || 'Product';
+  const pBrand = product.brand || product.brandName || 'Store';
+  const metaTitle = product.seo?.title || `${pName} | Buy Online | ${pBrand}`;
+  const metaDesc =
+    product.seo?.description ||
+    product.shortDescription ||
+    (typeof product.description === 'string' ? product.description.replace(/<[^>]*>?/gm, '').slice(0, 160) : '');
+  const firstImg = product.images?.[0]
+    ? typeof product.images[0] === 'string'
+      ? product.images[0]
+      : product.images[0].url
+    : undefined;
 
   return {
-    title: `${pName} | Atelier Haute Couture`,
-    description: pDesc,
+    title: metaTitle,
+    description: metaDesc,
     openGraph: {
-      title: `${pName} | Atelier Haute Couture`,
-      description: pDesc,
+      title: metaTitle,
+      description: metaDesc,
       images: firstImg ? [firstImg] : [],
     },
   };
@@ -78,30 +89,47 @@ import { ProductReviewsAndQA } from '@/components/pdp/ProductReviewsAndQA';
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const resolved = await params;
   const activeTenant = resolveTenant();
+  const pdpConfig = await getPdpTemplateConfig(activeTenant.slug || 'lumina');
 
-  const [productRes, pdpConfig] = await Promise.all([
-    ProductService.getProductBySlug(resolved.slug),
-    getPdpTemplateConfig(activeTenant.slug || 'lumina'),
-  ]);
+  let rawProduct: any = null;
 
-  let rawProduct = productRes.data;
+  // 1. Authoritative direct MongoDB lookup for instant sync with Admin Panel
+  try {
+    const db = await getDatabase();
+    if (db) {
+      const doc = await db.collection('products').findOne({
+        $or: [{ slug: resolved.slug }, { id: resolved.slug }],
+      });
+      if (doc) {
+        const { _id, ...clean } = doc;
+        rawProduct = clean as any;
 
-  // Direct MongoDB fallback for instant sync with Admin Panel
-  if (!rawProduct) {
-    try {
-      const db = await getDatabase();
-      if (db) {
-        const doc = await db.collection('products').findOne({
-          $or: [{ slug: resolved.slug }, { id: resolved.slug }],
-        });
-        if (doc) {
-          const { _id, ...clean } = doc;
-          rawProduct = clean as any;
+        // Resolve exact category name from categories collection
+        const catIds = Array.isArray(rawProduct.categoryIds) && rawProduct.categoryIds.length > 0
+          ? rawProduct.categoryIds
+          : rawProduct.categoryId
+          ? [rawProduct.categoryId]
+          : [];
+
+        if (catIds.length > 0) {
+          const catDoc = await db.collection('categories').findOne({
+            $or: [{ id: { $in: catIds } }, { slug: { $in: catIds } }],
+          });
+          if (catDoc) {
+            rawProduct.categoryName = catDoc.name;
+            rawProduct.category = catDoc.slug || catDoc.id;
+          }
         }
       }
-    } catch (e) {
-      console.warn('Direct MongoDB PDP fallback lookup failed:', e);
     }
+  } catch (e) {
+    console.warn('Direct MongoDB PDP lookup failed:', e);
+  }
+
+  // 2. Service fallback
+  if (!rawProduct) {
+    const productRes = await ProductService.getProductBySlug(resolved.slug);
+    rawProduct = productRes.data;
   }
 
   if (!rawProduct) {

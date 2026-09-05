@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { ShoppingBag, Zap } from 'lucide-react';
 import { NormalizedProduct } from '@/types/pdp-template.types';
+import { formatCurrency } from '@/lib/utils';
 
 export interface MobilePurchaseBarProps {
   product: NormalizedProduct;
@@ -47,7 +48,7 @@ export function MobilePurchaseBar({
             </h4>
             <div className="flex items-baseline gap-2">
               <span className="text-xs font-bold text-slate-900 dark:text-white font-mono">
-                ${product.price.toLocaleString()}
+                {formatCurrency(product.price)}
               </span>
               {(selectedColor || selectedSize) && (
                 <span className="text-[10px] text-slate-400 truncate">

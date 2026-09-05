@@ -21,6 +21,7 @@ import {
 } from '@/types/pdp-template.types';
 import { ProductVariantSelector } from './ProductVariantSelector';
 import { PincodeChecker } from '../PincodeChecker';
+import { formatCurrency } from '@/lib/utils';
 
 export interface ProductPurchasePanelProps {
   product: NormalizedProduct;
@@ -58,7 +59,7 @@ export function ProductPurchasePanel({
 
   // Format currency helper
   const formatMoney = (amount: number) => {
-    return `$${amount.toLocaleString()}`;
+    return formatCurrency(amount);
   };
 
   const handleAddToCart = () => {
@@ -84,7 +85,7 @@ export function ProductPurchasePanel({
   };
 
   // Curated badges (limit to 2 most relevant)
-  const curatedBadges = (product.badges || []).slice(0, 2);
+  const curatedBadges = (product.badges || []).slice(0, 3);
 
   // Render element by key
   const renderElement = (key: PurchaseElementKey) => {
@@ -320,7 +321,7 @@ export function ProductPurchasePanel({
             {config.shippingText && (
               <div className="flex items-center gap-2.5 text-xs text-slate-600">
                 <Truck className="w-4 h-4 text-rose-600 shrink-0" />
-                <span>{config.shippingText}</span>
+                <span>{config.shippingText.replace(/\$100/g, "₹999").replace(/\$50/g, "₹499")}</span>
               </div>
             )}
           </div>

@@ -28,8 +28,19 @@ export default async function CollectionPage({ params }: CollectionPageProps) {
   const collectionDesc = col ? `${col.subtitle} — ${col.description}` : 'Explore our curated seasonal assortment of bespoke luxury garments.';
   const bannerImg = col ? col.bannerImage : undefined;
 
-  const prodRes = await ProductApiService.getProducts({ category: resolved.slug, limit: 30 });
-  const productsToRender = prodRes.data?.products || [];
+  let productsToRender: any[] = [];
+  if (col && Array.isArray(col.productIds) && col.productIds.length > 0) {
+    const prodRes = await ProductApiService.getProducts({
+      ids: col.productIds.join(','),
+      limit: 50,
+    } as any);
+    productsToRender = prodRes.data?.products || [];
+  }
+
+  if (productsToRender.length === 0) {
+    const prodRes = await ProductApiService.getProducts({ category: resolved.slug, limit: 30 });
+    productsToRender = prodRes.data?.products || [];
+  }
 
   return (
     <CollectionListingPage
