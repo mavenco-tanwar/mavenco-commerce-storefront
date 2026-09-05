@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import { formatTenantHref } from '@/lib/tenant-config';
+import { formatTenantHref, cleanCategorySlug } from '@/lib/tenant-config';
 
 interface CategoryItem {
   id?: string;
@@ -119,7 +119,7 @@ export function CategoryShowcase({
               cat.imageUrl ||
               cat.image ||
               'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop',
-            href: `/collections?category=${encodeURIComponent(cat.slug || cat.id)}`,
+            href: `/${cleanCategorySlug(cat.slug || cat.id)}`,
             buttonText: `Explore ${cat.name || 'Category'}`,
             badge: cat.badge || cat.department || 'Curated Department',
           }));
@@ -180,7 +180,13 @@ export function CategoryShowcase({
               cat.image ||
               'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop';
             const tagline = cat.tagline || cat.description || cat.count || 'Explore Collection';
-            const href = cat.href || cat.link || '/collections';
+            let href = cat.href || cat.link || '/collections';
+            if (href.includes('?category=')) {
+              const matchCat = href.match(/[?&]category=([^&#]+)/);
+              if (matchCat && matchCat[1]) {
+                href = `/${cleanCategorySlug(decodeURIComponent(matchCat[1]))}`;
+              }
+            }
             const btnText = cat.buttonText || `Explore ${itemTitle}`;
 
             return (

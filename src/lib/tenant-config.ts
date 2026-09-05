@@ -451,6 +451,19 @@ export function formatTenantHref(href?: string, explicitTenant?: string): string
 
   if (!tenant) return href;
 
+  // Rewrite any legacy collections?category=xyz to format 2: /[category] (or /stores/[tenant]/[category])
+  if (href.includes('collections?category=') || href.includes('?category=')) {
+    const legacyCatMatch = href.match(/[?&]category=([^&#]+)/);
+    if (legacyCatMatch && legacyCatMatch[1]) {
+      const rawCat = decodeURIComponent(legacyCatMatch[1]).replace(/^\/+/, '');
+      const storeMatch = href.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+      if (storeMatch) {
+        return `/${storeMatch[1]}/${storeMatch[2]}/${cleanCategorySlug(rawCat)}`;
+      }
+      href = `/${cleanCategorySlug(rawCat)}`;
+    }
+  }
+
   // Don't prefix external or already-prefixed store paths
   if (href.startsWith('/stores/') || href.startsWith('/tenant/')) {
     return href;
