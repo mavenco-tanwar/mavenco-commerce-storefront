@@ -107,14 +107,27 @@ export function ProductPageRenderer({
     router.push(formatTenantHref('/checkout', activeTenant.slug));
   };
 
+  // Sync document title and meta description on tab hover
+  useEffect(() => {
+    const metaTitle = product.seo?.title || product.title;
+    const metaDesc = product.seo?.description || product.shortDescription;
+    if (metaDesc) {
+      document.title = `${metaTitle} — ${metaDesc}`;
+    } else if (metaTitle) {
+      document.title = metaTitle;
+    }
+  }, [product]);
+
   return (
     <div className="min-h-screen bg-[#FFFDFC] text-slate-900 pb-28 space-y-10">
       {/* 1. Breadcrumbs Trail */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <Breadcrumbs
           items={[
-            { label: 'Home', href: formatTenantHref('/', activeTenant.slug) },
-            { label: product.categoryName || 'Creations', href: formatTenantHref(`/collections/${product.category || 'all'}`, activeTenant.slug) },
+            {
+              label: product.categoryName || 'Collection',
+              href: formatTenantHref(`/${product.category || 'all'}`, activeTenant.slug),
+            },
             { label: product.title },
           ]}
         />

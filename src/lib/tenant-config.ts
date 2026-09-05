@@ -474,3 +474,55 @@ export function formatTenantHref(href?: string, explicitTenant?: string): string
   const cleanPath = href.startsWith('/') ? href : `/${href}`;
   return `/stores/${tenant}${cleanPath}`;
 }
+
+/**
+ * Sanitizes category slug, stripping database prefixes and tenant suffixes
+ * (e.g. cat_clothestees_gever -> clothestees, cat_womens-t-shirt_jq-trends -> womens-t-shirt)
+ */
+export function cleanCategorySlug(cat?: string): string {
+  if (!cat) return 'collection';
+  let clean = String(cat).toLowerCase().trim();
+  if (clean.startsWith('cat_')) {
+    clean = clean.replace(/^cat_/, '');
+    const lastUnderscore = clean.lastIndexOf('_');
+    if (lastUnderscore !== -1) {
+      clean = clean.substring(0, lastUnderscore);
+    }
+  }
+  // Strip any remaining trailing tenant slug like _gever
+  clean = clean.replace(/_[a-z0-9-]+$/, '');
+  return clean || 'collection';
+}
+
+/**
+ * Automatically scopes product links to the nested category URL:
+ * /stores/[tenant]/[category]/[productSlug] (e.g. /stores/gever/clothestees/fffff)
+ * or fallback: /[category]/[productSlug]
+ */
+export function formatProductHref(
+  productSlug: string,
+  category?: string,
+  explicitTenant?: string
+): string {
+  if (!productSlug) return '/';
+  const cleanCat = cleanCategorySlug(category);
+  const cleanSlug = productSlug.startsWith('/') ? productSlug.slice(1) : productSlug;
+
+  // Determine active tenant slug
+  let tenant = (explicitTenant || '').toLowerCase().trim();
+  if (!tenant && typeof window !== 'undefined') {
+    const pathMatch = window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/);
+    if (pathMatch) {
+      tenant = pathMatch[2].toLowerCase().trim();
+    } else {
+      const qTenant = new URLSearchParams(window.location.search).get('tenant');
+      if (qTenant) tenant = qTenant.toLowerCase().trim();
+    }
+  }
+
+  if (tenant) {
+    return `/stores/${tenant}/${cleanCat}/${cleanSlug}`;
+  }
+
+  return `/${cleanCat}/${cleanSlug}`;
+}

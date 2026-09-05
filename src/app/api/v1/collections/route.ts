@@ -7,7 +7,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-slug, x-user-name, X-Store-ID, X-API-Key, X-Tenant-Slug, x-store-id, x-api-key, *',
   };
 }
 
@@ -18,52 +18,33 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const tenantSlug = (searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'lumina').toLowerCase();
+    const rawTenant =
+      searchParams.get('tenant') ||
+      searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      req.headers.get('X-Tenant-Slug');
+
+    const tenantSlug = rawTenant ? rawTenant.replace(/^store_/, '').trim().toLowerCase() : undefined;
 
     const db = await getDatabase();
     if (db) {
       const collection = db.collection('collections');
-      const count = await collection.countDocuments({
-        $or: [{ tenantId: tenantSlug }, { storeSlug: tenantSlug }],
-      });
 
-      if (count === 0) {
-        // Auto-seed MongoDB with collections
-        const initialCollections = [
-          {
-            id: 'col_monsoon',
-            tenantId: tenantSlug,
-            title: 'Monsoon Atelier Capsule',
-            slug: 'monsoon-capsule',
-            description: 'Bespoke breathable linens and waterproof silk blends.',
-            imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800',
-            productCount: 8,
-            isFeatured: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          {
-            id: 'col_festive',
-            tenantId: tenantSlug,
-            title: 'Royal Heritage Drop',
-            slug: 'royal-heritage',
-            description: 'Hand-embroidered zardozi and raw silk silhouettes.',
-            imageUrl: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800',
-            productCount: 14,
-            isFeatured: true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ];
-        await collection.insertMany(initialCollections);
+      let query: Record<string, any> = {};
+      if (tenantSlug && tenantSlug !== 'all') {
+        query = {
+          $or: [
+            { tenantId: tenantSlug },
+            { tenantId: `store_${tenantSlug}` },
+            { tenantId: new RegExp(tenantSlug, 'i') },
+            { storeSlug: tenantSlug },
+            { tenantSlug: tenantSlug },
+          ],
+        };
       }
 
-      const docs = await collection
-        .find({
-          $or: [{ tenantId: tenantSlug }, { storeSlug: tenantSlug }],
-        })
-        .toArray();
-
+      const docs = await collection.find(query).sort({ createdAt: -1 }).toArray();
       const clean = docs.map(({ _id, ...rest }) => rest);
       return NextResponse.json({ success: true, data: clean }, { headers: corsHeaders() });
     }
@@ -80,24 +61,95 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const tenantSlug = (req.headers.get('x-tenant-slug') || body.tenantId || 'lumina').toLowerCase();
+    const { searchParams } = new URL(req.url);
+    const rawTenant =
+      body.tenantSlug ||
+      body.storeSlug ||
+      body.tenantId ||
+      searchParams.get('tenant') ||
+      searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      req.headers.get('X-Tenant-Slug') ||
+      'jq-trends';
+
+    const tenantSlug = rawTenant.replace(/^store_/, '').trim().toLowerCase();
 
     const db = await getDatabase();
     const now = new Date().toISOString();
+    const cleanId = body.id || `col_${Date.now()}`;
+    const cleanTitle = body.title || body.name || 'New Collection';
+    const cleanSlug = body.slug || cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
     const newCollection = {
       ...body,
-      id: body.id || `col_${Date.now()}`,
+      id: cleanId,
+      title: cleanTitle,
+      slug: cleanSlug,
       tenantId: tenantSlug,
+      tenantSlug: tenantSlug,
+      storeSlug: tenantSlug,
+      productIds: Array.isArray(body.productIds) ? body.productIds : [],
+      productCount: Array.isArray(body.productIds) ? body.productIds.length : (body.productCount || 0),
       createdAt: now,
       updatedAt: now,
     };
 
     if (db) {
-      await db.collection('collections').insertOne(newCollection);
+      await db.collection('collections').updateOne(
+        { $or: [{ id: cleanId }, { slug: cleanSlug, tenantId: tenantSlug }] },
+        { $set: newCollection },
+        { upsert: true }
+      );
     }
 
     return NextResponse.json(
-      { success: true, data: newCollection, message: 'Collection created in MongoDB' },
+      { success: true, data: newCollection, message: 'Collection saved in MongoDB' },
+      { headers: corsHeaders() }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500, headers: corsHeaders() }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    let id = searchParams.get('id') || searchParams.get('slug');
+
+    if (!id) {
+      try {
+        const body = await req.json();
+        id = body?.id || body?.slug;
+      } catch {}
+    }
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Collection ID or slug is required' },
+        { status: 400, headers: corsHeaders() }
+      );
+    }
+
+    const cleanId = decodeURIComponent(id).trim();
+    const db = await getDatabase();
+    if (db) {
+      const { ObjectId } = await import('mongodb');
+      let objId = null;
+      try {
+        if (ObjectId.isValid(cleanId) && cleanId.length === 24) objId = new ObjectId(cleanId);
+      } catch {}
+
+      await db.collection('collections').deleteMany({
+        $or: [{ id: cleanId }, { slug: cleanId }, ...(objId ? [{ _id: objId }] : [])],
+      });
+    }
+
+    return NextResponse.json(
+      { success: true, message: 'Collection deleted successfully' },
       { headers: corsHeaders() }
     );
   } catch (error: any) {

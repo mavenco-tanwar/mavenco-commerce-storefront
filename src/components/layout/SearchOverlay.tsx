@@ -7,7 +7,7 @@ import { Search, X, TrendingUp, ArrowRight, Loader2 } from 'lucide-react';
 import { ProductService } from '@/services/products';
 import { Product } from '@/types/product';
 import { PriceDisplay } from '@/components/ui/PriceDisplay';
-import { formatTenantHref } from '@/lib/tenant-config';
+import { formatTenantHref, formatProductHref } from '@/lib/tenant-config';
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -144,7 +144,7 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
                   {results.map((product) => (
                     <Link
                       key={product.id}
-                      href={formatTenantHref(`/products/${product.slug}`)}
+                      href={formatProductHref(product.slug, product.category)}
                       onClick={onClose}
                       className="group flex flex-col bg-[#FAF6F2] border border-[#E8DED8] p-2 hover:border-[#B77A68] transition-all"
                     >

@@ -16,11 +16,20 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders() });
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } | Promise<{ id: string }> }
+) {
   try {
-    const { id } = params;
-    if (!id || id === 'undefined' || id === 'null' || id.trim() === '') {
-      return NextResponse.json({ success: false, error: 'Category ID is required' }, { status: 400, headers: corsHeaders() });
+    const resolvedParams = await params;
+    const rawId = resolvedParams?.id;
+    const id = decodeURIComponent(rawId || '').trim();
+
+    if (!id || id === 'undefined' || id === 'null') {
+      return NextResponse.json(
+        { success: false, error: 'Category ID is required' },
+        { status: 400, headers: corsHeaders() }
+      );
     }
 
     const body = await req.json();
@@ -46,108 +55,133 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     if (db) {
+      const { ObjectId } = await import('mongodb');
+      let objId = null;
+      try {
+        if (ObjectId.isValid(id) && id.length === 24) objId = new ObjectId(id);
+      } catch {}
+
       const { _id, createdAt, ...updates } = body;
-      const tenantMatchConditions = [
-        { tenantSlug },
-        { storeSlug: tenantSlug },
-        { tenantId: tenantSlug },
-        { tenantId: `store_${tenantSlug}` },
-      ];
+
+      const updateData: Record<string, any> = {
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      };
+
+      if (tenantSlug) {
+        updateData.tenantSlug = tenantSlug;
+        updateData.storeSlug = tenantSlug;
+        updateData.tenantId = `store_${tenantSlug}`;
+      }
 
       await db.collection('categories').updateOne(
         {
-          $and: [
-            { $or: [{ id }, { slug: id }] },
-            { $or: tenantMatchConditions },
+          $or: [
+            { id },
+            { slug: id },
+            ...(objId ? [{ _id: objId }] : []),
           ],
         },
-        {
-          $set: {
-            ...updates,
-            tenantSlug,
-            storeSlug: tenantSlug,
-            tenantId: `store_${tenantSlug}`,
-            updatedAt: new Date().toISOString(),
-          },
-        }
+        { $set: updateData }
       );
     }
-    return NextResponse.json({ success: true, message: 'Category updated in MongoDB' }, { headers: corsHeaders() });
+
+    return NextResponse.json(
+      { success: true, message: 'Category updated in MongoDB' },
+      { headers: corsHeaders() }
+    );
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500, headers: corsHeaders() }
+    );
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } | Promise<{ id: string }> }
+) {
   try {
-    const { id } = params;
-    if (!id || id === 'undefined' || id === 'null' || id.trim() === '') {
-      return NextResponse.json({ success: false, error: 'Category ID is required' }, { status: 400, headers: corsHeaders() });
+    const resolvedParams = await params;
+    const rawId = resolvedParams?.id;
+    const id = decodeURIComponent(rawId || '').trim();
+
+    if (!id || id === 'undefined' || id === 'null') {
+      return NextResponse.json(
+        { success: false, error: 'Category ID is required' },
+        { status: 400, headers: corsHeaders() }
+      );
     }
 
     const db = await getDatabase();
-    const { searchParams } = new URL(req.url);
-
-    const rawTenant =
-      searchParams.get('tenant') ||
-      searchParams.get('store') ||
-      req.headers.get('x-tenant-slug') ||
-      req.headers.get('x-tenant') ||
-      req.headers.get('X-Tenant-Slug');
-
-    let tenantSlug = rawTenant
-      ? rawTenant.replace(/^store_/, '').trim().toLowerCase()
-      : await resolveRequestTenantSlug(req, searchParams, db);
-
-    if (!tenantSlug || tenantSlug === 'all' || tenantSlug === 'lumina') {
-      tenantSlug = 'jq-trends';
+    if (!db) {
+      return NextResponse.json(
+        { success: false, error: 'Database unavailable' },
+        { status: 500, headers: corsHeaders() }
+      );
     }
 
-    if (db) {
-      const tenantMatchConditions = [
-        { tenantSlug },
-        { storeSlug: tenantSlug },
-        { tenantId: tenantSlug },
-        { tenantId: `store_${tenantSlug}` },
-      ];
-
-      // 1. Locate the exact category belonging to this tenant
-      const targetCat = await db.collection('categories').findOne({
-        $and: [
-          { $or: [{ id }, { slug: id }] },
-          { $or: tenantMatchConditions },
-        ],
-      });
-
-      if (!targetCat) {
-        return NextResponse.json(
-          { success: true, message: 'Category not found or already deleted' },
-          { headers: corsHeaders() }
-        );
+    const { ObjectId } = await import('mongodb');
+    let objId = null;
+    try {
+      if (ObjectId.isValid(id) && id.length === 24) {
+        objId = new ObjectId(id);
       }
+    } catch {}
 
+    const idMatches = [
+      { id },
+      { slug: id },
+      ...(objId ? [{ _id: objId }] : []),
+    ];
+
+    // 1. Locate category to see if it is a department or subcategory
+    const targetCat = await db.collection('categories').findOne({
+      $or: idMatches,
+    });
+
+    if (targetCat) {
       const targetId = targetCat.id || id;
+      const targetSlug = targetCat.slug;
 
       if (targetCat.parentId) {
-        // SUBCATEGORY: Delete ONLY this specific subcategory! Do not delete parent or other subcategories!
-        await db.collection('categories').deleteOne({
-          $and: [
+        // SUBCATEGORY: Delete ONLY this specific subcategory
+        await db.collection('categories').deleteMany({
+          $or: [
             { id: targetId },
-            { $or: tenantMatchConditions },
+            ...(targetCat._id ? [{ _id: targetCat._id }] : []),
           ],
         });
       } else {
-        // PRIMARY DEPARTMENT: Delete this department and its direct children within THIS tenant only
+        // PRIMARY DEPARTMENT: Delete department and all nested subcategories
         await db.collection('categories').deleteMany({
-          $and: [
-            { $or: [{ id: targetId }, { parentId: targetId }] },
-            { $or: tenantMatchConditions },
+          $or: [
+            { id: targetId },
+            { parentId: targetId },
+            ...(targetSlug ? [{ parentId: targetSlug }] : []),
+            ...(targetCat._id ? [{ _id: targetCat._id }] : []),
           ],
         });
       }
+    } else {
+      // Fallback cleanup in case of orphaned or mismatched records
+      await db.collection('categories').deleteMany({
+        $or: [
+          ...idMatches,
+          { parentId: id },
+        ],
+      });
     }
-    return NextResponse.json({ success: true, message: 'Category deleted from MongoDB' }, { headers: corsHeaders() });
+
+    return NextResponse.json(
+      { success: true, message: 'Category deleted successfully from MongoDB' },
+      { headers: corsHeaders() }
+    );
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500, headers: corsHeaders() }
+    );
   }
 }

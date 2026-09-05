@@ -15,7 +15,14 @@ export interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
-  const cleanItems = items.filter((item) => item.label && item.label.trim().toLowerCase() !== "home");
+  const seenLabels = new Set<string>(['home']);
+  const cleanItems = items.filter((item) => {
+    if (!item.label) return false;
+    const lower = item.label.trim().toLowerCase();
+    if (seenLabels.has(lower)) return false;
+    seenLabels.add(lower);
+    return true;
+  });
 
   return (
     <nav

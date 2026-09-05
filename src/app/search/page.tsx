@@ -23,7 +23,7 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useToast } from '@/context/ToastContext';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
-import { formatTenantHref } from '@/lib/tenant-config';
+import { formatTenantHref, formatProductHref } from '@/lib/tenant-config';
 import { SearchProductHit, SearchFacet } from '@/types/search-commerce.types';
 
 function SearchPageContent() {
@@ -367,7 +367,7 @@ function SearchPageContent() {
                           <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">
                             {p.category}
                           </span>
-                          <Link href={formatTenantHref(`/products/${p.slug || p.id}`)}>
+                          <Link href={formatProductHref(p.slug || p.id, p.category)}>
                             <h4 className="text-sm font-bold text-slate-900 hover:text-rose-600 transition-colors line-clamp-1">
                               {p.name}
                             </h4>

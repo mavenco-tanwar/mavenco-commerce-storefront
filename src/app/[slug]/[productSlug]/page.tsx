@@ -7,8 +7,8 @@ import { headers, cookies } from 'next/headers';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-interface ProductPageProps {
-  params: Promise<{ slug: string }>;
+interface CategoryProductPageProps {
+  params: Promise<{ slug: string; productSlug: string }>;
   searchParams?: Promise<{ tenant?: string; [key: string]: string | string[] | undefined }>;
 }
 
@@ -31,19 +31,23 @@ async function resolveTenantSlug(searchParams?: Promise<{ tenant?: string }>) {
   return undefined;
 }
 
-export async function generateMetadata({ params, searchParams }: ProductPageProps) {
-  const { slug } = await params;
+export async function generateMetadata({ params, searchParams }: CategoryProductPageProps) {
+  const { productSlug } = await params;
   const tenant = await resolveTenantSlug(searchParams);
-  return generatePdpMetadata({ productSlug: slug, explicitTenant: tenant });
+  return generatePdpMetadata({ productSlug, explicitTenant: tenant });
 }
 
-export default async function ProductDetailPage({ params, searchParams }: ProductPageProps) {
-  const { slug } = await params;
+export default async function CategoryProductDetailPage({
+  params,
+  searchParams,
+}: CategoryProductPageProps) {
+  const { slug, productSlug } = await params;
   const tenant = await resolveTenantSlug(searchParams);
 
   return (
     <RenderProductDetailPage
-      productSlug={slug}
+      productSlug={productSlug}
+      categorySlug={slug}
       explicitTenant={tenant}
     />
   );

@@ -143,10 +143,22 @@ async function handleUpdate(
         ],
       };
 
-      const updatePayload = {
+      const updatePayload: Record<string, any> = {
         ...body,
         updatedAt: new Date().toISOString(),
       };
+
+      if (body.badges && typeof body.badges === 'object') {
+        updatePayload['flags.isFeatured'] = Boolean(body.badges.isFeatured);
+        updatePayload['flags.isNew'] = Boolean(body.badges.isNewArrival);
+        updatePayload['flags.isBestSeller'] = Boolean(body.badges.isBestSeller);
+        updatePayload.isFeatured = Boolean(body.badges.isFeatured);
+        updatePayload.isNewArrival = Boolean(body.badges.isNewArrival);
+        updatePayload.isBestSeller = Boolean(body.badges.isBestSeller);
+      }
+      if (body.shipping?.weightKg !== undefined) {
+        updatePayload.weight = body.shipping.weightKg;
+      }
 
       await db.collection('products').updateMany(matchQuery, { $set: updatePayload });
       await db.collection('pim_products').updateMany(matchQuery, { $set: updatePayload });

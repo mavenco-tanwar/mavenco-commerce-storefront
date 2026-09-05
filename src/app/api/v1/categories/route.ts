@@ -136,3 +136,91 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    let id = searchParams.get('id') || searchParams.get('slug');
+
+    if (!id) {
+      try {
+        const body = await req.json();
+        id = body?.id || body?.slug;
+      } catch {}
+    }
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Category ID or slug is required' },
+        { status: 400, headers: corsHeaders() }
+      );
+    }
+
+    const cleanId = decodeURIComponent(id).trim();
+    const db = await getDatabase();
+    if (!db) {
+      return NextResponse.json(
+        { success: false, error: 'Database unavailable' },
+        { status: 500, headers: corsHeaders() }
+      );
+    }
+
+    const { ObjectId } = await import('mongodb');
+    let objId = null;
+    try {
+      if (ObjectId.isValid(cleanId) && cleanId.length === 24) {
+        objId = new ObjectId(cleanId);
+      }
+    } catch {}
+
+    const idMatches = [
+      { id: cleanId },
+      { slug: cleanId },
+      ...(objId ? [{ _id: objId }] : []),
+    ];
+
+    const targetCat = await db.collection('categories').findOne({
+      $or: idMatches,
+    });
+
+    if (targetCat) {
+      const targetId = targetCat.id || cleanId;
+      const targetSlug = targetCat.slug;
+
+      if (targetCat.parentId) {
+        await db.collection('categories').deleteMany({
+          $or: [
+            { id: targetId },
+            ...(targetCat._id ? [{ _id: targetCat._id }] : []),
+          ],
+        });
+      } else {
+        await db.collection('categories').deleteMany({
+          $or: [
+            { id: targetId },
+            { parentId: targetId },
+            ...(targetSlug ? [{ parentId: targetSlug }] : []),
+            ...(targetCat._id ? [{ _id: targetCat._id }] : []),
+          ],
+        });
+      }
+    } else {
+      await db.collection('categories').deleteMany({
+        $or: [
+          ...idMatches,
+          { parentId: cleanId },
+        ],
+      });
+    }
+
+    return NextResponse.json(
+      { success: true, message: 'Category deleted successfully' },
+      { headers: corsHeaders() }
+    );
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500, headers: corsHeaders() }
+    );
+  }
+}

@@ -58,6 +58,13 @@ export interface Product {
   isBestSeller: boolean;
   isSale: boolean;
   badge?: string;
+  badges?: string[];
+  shipping?: {
+    weightKg?: number;
+    isExpressAvailable?: boolean;
+    freeShippingThreshold?: number;
+    estimatedDays?: string;
+  };
   tags: string[];
   fit?: string;
   modelInfo?: string;

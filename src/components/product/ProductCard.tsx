@@ -10,7 +10,7 @@ import { RatingStars } from '@/components/ui/RatingStars';
 import { Badge } from '@/components/ui/Badge';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { resolveTenant } from '@/lib/tenant-config';
+import { resolveTenant, formatProductHref } from '@/lib/tenant-config';
 import { ProductCardConfig } from '@/types/product-card.types';
 import { getDefaultProductCardConfig } from '@/lib/product-card-presets';
 
@@ -25,9 +25,8 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name || '');
   const [showQuickSizes, setShowQuickSizes] = useState(false);
   const activeTenant = resolveTenant();
-  const productUrl = activeTenant.slug
-    ? `/stores/${activeTenant.slug}/products/${product.slug}`
-    : `/products/${product.slug}`;
+  const rawCategory = product.category || (product as any).categorySlug || (product as any).department;
+  const productUrl = formatProductHref(product.slug, rawCategory, activeTenant.slug);
 
   const cfg: ProductCardConfig = {
     ...getDefaultProductCardConfig(activeTenant.slug || 'lumina'),
@@ -111,28 +110,35 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
                 : 'bottom-2.5 left-2.5'
             }`}
           >
-            {product.badge && (
-              <span
-                className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${
-                  cfg.badges.style === 'pill' ? 'rounded-full' : 'rounded'
-                } ${
-                  product.badge === 'Sale' || product.badge === 'SALE'
-                    ? 'bg-rose-600 text-white'
-                    : 'bg-slate-950 text-white'
-                }`}
-              >
-                {product.badge}
-              </span>
-            )}
-            {Boolean(product.discountPercent && product.discountPercent > 0) && !product.badge && cfg.badges.showDiscount && (
-              <span
-                className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-rose-600 text-white ${
-                  cfg.badges.style === 'pill' ? 'rounded-full' : 'rounded'
-                }`}
-              >
-                {product.discountPercent}% OFF
-              </span>
-            )}
+            {(product.badges && product.badges.length > 0
+              ? product.badges.slice(0, 2)
+              : product.badge
+              ? [product.badge]
+              : []
+            ).map((b, i) => {
+              const lower = b.toLowerCase();
+              const badgeBg =
+                lower.includes('%') || lower.includes('sale')
+                  ? 'bg-rose-600 text-white'
+                  : lower.includes('featured')
+                  ? 'bg-indigo-600 text-white'
+                  : lower.includes('new')
+                  ? 'bg-rose-500 text-white'
+                  : lower.includes('best')
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-slate-950 text-white';
+
+              return (
+                <span
+                  key={i}
+                  className={`px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-xs ${
+                    cfg.badges.style === 'pill' ? 'rounded-full' : 'rounded'
+                  } ${badgeBg}`}
+                >
+                  {b}
+                </span>
+              );
+            })}
           </div>
         )}
 

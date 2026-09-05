@@ -150,11 +150,29 @@ export function mapCmsProductToStorefrontProduct(cms: any): Product {
     sizes,
     rating: Number(custom.rating) || 4.8,
     reviewCount: Number(custom.reviewCount) || 24,
-    isFeatured: Boolean(custom.isFeatured || cms.isFeatured),
-    isNewArrival: Boolean(custom.isNewArrival),
-    isBestSeller: Boolean(custom.isBestSeller),
+    isFeatured: Boolean(cms.badges?.isFeatured || cms.flags?.isFeatured || custom.isFeatured || cms.isFeatured),
+    isNewArrival: Boolean(cms.badges?.isNewArrival || cms.flags?.isNew || custom.isNewArrival || cms.isNewArrival),
+    isBestSeller: Boolean(cms.badges?.isBestSeller || cms.flags?.isBestSeller || custom.isBestSeller || cms.isBestSeller),
     isSale: Boolean(discountPercent && discountPercent > 0),
-    badge: custom.badge || (discountPercent ? `${discountPercent}% OFF` : undefined),
+    badge:
+      (cms.badges?.isNewArrival || cms.flags?.isNew || custom.isNewArrival || cms.isNewArrival)
+        ? 'New Arrival'
+        : (cms.badges?.isFeatured || cms.flags?.isFeatured || custom.isFeatured || cms.isFeatured)
+        ? 'Featured'
+        : (cms.badges?.isBestSeller || cms.flags?.isBestSeller || custom.isBestSeller || cms.isBestSeller)
+        ? 'Best Seller'
+        : custom.badge || (discountPercent ? `${discountPercent}% OFF` : undefined),
+    badges: [
+      ...((cms.badges?.isNewArrival || cms.flags?.isNew || custom.isNewArrival || cms.isNewArrival) ? ['New Arrival'] : []),
+      ...((cms.badges?.isFeatured || cms.flags?.isFeatured || custom.isFeatured || cms.isFeatured) ? ['Featured'] : []),
+      ...((cms.badges?.isBestSeller || cms.flags?.isBestSeller || custom.isBestSeller || cms.isBestSeller) ? ['Best Seller'] : []),
+      ...(discountPercent && discountPercent > 0 ? [`${discountPercent}% OFF`] : []),
+    ],
+    shipping: {
+      weightKg: typeof cms.shipping?.weightKg === 'number' ? cms.shipping.weightKg : (cms.weight ? Number(cms.weight) : 0.4),
+      isExpressAvailable: cms.shipping?.isExpressAvailable !== undefined ? Boolean(cms.shipping.isExpressAvailable) : true,
+      estimatedDays: cms.shipping?.estimatedDays || '2-4 Business Days',
+    },
     tags: Array.isArray(cms.tags) ? cms.tags : [],
     fit: custom.fit || 'Regular fit, true to size',
     modelInfo: custom.modelInfo || 'Model is 5ft 8in wearing size S',

@@ -174,6 +174,10 @@ export interface NormalizedProduct {
   };
   category?: string;
   categoryName?: string;
+  seo?: {
+    title?: string;
+    description?: string;
+  };
   price: number;
   compareAtPrice?: number;
   discountPercent?: number;
@@ -191,6 +195,12 @@ export interface NormalizedProduct {
   fabric?: string;
   careInstructions?: string[];
   origin?: string;
+  shipping?: {
+    weightKg?: number;
+    isExpressAvailable?: boolean;
+    freeShippingThreshold?: number;
+    estimatedDays?: string;
+  };
   inStock: boolean;
   stockCount: number;
   subscriptionAvailability?: boolean;

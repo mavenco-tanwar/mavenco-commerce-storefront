@@ -1,6 +1,7 @@
 import { Product } from "@/types/product";
 import { NormalizedProduct, NormalizedProductMedia, NormalizedProductVariant } from "@/types/pdp-template.types";
 import { PimProduct } from "@/types/pim-commerce.types";
+import { cleanCategorySlug } from "@/lib/tenant-config";
 
 function cleanCategoryLabel(idOrSlug?: string): string {
   if (!idOrSlug) return "";
@@ -194,10 +195,15 @@ export function normalizeProduct(
   // Resolve Category & Category Name cleanly
   const rawCatId = Array.isArray(raw.categoryIds) && raw.categoryIds.length > 0 ? raw.categoryIds[0] : raw.categoryId;
   const rawCatName = raw.categoryName || (raw.category && typeof raw.category === "object" ? raw.category.name : undefined);
-  const rawCatSlug = raw.categorySlug || (raw.category && typeof raw.category === "object" ? raw.category.slug : undefined) || (typeof raw.category === "string" ? raw.category : undefined);
+  const rawCatSlug =
+    raw.categorySlug ||
+    (raw.category && typeof raw.category === "object" ? raw.category.slug : undefined) ||
+    (typeof raw.category === "string" ? raw.category : undefined) ||
+    (raw.department && !raw.department.startsWith("cat_") ? raw.department : undefined) ||
+    (Array.isArray(raw.categories) && raw.categories[0] ? raw.categories[0] : undefined);
 
   const categoryName = rawCatName || cleanCategoryLabel(rawCatId) || cleanCategoryLabel(rawCatSlug) || "Collection";
-  const category = rawCatSlug || (rawCatId ? rawCatId.replace(/^cat_/, "").replace(/_gever$|_jq-trends$/, "") : "all");
+  const category = cleanCategorySlug(rawCatSlug || rawCatId || "all");
 
   // Extract fabric and care instructions intelligently from description if not directly provided
   let fabric = raw.fabric || raw.material || undefined;
@@ -219,20 +225,58 @@ export function normalizeProduct(
   // Only use features if explicitly defined
   const features = Array.isArray(raw.features) && raw.features.length > 0 ? raw.features : [];
 
-  // Badges
+  // Badges: Prioritize Admin Store Badges (New Arrival, Featured, Best Seller), followed by Discount
   const badges: string[] = [];
+  if (raw.badges?.isNewArrival || raw.flags?.isNew || raw.isNewArrival) {
+    badges.push("New Arrival");
+  }
+  if (raw.badges?.isFeatured || raw.flags?.isFeatured || raw.isFeatured) {
+    badges.push("Featured");
+  }
+  if (raw.badges?.isBestSeller || raw.flags?.isBestSeller || raw.isBestSeller) {
+    badges.push("Best Seller");
+  }
+  if (Array.isArray(raw.badges)) {
+    for (const b of raw.badges) {
+      if (typeof b === "string" && !badges.includes(b)) {
+        badges.push(b);
+      }
+    }
+  }
   if (discountPercent && discountPercent > 0) {
     badges.push(`${discountPercent}% OFF`);
   }
-  if (raw.badges) {
-    if (Array.isArray(raw.badges)) {
-      badges.push(...raw.badges);
-    } else if (typeof raw.badges === "object") {
-      if (raw.badges.isNewArrival) badges.push("New Arrival");
-      if (raw.badges.isFeatured) badges.push("Featured");
-      if (raw.badges.isBestSeller) badges.push("Best Seller");
-    }
-  }
+
+  // Shipping details resolution from admin or defaults
+  const rawShipping =
+    raw.shipping ||
+    (raw.customFields?.shipping
+      ? typeof raw.customFields.shipping === "string"
+        ? JSON.parse(raw.customFields.shipping)
+        : raw.customFields.shipping
+      : undefined);
+
+  const shipping = rawShipping
+    ? {
+        weightKg:
+          typeof rawShipping.weightKg === "number"
+            ? rawShipping.weightKg
+            : raw.weight
+            ? Number(raw.weight)
+            : 0.4,
+        isExpressAvailable:
+          rawShipping.isExpressAvailable !== undefined
+            ? Boolean(rawShipping.isExpressAvailable)
+            : true,
+        freeShippingThreshold: rawShipping.freeShippingThreshold || 999,
+        estimatedDays: rawShipping.estimatedDays || "2-4 Business Days",
+      }
+    : {
+        weightKg: raw.weight ? Number(raw.weight) : 0.4,
+        isExpressAvailable: true,
+        freeShippingThreshold: 999,
+        estimatedDays: "2-4 Business Days",
+      };
 
   const brandName = raw.brand || raw.brandName || "JQ Trends";
   const currency = raw.currency || "INR";
@@ -250,6 +294,7 @@ export function normalizeProduct(
     },
     category,
     categoryName,
+    seo: raw.seo || (raw.meta ? { title: raw.meta.title, description: raw.meta.description } : undefined),
     price: basePrice,
     compareAtPrice,
     discountPercent,
@@ -257,7 +302,8 @@ export function normalizeProduct(
     sku: raw.sku || `SKU-${raw.id}`,
     rating: raw.rating || 4.9,
     reviewCount: raw.reviewCount || 42,
-    badges: Array.from(new Set(badges)).slice(0, 3),
+    badges: Array.from(new Set(badges)).slice(0, 4),
+    shipping,
     media:
       media.length > 0
         ? media
