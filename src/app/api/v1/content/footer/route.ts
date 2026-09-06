@@ -8,6 +8,9 @@ function corsHeaders() {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Store-ID, X-API-Key, x-tenant-slug',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
   };
 }
 
@@ -38,17 +41,24 @@ export async function GET(request: NextRequest) {
         ],
       });
 
-      if (doc && (doc.sections || doc.config?.sections)) {
+      if (doc && (doc.sections || doc.config?.sections || doc.theme || doc.config?.theme)) {
         const raw = doc.config || doc;
+        const rawSections = Array.isArray(raw.sections)
+          ? raw.sections
+          : Array.isArray(doc.sections)
+          ? doc.sections
+          : base.sections;
+        const rawTheme = raw.theme || doc.theme || {};
+
         const merged: FooterConfig = {
           ...base,
           ...raw,
           tenantSlug: tenantSlug,
           theme: {
             ...base.theme,
-            ...(raw.theme || {}),
+            ...rawTheme,
           },
-          sections: Array.isArray(raw.sections) ? raw.sections : base.sections,
+          sections: rawSections,
         };
 
         return NextResponse.json(
