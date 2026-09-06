@@ -436,7 +436,7 @@ export function BuilderInspector() {
                     : style.typography?.fontSize) || ''
                 }
                 onChange={(e) => {
-                  const cur = typeof style.typography?.fontSize === 'object' ? { ...style.typography.fontSize } : {};
+                  const cur: any = typeof style.typography?.fontSize === 'object' ? { ...style.typography.fontSize } : { desktop: '' };
                   cur[activeDevice] = e.target.value;
                   updateWidgetStyle(selectedNode.id, {
                     typography: { ...style.typography, fontSize: cur },
@@ -520,7 +520,7 @@ export function BuilderInspector() {
                       value={curPadding[side] || ''}
                       onChange={(e) => {
                         const nextObj = { ...curPadding, [side]: e.target.value };
-                        const curSpacing = typeof style.spacing?.padding === 'object' ? { ...style.spacing.padding } : {};
+                        const curSpacing: any = typeof style.spacing?.padding === 'object' ? { ...style.spacing.padding } : { desktop: {} };
                         curSpacing[activeDevice] = nextObj;
                         updateWidgetStyle(selectedNode.id, {
                           spacing: { ...style.spacing, padding: curSpacing },
@@ -550,7 +550,7 @@ export function BuilderInspector() {
                       value={curMargin[side] || ''}
                       onChange={(e) => {
                         const nextObj = { ...curMargin, [side]: e.target.value };
-                        const curSpacing = typeof style.spacing?.margin === 'object' ? { ...style.spacing.margin } : {};
+                        const curSpacing: any = typeof style.spacing?.margin === 'object' ? { ...style.spacing.margin } : { desktop: {} };
                         curSpacing[activeDevice] = nextObj;
                         updateWidgetStyle(selectedNode.id, {
                           spacing: { ...style.spacing, margin: curSpacing },

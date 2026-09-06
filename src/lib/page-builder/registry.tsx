@@ -35,7 +35,6 @@ import {
 import { ComponentRegistryItem, BuilderNode, DeviceType } from './types';
 import { computeNodeStyle } from './style-utils';
 import { resolveNodeContent } from './dynamic-data';
-import { ValueProps } from '@/components/home/ValueProps';
 
 export const COMPONENT_REGISTRY: Record<string, ComponentRegistryItem> = {
   // 1. Structural Nodes
@@ -419,8 +418,18 @@ export const COMPONENT_REGISTRY: Record<string, ComponentRegistryItem> = {
       const items = node.content?.items || [];
       const style = computeNodeStyle(node.style, activeDevice);
       return (
-        <div style={style} className={`w-full ${node.style.customClasses || ''}`}>
-          <ValueProps customItems={items} />
+        <div style={style} className={`w-full py-8 ${node.style.customClasses || ''}`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto px-4">
+            {items.map((item: any, idx: number) => (
+              <div key={idx} className="p-5 rounded-xl border border-slate-200/80 bg-white text-center space-y-2 shadow-xs">
+                <div className="w-10 h-10 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+                  <Award className="w-5 h-5" />
+                </div>
+                <h4 className="text-xs font-bold text-slate-900 tracking-tight">{item.title}</h4>
+                <p className="text-[11px] text-slate-500 leading-relaxed">{item.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
       );
     },
