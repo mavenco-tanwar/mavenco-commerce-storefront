@@ -20,8 +20,6 @@ import { ProductListingView } from '@/components/plp/ProductListingView';
 import { Button } from '@/components/ui/Button';
 import { getDatabase } from '@/lib/mongodb';
 import { headers, cookies } from 'next/headers';
-import { PageRenderer } from '@/components/page-builder/PageRenderer';
-import { ensurePageDocument } from '@/lib/page-builder/adapter';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -205,36 +203,9 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
   }
 
   if (page) {
-    const pageDoc = ensurePageDocument(page, tenant);
-
-    if (pageDoc.content?.root?.children && pageDoc.content.root.children.length > 0) {
-      return (
-        <div className="min-h-screen bg-[#FFFDFC] text-[#111111]">
-          {/* Breadcrumb Navigation */}
-          <div className="bg-[#FAF6F2] border-b border-[#E8DED8] py-3">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <nav className="flex items-center gap-2 text-xs text-[#777777] font-sans">
-                <Link href={formatTenantHref('/')} className="hover:text-[#111111] transition-colors">
-                  Home
-                </Link>
-                <ChevronRight className="w-3.5 h-3.5 text-[#B77A68]" />
-                <span className="text-[#111111] font-semibold">{pageDoc.name || page.title}</span>
-              </nav>
-            </div>
-          </div>
-
-          <PageRenderer
-            page={pageDoc}
-            mode="storefront"
-            contextData={{ store: { name: tenant } }}
-          />
-        </div>
-      );
-    }
-
-    const heroBlock = page.blocks?.find((b: any) => b.type === 'hero');
-    const richTextBlocks = page.blocks?.filter((b: any) => b.type === 'rich-text') || [];
-    const valuePropsBlock = page.blocks?.find((b: any) => b.type === 'value-props');
+    const heroBlock = page.blocks?.find((b) => b.type === 'hero');
+    const richTextBlocks = page.blocks?.filter((b) => b.type === 'rich-text') || [];
+    const valuePropsBlock = page.blocks?.find((b) => b.type === 'value-props');
 
     return (
       <div className="min-h-screen bg-[#FFFDFC] text-[#111111] select-none">

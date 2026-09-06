@@ -22,7 +22,6 @@ import {
   Sparkles,
   RefreshCw,
   Lock,
-  Layout,
 } from 'lucide-react';
 
 interface NavItemDef {
@@ -50,8 +49,6 @@ const ALL_NAV_ITEMS: NavItemDef[] = [
   { label: 'Import Center', href: '/admin/catalog/imports', icon: UploadCloud, moduleKey: 'pim' },
   { label: 'Export Center', href: '/admin/catalog/exports', icon: DownloadCloud, moduleKey: 'pim' },
   { label: 'Publishing Matrix', href: '/admin/catalog/publishing', icon: Globe2, moduleKey: 'catalog' },
-  { label: 'Storefront Pages', href: '/admin/storefront/pages', icon: Layout, moduleKey: 'storefront', requiredPermission: 'page.view' },
-  { label: 'Templates', href: '/admin/storefront/templates', icon: Layers, moduleKey: 'storefront', requiredPermission: 'page.template.manage' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -67,9 +64,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       subscriptions: true,
       memberships: true,
       pim: true,
-      storefront: true,
     },
-    permissions: ['products.view', 'subscriptions.view', 'page.view', 'page.template.manage'],
+    permissions: ['products.view', 'subscriptions.view'],
   });
 
   useEffect(() => {
