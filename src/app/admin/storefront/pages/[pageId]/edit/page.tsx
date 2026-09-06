@@ -1,6 +1,6 @@
 /**
- * Module 38: Superadmin Visual Page Builder Route
- * Embeds the full Elementor-style VisualPageBuilder for editing tenant pages.
+ * Module 38: Tenant Admin - Visual Page Builder Route
+ * Full Elementor-style visual editor mounted for the tenant administrator.
  */
 
 'use client';
@@ -12,10 +12,9 @@ import { ensurePageDocument } from '@/lib/page-builder/adapter';
 import { PageDocument } from '@/lib/page-builder/types';
 import { Loader2 } from 'lucide-react';
 
-export default function SuperadminPageEditorPage() {
+export default function TenantAdminPageEditorPage() {
   const params = useParams();
   const router = useRouter();
-  const tenantId = (params?.id as string) || '';
   const pageId = (params?.pageId as string) || '';
 
   const [pageDoc, setPageDoc] = useState<PageDocument | null>(null);
@@ -23,30 +22,21 @@ export default function SuperadminPageEditorPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!tenantId || !pageId) return;
+    if (!pageId) return;
 
     async function loadData() {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/v1/content/pages/${pageId}?tenant=${tenantId}`);
+        const res = await fetch(`/api/v1/content/pages/${pageId}`);
         if (res.ok) {
           const json = await res.json();
           if (json?.data) {
-            setPageDoc(ensurePageDocument(json.data, tenantId));
-          }
-        } else {
-          // Fallback to superadmin storefront route if present
-          const res2 = await fetch(`/api/v1/superadmin/tenants/${tenantId}/storefront/pages/${pageId}`);
-          if (res2.ok) {
-            const json2 = await res2.json();
-            if (json2?.data) {
-              setPageDoc(ensurePageDocument(json2.data, tenantId));
-            }
+            setPageDoc(ensurePageDocument(json.data));
           }
         }
 
         // Load versions
-        const verRes = await fetch(`/api/v1/content/pages/${pageId}/versions?tenant=${tenantId}`);
+        const verRes = await fetch(`/api/v1/content/pages/${pageId}/versions`);
         if (verRes.ok) {
           const verJson = await verRes.json();
           if (verJson?.data) {
@@ -54,17 +44,17 @@ export default function SuperadminPageEditorPage() {
           }
         }
       } catch (err) {
-        console.error('Failed to load page:', err);
+        console.error('Failed to load page for builder:', err);
       } finally {
         setIsLoading(false);
       }
     }
 
     loadData();
-  }, [tenantId, pageId]);
+  }, [pageId]);
 
   const handleSaveDraft = async (updated: PageDocument) => {
-    await fetch(`/api/v1/content/pages/${pageId}?tenant=${tenantId}`, {
+    await fetch(`/api/v1/content/pages/${pageId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updated),
@@ -72,14 +62,14 @@ export default function SuperadminPageEditorPage() {
   };
 
   const handlePublishLive = async (published: PageDocument) => {
-    await fetch(`/api/v1/content/pages/${pageId}/publish?tenant=${tenantId}`, {
+    await fetch(`/api/v1/content/pages/${pageId}/publish`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content: published.content }),
     });
 
     // Refresh versions
-    const verRes = await fetch(`/api/v1/content/pages/${pageId}/versions?tenant=${tenantId}`);
+    const verRes = await fetch(`/api/v1/content/pages/${pageId}/versions`);
     if (verRes.ok) {
       const verJson = await verRes.json();
       if (verJson?.data) {
@@ -89,7 +79,7 @@ export default function SuperadminPageEditorPage() {
   };
 
   const handleRollback = async (versionNumber: number) => {
-    const res = await fetch(`/api/v1/content/pages/${pageId}/rollback?tenant=${tenantId}`, {
+    const res = await fetch(`/api/v1/content/pages/${pageId}/rollback`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ version: versionNumber }),
@@ -99,24 +89,35 @@ export default function SuperadminPageEditorPage() {
     }
   };
 
-  if (isLoading || !pageDoc) {
+  if (isLoading) {
     return (
-      <div className="h-screen w-screen bg-[#07090E] flex flex-col items-center justify-center text-white space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
-        <span className="text-xs text-slate-400 font-mono tracking-wider uppercase">
-          Loading Visual Page Builder...
-        </span>
+      <div className="h-screen w-screen bg-[#111111] flex flex-col items-center justify-center text-slate-400 gap-3">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+        <p className="text-xs tracking-wider uppercase font-medium">Initializing Visual Page Builder...</p>
+      </div>
+    );
+  }
+
+  if (!pageDoc) {
+    return (
+      <div className="h-screen w-screen bg-[#111111] flex flex-col items-center justify-center text-slate-400 gap-4">
+        <p className="text-sm font-semibold text-white">Storefront page document not found.</p>
+        <button
+          onClick={() => router.push('/admin/storefront/pages')}
+          className="px-4 py-2 bg-zinc-800 text-white text-xs font-semibold rounded-lg hover:bg-zinc-700"
+        >
+          Return to Storefront Pages
+        </button>
       </div>
     );
   }
 
   return (
     <VisualPageBuilder
-      initialPage={pageDoc}
-      onSaveDraft={handleSaveDraft}
-      onPublishLive={handlePublishLive}
-      onBackUrl={`/superadmin/tenants/${tenantId}/storefront`}
+      initialDocument={pageDoc}
       versions={versions}
+      onSaveDraft={handleSaveDraft}
+      onPublish={handlePublishLive}
       onRollback={handleRollback}
     />
   );

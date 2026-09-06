@@ -7,6 +7,7 @@
  * - Zero Static Business Data Audit Scanner
  */
 
+import './test-env';
 import { runCartPricingUnitTests } from '../tests/unit/cart-pricing.test';
 import { runGlobalCommerceUnitTests } from '../tests/unit/global-commerce.test';
 import { runHeadlessExperienceUnitTests } from '../tests/unit/headless-experience.test';
@@ -19,6 +20,7 @@ import { runSuperadminApiIntegrationTests } from '../tests/integration/superadmi
 import { runTenantAdminApiIntegrationTests } from '../tests/integration/admin-api.test';
 import { runDbSyncTestSuite } from '../src/server/db/__tests__/db-sync.test';
 import { runStaticDataAudit } from './audit-static-data';
+import { runModule38TestSuite } from '../tests/unit/module38-page-builder.test';
 
 interface SuiteResult {
   name: string;
@@ -44,6 +46,7 @@ async function runQualityGate() {
     { name: 'Enterprise PIM & Catalog Governance', category: 'Unit', fn: runPimTestSuite },
     { name: 'Subscriptions & Recurring Commerce', category: 'Unit', fn: runSubscriptionTestSuite },
     { name: 'Tenant Entitlements & Storefront Governance', category: 'Unit', fn: runModule36TestSuite },
+    { name: 'Elementor Visual Page Builder & Unified Renderer', category: 'Unit', fn: runModule38TestSuite },
     { name: 'Multi-Tenant Isolation & Security Boundary', category: 'Security', fn: runTenantIsolationSecurityTests },
     { name: 'Storefront Route Handlers Integration', category: 'Integration', fn: runStorefrontApiIntegrationTests },
     { name: 'Superadmin Route Handlers Integration', category: 'Integration', fn: runSuperadminApiIntegrationTests },

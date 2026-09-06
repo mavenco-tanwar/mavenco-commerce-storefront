@@ -279,7 +279,7 @@ export function normalizeProduct(
         estimatedDays: "2-4 Business Days",
       };
 
-  const brandName = raw.brand || raw.brandName || "JQ Trends";
+  const brandName = raw.brand || raw.brandName || "Store";
   const currency = raw.currency || "INR";
 
   return {
@@ -348,7 +348,7 @@ export function generateProductJsonLd(product: NormalizedProduct, baseUrl: strin
     sku: product.sku,
     brand: {
       "@type": "Brand",
-      name: product.brand?.name || "JQ Trends",
+      name: product.brand?.name || "Store",
     },
     offers: {
       "@type": "Offer",
