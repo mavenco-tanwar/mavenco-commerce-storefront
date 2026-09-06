@@ -21,13 +21,18 @@ interface HeroSectionProps {
     mobileImage?: string;
     overlayOpacity?: number;
     textAlignment?: 'left' | 'center' | 'right';
+    contentAlign?: 'left' | 'center' | 'right';
+    layout?: string;
+    minHeight?: string;
   };
+  tenantSlug?: string;
 }
 
 export function HeroSection({
   customTitle,
   customSubtitle,
   customSettings,
+  tenantSlug,
 }: HeroSectionProps = {}) {
   const title = customTitle || 'Style That Speaks You';
   const subtitle =
@@ -40,9 +45,85 @@ export function HeroSection({
   const secondaryBtnLink = customSettings?.secondaryBtnLink || '/kids';
   const desktopImage =
     customSettings?.desktopImage ||
-    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1000&auto=format&fit=crop';
-  const overlayOpacity = customSettings?.overlayOpacity || 45;
+    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop';
+  const rawOpacity = customSettings?.overlayOpacity !== undefined ? customSettings.overlayOpacity : 45;
+  const overlayOpacity = rawOpacity <= 1 ? rawOpacity : rawOpacity / 100;
 
+  const isCenteredLayout =
+    customSettings?.contentAlign === 'center' ||
+    customSettings?.textAlignment === 'center' ||
+    customSettings?.layout === 'full_width';
+
+  // Full-Width Centered Visual Hero Banner
+  if (isCenteredLayout) {
+    return (
+      <section
+        className="relative overflow-hidden bg-[#111111] text-white flex items-center justify-center select-none border-b border-[var(--theme-color-border,#E8DED8)] transition-colors duration-200"
+        style={{ minHeight: customSettings?.minHeight || '620px' }}
+      >
+        {/* Full-bleed background imagery */}
+        <Image
+          src={desktopImage}
+          alt={title}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+
+        {/* Ambient Dark Overlay */}
+        <div
+          className="absolute inset-0 bg-black"
+          style={{ opacity: overlayOpacity }}
+        />
+
+        {/* Content Container */}
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-20 md:py-28 space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" />
+            <span className="text-[11px] uppercase font-bold tracking-widest text-[#E8B8B5]">
+              {tagline}
+            </span>
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-serif font-bold text-white leading-[1.1] tracking-tight">
+            {title}
+          </h1>
+
+          <p className="text-sm sm:text-base md:text-lg text-slate-200 max-w-2xl mx-auto font-sans leading-relaxed">
+            {subtitle}
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <Link href={formatTenantHref(primaryBtnLink, tenantSlug)} className="w-full sm:w-auto">
+              <Button
+                variant="luxury-gold"
+                size="lg"
+                className="w-full sm:w-auto min-w-[190px] group shadow-xl"
+              >
+                <span>{primaryBtnText}</span>
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+
+            {secondaryBtnText && (
+              <Link href={formatTenantHref(secondaryBtnLink, tenantSlug)} className="w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto min-w-[170px] border-white text-white hover:bg-white hover:text-black"
+                >
+                  {secondaryBtnText}
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // 2-Column Split Hero Layout
   return (
     <section className="relative overflow-hidden bg-[#F8F1EA] border-b border-[#E8DED8] select-none">
       {/* Background Decorative Gradient Aura */}
@@ -80,7 +161,7 @@ export function HeroSection({
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
-              <Link href={formatTenantHref(primaryBtnLink)} className="w-full sm:w-auto">
+              <Link href={formatTenantHref(primaryBtnLink, tenantSlug)} className="w-full sm:w-auto">
                 <Button
                   variant="primary"
                   size="lg"
@@ -91,7 +172,7 @@ export function HeroSection({
                 </Button>
               </Link>
 
-              <Link href={formatTenantHref(secondaryBtnLink)} className="w-full sm:w-auto">
+              <Link href={formatTenantHref(secondaryBtnLink, tenantSlug)} className="w-full sm:w-auto">
                 <Button
                   variant="secondary"
                   size="lg"
@@ -134,7 +215,7 @@ export function HeroSection({
               {/* Subtle Bottom Vignette */}
               <div
                 className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
-                style={{ opacity: overlayOpacity / 100 }}
+                style={{ opacity: overlayOpacity }}
               />
 
               {/* Floating Highlight Card */}
@@ -150,7 +231,7 @@ export function HeroSection({
                 </div>
 
                 <Link
-                  href={formatTenantHref("/women")}
+                  href={formatTenantHref('/women', tenantSlug)}
                   className="px-3 py-1.5 bg-[#111111] text-[#FFFDFC] text-[11px] font-bold uppercase tracking-wider hover:bg-[#B77A68] transition-colors shrink-0"
                 >
                   View

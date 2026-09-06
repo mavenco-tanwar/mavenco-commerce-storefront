@@ -62,7 +62,12 @@ export function NewArrivalsStudio({
     async function loadNewArrivals() {
       try {
         const res = await ProductService.getNewArrivals(customLimit, currentSlug || undefined);
-        setNewArrivals(res.data);
+        if ((!res.data || res.data.length === 0) && currentSlug) {
+          const fallbackRes = await ProductService.getProducts({ limit: customLimit, tenant: currentSlug });
+          setNewArrivals(fallbackRes.data.products || []);
+        } else {
+          setNewArrivals(res.data || []);
+        }
       } catch (e) {
         console.error('Failed to load new arrivals', e);
       } finally {
@@ -142,7 +147,7 @@ export function NewArrivalsStudio({
           {/* Product Cards */}
           <div className="md:col-span-8 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {newArrivals.slice(0, 3).map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} tenantSlug={currentSlug} />
             ))}
           </div>
         </div>

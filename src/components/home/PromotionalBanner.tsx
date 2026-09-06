@@ -14,6 +14,8 @@ interface PromotionalBannerProps {
   customPrimaryCtaUrl?: string;
   customSecondaryCtaText?: string;
   customSecondaryCtaUrl?: string;
+  bgColor?: string;
+  textColor?: string;
   tenantSlug?: string;
 }
 
@@ -26,6 +28,8 @@ export function PromotionalBanner({
   customPrimaryCtaUrl = '/women',
   customSecondaryCtaText = 'View Offers',
   customSecondaryCtaUrl = '/sale',
+  bgColor,
+  textColor,
   tenantSlug,
 }: PromotionalBannerProps = {}) {
   const title = customTitle || 'NEW SEASON. NEW YOU.';
@@ -38,7 +42,13 @@ export function PromotionalBanner({
     'https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?q=80&w=1600&auto=format&fit=crop';
 
   return (
-    <section className="relative bg-[#111111] text-white overflow-hidden py-20 md:py-28 select-none">
+    <section
+      className="relative bg-[#111111] text-white overflow-hidden py-20 md:py-28 select-none transition-colors duration-200"
+      style={{
+        backgroundColor: bgColor || undefined,
+        color: textColor || undefined,
+      }}
+    >
       {/* Background Editorial High-Fashion Image */}
       <Image
         src={image}

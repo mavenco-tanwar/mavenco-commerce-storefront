@@ -74,17 +74,17 @@ export class CmsApiService {
     tenantSlug?: string
   ): Promise<CmsHomepageSection[]> {
     try {
-      const endpoint = isPreview ? '/api/v1/content/homepage?status=draft' : '/api/v1/content/homepage';
-      const headers: Record<string, string> = {};
-      if (tenantSlug) {
-        headers['x-tenant-slug'] = tenantSlug;
-      }
+      const slug = (tenantSlug || 'lumina').toLowerCase().trim();
+      const endpoint = `/api/v1/content/homepage?tenant=${encodeURIComponent(slug)}${isPreview ? '&status=draft' : ''}`;
+      const headers: Record<string, string> = {
+        'x-tenant-slug': slug,
+      };
       const res = await apiClient.get<CmsHomepageResponse>(endpoint, { headers });
 
       if (res.data && res.data.sections && Array.isArray(res.data.sections) && res.data.sections.length > 0) {
-        return res.data.sections
-          .filter((s) => s.isVisible !== false)
-          .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+        return (res.data.sections as any[])
+          .filter((s) => s.isVisible !== false && s.enabled !== false)
+          .sort((a, b) => (a.order ?? a.displayOrder ?? 0) - (b.order ?? b.displayOrder ?? 0));
       }
     } catch (err) {
       console.warn('[CmsApiService] Could not load homepage layout from CMS:', err);

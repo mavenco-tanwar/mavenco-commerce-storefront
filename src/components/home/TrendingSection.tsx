@@ -16,6 +16,8 @@ interface TrendingSectionProps {
   customLimit?: number;
   customCtaText?: string;
   customCtaUrl?: string;
+  querySource?: string;
+  columnsDesktop?: 2 | 3 | 4;
   tenantSlug?: string;
 }
 
@@ -24,8 +26,10 @@ export function TrendingSection({
   customSubtitle,
   customBadge,
   customLimit = 8,
-  customCtaText = 'Explore All Trending',
-  customCtaUrl = '/women',
+  customCtaText = 'Explore All',
+  customCtaUrl = '/collections',
+  querySource,
+  columnsDesktop = 4,
   tenantSlug,
 }: TrendingSectionProps = {}) {
   const [products, setProducts] = useState<Product[]>([]);
@@ -43,22 +47,36 @@ export function TrendingSection({
 
   const title = customTitle || 'Trending Now';
   const subtitle = customSubtitle || 'Styles everyone is talking about this season.';
-  const badge = customBadge || 'Most Coveted Silhouettes';
+  const badge = customBadge || 'Featured Catalog';
 
   useEffect(() => {
-    async function loadTrending() {
+    async function loadProducts() {
       setIsLoading(true);
       try {
-        const res = await ProductService.getTrending(undefined, customLimit, currentSlug || undefined);
-        setProducts(res.data);
+        let res: { data: Product[] };
+        if (querySource === 'best_sellers' || querySource === 'bestseller') {
+          res = await ProductService.getBestSellers(customLimit, currentSlug || undefined);
+        } else if (querySource === 'new_arrivals' || querySource === 'new') {
+          res = await ProductService.getNewArrivals(customLimit, currentSlug || undefined);
+        } else {
+          res = await ProductService.getTrending(undefined, customLimit, currentSlug || undefined);
+        }
+
+        // If specific filtered list has 0 items, fallback to any published products for this store
+        if ((!res.data || res.data.length === 0) && currentSlug) {
+          const fallbackRes = await ProductService.getProducts({ limit: customLimit, tenant: currentSlug });
+          setProducts(fallbackRes.data.products || []);
+        } else {
+          setProducts(res.data || []);
+        }
       } catch (err) {
-        console.error('Failed to load trending products', err);
+        console.error('Failed to load products for grid', err);
       } finally {
         setIsLoading(false);
       }
     }
-    loadTrending();
-  }, [customLimit, currentSlug]);
+    loadProducts();
+  }, [customLimit, currentSlug, querySource]);
 
   const filtered = (products || []).filter((p) => {
     if (!p) return false;
@@ -123,12 +141,13 @@ export function TrendingSection({
           </div>
         </div>
 
-        {/* 4-column Product Grid */}
+        {/* Product Grid */}
         <ProductGrid
           products={displayedProducts.slice(0, customLimit)}
           isLoading={isLoading}
           skeletonCount={customLimit}
-          columns={4}
+          columns={columnsDesktop}
+          tenantSlug={currentSlug}
         />
 
         {/* View All CTA */}

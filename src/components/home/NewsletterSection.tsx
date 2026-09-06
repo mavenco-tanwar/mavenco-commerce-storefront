@@ -10,6 +10,8 @@ interface NewsletterSectionProps {
   customBadge?: string;
   customCouponPromo?: string;
   customButtonText?: string;
+  customPlaceholder?: string;
+  customSuccessMsg?: string;
 }
 
 export function NewsletterSection({
@@ -18,6 +20,8 @@ export function NewsletterSection({
   customBadge,
   customCouponPromo,
   customButtonText = 'Subscribe',
+  customPlaceholder = 'Enter your email address',
+  customSuccessMsg = 'Welcome to the VIP Family!',
 }: NewsletterSectionProps = {}) {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -62,7 +66,7 @@ export function NewsletterSection({
           <div className="max-w-md mx-auto p-6 bg-[#FFFDFC] border border-[#B77A68] shadow-lg animate-in zoom-in-95 duration-200">
             <CheckCircle2 className="w-8 h-8 text-[#B77A68] mx-auto mb-2" />
             <h4 className="text-base font-serif font-bold text-[#111111]">
-              Welcome to the VIP Family!
+              {customSuccessMsg}
             </h4>
             <p className="text-xs text-[#777777] mt-1 font-sans">
               Use code <strong className="text-[#B77A68] font-bold">{coupon}</strong> for special savings on your upcoming purchase.
@@ -77,7 +81,7 @@ export function NewsletterSection({
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
+                placeholder={customPlaceholder}
                 className="w-full pl-10 pr-4 py-3 bg-[#FFFDFC] border border-[#E8DED8] text-xs md:text-sm text-[#111111] placeholder:text-[#999999] focus:outline-none focus:border-[#B77A68] rounded-none font-sans"
               />
             </div>

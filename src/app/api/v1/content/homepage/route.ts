@@ -3,11 +3,18 @@ import { revalidatePath } from 'next/cache';
 import { getStoredHomepageSections, saveStoredHomepageSections } from '@/lib/cms-store';
 import { getDatabase } from '@/lib/mongodb';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Store-ID, X-API-Key',
+    'Access-Control-Allow-Headers':
+      'Content-Type, Authorization, x-tenant-slug, X-Tenant-Slug, x-tenant, x-store-id, x-store-slug, X-Store-ID, X-API-Key, *',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    Pragma: 'no-cache',
+    Expires: '0',
   };
 }
 
@@ -17,19 +24,40 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
+  const tenantSlug = (
+    searchParams.get('tenant') ||
+    request.headers.get('x-tenant-slug') ||
+    request.headers.get('x-store-slug') ||
+    'lumina'
+  )
+    .toLowerCase()
+    .trim();
+
+  const isDraft = searchParams.get('status') === 'draft' || searchParams.get('preview') === 'draft';
 
   try {
     const db = await getDatabase();
     if (db) {
-      const doc = await db.collection('cms_pages').findOne({
+      // Find published or draft depending on query
+      const query: any = {
         $or: [
           { tenantSlug: tenantSlug, type: 'homepage' },
           { tenantSlug: 'all', type: 'homepage' },
         ],
+      };
+
+      if (!isDraft) {
+        // Prefer published if both exist
+        query.status = { $ne: 'archived' };
+      }
+
+      const doc = await db.collection('cms_pages').findOne(query, {
+        sort: { updatedAt: -1, version: -1 },
       });
 
-      if (doc && doc.sections && Array.isArray(doc.sections) && doc.sections.length > 0) {
+      const dbSections = doc?.sections || doc?.config?.sections;
+
+      if (doc && Array.isArray(dbSections) && dbSections.length > 0) {
         return NextResponse.json(
           {
             data: {
@@ -38,7 +66,8 @@ export async function GET(request: NextRequest) {
               tenant: tenantSlug,
               version: doc.version || 1,
               status: doc.status || 'published',
-              sections: doc.sections,
+              sections: dbSections,
+              themeStyles: doc.themeStyles || doc.styles || {},
               updatedAt: doc.updatedAt || new Date().toISOString(),
               source: 'mongodb',
             },
@@ -73,9 +102,17 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'lumina').toLowerCase().trim();
+    const tenantSlug = (
+      searchParams.get('tenant') ||
+      request.headers.get('x-tenant-slug') ||
+      request.headers.get('x-store-slug') ||
+      'lumina'
+    )
+      .toLowerCase()
+      .trim();
+
     const body = await request.json();
-    const newSections = body.sections || body;
+    const newSections = body.sections || body.config?.sections || (Array.isArray(body) ? body : []);
 
     if (Array.isArray(newSections) && newSections.length > 0) {
       saveStoredHomepageSections(newSections, tenantSlug);
@@ -92,6 +129,8 @@ export async function PUT(request: NextRequest) {
                 version: Date.now(),
                 status: body.status || 'published',
                 sections: newSections,
+                'config.sections': newSections,
+                styles: body.styles || body.themeStyles || {},
                 updatedAt: new Date().toISOString(),
               },
             },
@@ -105,6 +144,8 @@ export async function PUT(request: NextRequest) {
       try {
         revalidatePath('/');
         revalidatePath(`/stores/${tenantSlug}`);
+        revalidatePath(`/stores/${tenantSlug}/`);
+        revalidatePath(`/tenant/${tenantSlug}`);
       } catch {}
     }
 
