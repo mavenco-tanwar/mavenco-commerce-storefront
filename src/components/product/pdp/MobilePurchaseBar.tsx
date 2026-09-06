@@ -83,7 +83,8 @@ export function MobilePurchaseBar({
           <button
             type="button"
             onClick={onBuyNow}
-            className="px-4 py-2.5 rounded-xl bg-[#B77A68] hover:bg-[#A36655] text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md active:scale-95 transition-transform"
+            style={{ backgroundColor: 'var(--pdp-accent-color, #B77A68)' }}
+            className="px-4 py-2.5 rounded-xl text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md active:scale-95 transition-transform hover:opacity-90"
           >
             <Zap className="w-3.5 h-3.5 fill-white" />
             <span>Buy</span>

@@ -11,22 +11,50 @@ import { ProductReviewsAndQA } from '@/components/pdp/ProductReviewsAndQA';
 import { mapCmsProductToStorefrontProduct } from '@/services/api/adapters';
 
 export async function getPdpTemplateConfig(tenantSlug: string = 'lumina') {
+  const cleanSlug = (tenantSlug || 'lumina').toLowerCase().trim();
   try {
     const db = await getDatabase();
     if (db) {
+      const tenantMatchConditions = [
+        { tenantSlug: cleanSlug },
+        { tenantId: cleanSlug },
+        { storeSlug: cleanSlug },
+        { tenantId: `store_${cleanSlug}` },
+        { storeId: `store_${cleanSlug}` },
+      ];
+
+      // 1. Authoritative lookup in product_page_templates
       const doc = await db.collection('product_page_templates').findOne({
-        tenantSlug: tenantSlug,
-        templateId: 'default_fashion',
+        $and: [
+          { $or: tenantMatchConditions },
+          { templateId: 'default_fashion' },
+        ],
       });
+
       if (doc?.published) {
         return doc.published;
+      }
+      if (doc?.draft) {
+        return doc.draft;
+      }
+
+      // 2. Interoperability fallback in cms_pages
+      const cmsDoc = await db.collection('cms_pages').findOne({
+        $and: [
+          { type: 'product-page' },
+          { $or: tenantMatchConditions },
+        ],
+      });
+
+      if (cmsDoc?.config) {
+        return cmsDoc.config;
       }
     }
   } catch (err) {
     console.warn('Failed to load PDP template from MongoDB:', err);
   }
 
-  return getDefaultPdpConfig(tenantSlug);
+  return getDefaultPdpConfig(cleanSlug);
 }
 
 export async function fetchRawProduct(productSlug: string, explicitTenant?: string) {

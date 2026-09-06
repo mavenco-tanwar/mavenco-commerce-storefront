@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Check, Ruler } from 'lucide-react';
+import { Check, Ruler, ChevronDown } from 'lucide-react';
 import { NormalizedProductVariant, VariantOptionDisplayType } from '@/types/pdp-template.types';
 
 export interface ProductVariantSelectorProps {
@@ -56,32 +56,80 @@ export function ProductVariantSelector({
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5 flex-wrap">
-            {colors.map((c) => {
-              const isSelected = selectedColor.toLowerCase() === c.name.toLowerCase();
-              const isAvailable = isCombinationAvailable(c.name, selectedSize);
+          {/* Color Display Mode: DROPDOWN */}
+          {colorDisplayType === 'dropdown' ? (
+            <div className="relative">
+              <select
+                value={selectedColor}
+                onChange={(e) => onColorChange(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-900 appearance-none cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-rose-500/30"
+              >
+                {colors.map((c) => (
+                  <option key={c.name} value={c.name}>
+                    {c.name} {!isCombinationAvailable(c.name, selectedSize) ? '(Out of stock)' : ''}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          ) : colorDisplayType === 'chips' ? (
+            /* Color Display Mode: CHIPS / PILLS */
+            <div className="flex items-center gap-2 flex-wrap">
+              {colors.map((c) => {
+                const isSelected = selectedColor.toLowerCase() === c.name.toLowerCase();
+                const isAvailable = isCombinationAvailable(c.name, selectedSize);
 
-              return (
-                <button
-                  key={c.name}
-                  type="button"
-                  onClick={() => onColorChange(c.name)}
-                  className={`relative w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center transition-all cursor-pointer ${
-                    isSelected ? 'ring-2 ring-rose-500 ring-offset-2 scale-110 shadow-xs' : 'hover:scale-105 opacity-90'
-                  } ${!isAvailable ? 'opacity-30' : ''}`}
-                  style={{ backgroundColor: c.hex || '#0A0A0B' }}
-                  title={c.name}
-                >
-                  {isSelected && <Check className="w-4 h-4 text-white drop-shadow-sm" />}
-                  {!isAvailable && (
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-full h-0.5 bg-rose-500 rotate-45" />
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <button
+                    key={c.name}
+                    type="button"
+                    onClick={() => onColorChange(c.name)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all flex items-center gap-2 cursor-pointer ${
+                      isSelected
+                        ? 'border-rose-600 bg-rose-50 text-rose-900 ring-1 ring-rose-500/30 shadow-2xs'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                    } ${!isAvailable ? 'opacity-40 line-through' : ''}`}
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0"
+                      style={{ backgroundColor: c.hex || '#0A0A0B' }}
+                    />
+                    <span>{c.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* Color Display Mode: CIRCULAR SWATCHES (Default) */
+            <div className="flex items-center gap-2.5 flex-wrap">
+              {colors.map((c) => {
+                const isSelected = selectedColor.toLowerCase() === c.name.toLowerCase();
+                const isAvailable = isCombinationAvailable(c.name, selectedSize);
+
+                return (
+                  <button
+                    key={c.name}
+                    type="button"
+                    onClick={() => onColorChange(c.name)}
+                    className={`relative w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center transition-all cursor-pointer ${
+                      isSelected
+                        ? 'ring-2 ring-rose-500 ring-offset-2 scale-110 shadow-xs'
+                        : 'hover:scale-105 opacity-90'
+                    } ${!isAvailable ? 'opacity-30' : ''}`}
+                    style={{ backgroundColor: c.hex || '#0A0A0B' }}
+                    title={c.name}
+                  >
+                    {isSelected && <Check className="w-4 h-4 text-white drop-shadow-sm" />}
+                    {!isAvailable && (
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-full h-0.5 bg-rose-500 rotate-45" />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -108,35 +156,83 @@ export function ProductVariantSelector({
             )}
           </div>
 
-          <div className="grid grid-cols-5 gap-2">
-            {sizes.map((s) => {
-              const isSelected = selectedSize === s.size;
-              const isAvailable = isCombinationAvailable(selectedColor, s.size) && s.inStock;
+          {/* Size Display Mode: DROPDOWN */}
+          {sizeDisplayType === 'dropdown' ? (
+            <div className="relative">
+              <select
+                value={selectedSize}
+                onChange={(e) => onSizeChange(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-900 appearance-none cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-rose-500/30"
+              >
+                {sizes.map((s) => {
+                  const isAvailable = isCombinationAvailable(selectedColor, s.size) && s.inStock;
+                  return (
+                    <option key={s.size} value={s.size} disabled={!isAvailable}>
+                      Size {s.size} {!isAvailable ? '(Out of stock)' : ''}
+                    </option>
+                  );
+                })}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          ) : sizeDisplayType === 'chips' ? (
+            /* Size Display Mode: ROUNDED PILLS */
+            <div className="flex items-center gap-2 flex-wrap">
+              {sizes.map((s) => {
+                const isSelected = selectedSize === s.size;
+                const isAvailable = isCombinationAvailable(selectedColor, s.size) && s.inStock;
 
-              return (
-                <button
-                  key={s.size}
-                  type="button"
-                  disabled={!isAvailable}
-                  onClick={() => onSizeChange(s.size)}
-                  className={`py-2.5 rounded-xl text-xs font-bold border transition-all text-center relative cursor-pointer ${
-                    isSelected
-                      ? 'border-rose-600 bg-rose-600 text-white shadow-xs'
-                      : isAvailable
-                      ? 'border-slate-200 bg-white text-slate-800 hover:border-slate-400 shadow-2xs'
-                      : 'border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed opacity-40'
-                  }`}
-                >
-                  <span>{s.size}</span>
-                  {!isAvailable && (
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-full h-px bg-slate-400 rotate-25" />
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <button
+                    key={s.size}
+                    type="button"
+                    disabled={!isAvailable}
+                    onClick={() => onSizeChange(s.size)}
+                    className={`px-4 py-2 rounded-full text-xs font-bold border transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-rose-600 bg-rose-600 text-white shadow-2xs'
+                        : isAvailable
+                        ? 'border-slate-300 bg-white text-slate-800 hover:border-slate-400'
+                        : 'border-slate-200 text-slate-300 bg-slate-50 cursor-not-allowed line-through opacity-40'
+                    }`}
+                  >
+                    <span>{s.size}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* Size Display Mode: SQUARE BUTTONS GRID (Default) */
+            <div className="grid grid-cols-5 gap-2">
+              {sizes.map((s) => {
+                const isSelected = selectedSize === s.size;
+                const isAvailable = isCombinationAvailable(selectedColor, s.size) && s.inStock;
+
+                return (
+                  <button
+                    key={s.size}
+                    type="button"
+                    disabled={!isAvailable}
+                    onClick={() => onSizeChange(s.size)}
+                    className={`py-2.5 rounded-xl text-xs font-bold border transition-all text-center relative cursor-pointer ${
+                      isSelected
+                        ? 'border-rose-600 bg-rose-600 text-white shadow-xs'
+                        : isAvailable
+                        ? 'border-slate-200 bg-white text-slate-800 hover:border-slate-400 shadow-2xs'
+                        : 'border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed opacity-40'
+                    }`}
+                  >
+                    <span>{s.size}</span>
+                    {!isAvailable && (
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-full h-px bg-slate-400 rotate-25" />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

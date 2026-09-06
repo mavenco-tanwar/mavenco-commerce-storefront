@@ -15,6 +15,9 @@ import {
   Copy,
   Package,
   Sparkles,
+  Bell,
+  Mail,
+  X,
 } from 'lucide-react';
 import {
   PurchasePanelConfig,
@@ -58,10 +61,12 @@ export function ProductPurchasePanel({
   const [quantity, setQuantity] = useState(1);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isNotifyModalOpen, setIsNotifyModalOpen] = useState(false);
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [notifySuccess, setNotifySuccess] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const { formatPrice } = useCurrency();
 
-  // Format currency helper
   const formatMoney = (amount: number) => {
     try {
       return formatPrice(amount);
@@ -70,7 +75,17 @@ export function ProductPurchasePanel({
     }
   };
 
+  const isInStock = product.inStock !== false && product.stockCount > 0;
+  const outOfStockMode = config.outOfStockBehavior || 'disabled';
+
   const handleAddToCart = () => {
+    if (!isInStock && outOfStockMode === 'notifyMe') {
+      setIsNotifyModalOpen(true);
+      return;
+    }
+    if (!isInStock && outOfStockMode === 'disabled') {
+      return;
+    }
     if (onAddToCart) {
       onAddToCart(quantity);
     }
@@ -79,6 +94,13 @@ export function ProductPurchasePanel({
   };
 
   const handleBuyNow = () => {
+    if (!isInStock && outOfStockMode === 'notifyMe') {
+      setIsNotifyModalOpen(true);
+      return;
+    }
+    if (!isInStock && outOfStockMode === 'disabled') {
+      return;
+    }
     if (onBuyNow) {
       onBuyNow(quantity);
     }
@@ -92,10 +114,19 @@ export function ProductPurchasePanel({
     }
   };
 
-  // Curated badges (store badges + discount, up to 4)
+  const handleNotifySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!notifyEmail) return;
+    setNotifySuccess(true);
+    setTimeout(() => {
+      setIsNotifyModalOpen(false);
+      setNotifySuccess(false);
+      setNotifyEmail('');
+    }, 2000);
+  };
+
   const curatedBadges = (product.badges || []).slice(0, 4);
 
-  // Helper for badge color accents
   const getBadgeStyle = (badge: string) => {
     const lower = badge.toLowerCase();
     if (lower.includes('%') || lower.includes('off') || lower.includes('sale')) {
@@ -113,7 +144,6 @@ export function ProductPurchasePanel({
     return 'bg-slate-50 text-slate-700 border-slate-200';
   };
 
-  // Render element by key
   const renderElement = (key: PurchaseElementKey) => {
     switch (key) {
       case 'badges':
@@ -194,7 +224,6 @@ export function ProductPurchasePanel({
               )}
             </div>
 
-            {/* Product Short Description */}
             {(product.shortDescription || product.subtitle) && (
               <p className="text-sm text-slate-600 leading-relaxed font-normal pt-0.5">
                 {product.shortDescription || product.subtitle}
@@ -204,7 +233,6 @@ export function ProductPurchasePanel({
         );
 
       case 'discount':
-        // Rendered together with price
         return null;
 
       case 'colorSwatches':
@@ -222,8 +250,8 @@ export function ProductPurchasePanel({
               onColorChange={onColorChange}
               onSizeChange={onSizeChange}
               onOpenSizeGuide={onOpenSizeGuide}
-              colorDisplayType={config.colorDisplayType}
-              sizeDisplayType={config.sizeDisplayType}
+              colorDisplayType={config.colorDisplayType || 'swatches'}
+              sizeDisplayType={config.sizeDisplayType || 'buttons'}
               showSizeGuide={true}
             />
           );
@@ -233,11 +261,25 @@ export function ProductPurchasePanel({
       case 'stockUrgency':
         if (!config.showLowStockWarning) return null;
         if (product.stockCount <= config.lowStockThreshold && product.stockCount > 0) {
+          const msg = (config.lowStockMessage || 'Only {{quantity}} left in stock — order soon')
+            .replace('{{quantity}}', String(product.stockCount));
           return (
             <div key="stockUrgency" className="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-2 text-amber-800 text-xs font-bold">
               <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>{msg}</span>
+            </div>
+          );
+        }
+        if (!isInStock) {
+          return (
+            <div key="stockUrgency" className="p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-center gap-2 text-rose-800 text-xs font-bold">
+              <Clock className="w-4 h-4 text-rose-600 shrink-0" />
               <span>
-                {config.lowStockMessage.replace('{{quantity}}', String(product.stockCount))}
+                {outOfStockMode === 'backorder'
+                  ? 'Currently on Backorder — Estimated Dispatch in 1–2 Weeks'
+                  : outOfStockMode === 'preorder'
+                  ? 'Pre-Order Exclusive — Crafted to Order'
+                  : 'Currently Out of Stock'}
               </span>
             </div>
           );
@@ -245,7 +287,7 @@ export function ProductPurchasePanel({
         return null;
 
       case 'quantity':
-        if (!config.showQuantitySelector) return null;
+        if (!config.showQuantitySelector || !isInStock) return null;
         return (
           <div key="quantity" className="flex items-center gap-3">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-900">
@@ -276,17 +318,42 @@ export function ProductPurchasePanel({
       case 'addToCart':
       case 'buyNow':
         if (key === 'addToCart') {
+          // Compute CTA button labels according to out-of-stock behavior
+          let cartBtnLabel = 'Add to Bag';
+          let buyBtnLabel = 'Instant Buy';
+          let isCartDisabled = false;
+
+          if (!isInStock) {
+            if (outOfStockMode === 'backorder') {
+              cartBtnLabel = 'Backorder Now';
+              buyBtnLabel = 'Backorder Instant';
+            } else if (outOfStockMode === 'preorder') {
+              cartBtnLabel = 'Pre-Order Creation';
+              buyBtnLabel = 'Pre-Order Now';
+            } else if (outOfStockMode === 'notifyMe') {
+              cartBtnLabel = 'Notify Me When Available';
+              buyBtnLabel = 'Notify Me';
+            } else {
+              cartBtnLabel = 'Out of Stock';
+              buyBtnLabel = 'Out of Stock';
+              isCartDisabled = true;
+            }
+          }
+
           return (
             <div key="actions" className="space-y-3 pt-2">
               <div className="flex items-center gap-3">
                 {config.showAddToCart && (
                   <button
                     type="button"
+                    disabled={isCartDisabled}
                     onClick={handleAddToCart}
-                    className={`flex-1 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer ${
-                      isAddedToCart
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-[#111111] hover:bg-[#B77A68] text-white'
+                    className={`flex-1 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm ${
+                      isCartDisabled
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : isAddedToCart
+                        ? 'bg-emerald-600 text-white cursor-pointer'
+                        : 'bg-[#111111] hover:bg-[#222222] text-white cursor-pointer'
                     }`}
                   >
                     {isAddedToCart ? (
@@ -294,23 +361,30 @@ export function ProductPurchasePanel({
                         <Check className="w-4 h-4" />
                         <span>Added to Bag</span>
                       </>
+                    ) : !isInStock && outOfStockMode === 'notifyMe' ? (
+                      <>
+                        <Bell className="w-4 h-4" />
+                        <span>{cartBtnLabel}</span>
+                      </>
                     ) : (
                       <>
                         <ShoppingBag className="w-4 h-4" />
-                        <span>Add to Bag</span>
+                        <span>{cartBtnLabel}</span>
                       </>
                     )}
                   </button>
                 )}
 
-                {config.showBuyNow && (
+                {config.showBuyNow && (!isCartDisabled || outOfStockMode === 'notifyMe') && (
                   <button
                     type="button"
+                    disabled={isCartDisabled && outOfStockMode !== 'notifyMe'}
                     onClick={handleBuyNow}
-                    className="flex-1 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider bg-[#B77A68] hover:bg-[#A36655] text-white transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                    style={{ backgroundColor: 'var(--pdp-accent-color, #B77A68)' }}
+                    className="flex-1 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer hover:opacity-90"
                   >
                     <Zap className="w-4 h-4 fill-white" />
-                    <span>Instant Buy</span>
+                    <span>{buyBtnLabel}</span>
                   </button>
                 )}
               </div>
@@ -323,11 +397,11 @@ export function ProductPurchasePanel({
                     onClick={onToggleWishlist}
                     className={`flex items-center gap-1.5 font-bold transition-colors cursor-pointer ${
                       isWishlisted
-                        ? 'text-[#B77A68]'
-                        : 'text-slate-600 hover:text-[#111111]'
+                        ? 'text-rose-600'
+                        : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-[#B77A68] text-[#B77A68]' : ''}`} />
+                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-600 text-rose-600' : ''}`} />
                     <span>{isWishlisted ? 'Saved in Wishlist' : 'Add to Wishlist'}</span>
                   </button>
                 )}
@@ -358,12 +432,11 @@ export function ProductPurchasePanel({
               <Truck className="w-4 h-4 text-rose-600 shrink-0" />
               <span>
                 {config.shippingText
-                  ? config.shippingText.replace(/\$100/g, "₹999").replace(/\$50/g, "₹499")
-                  : "Free express shipping on all orders above ₹999"}
+                  ? config.shippingText.replace(/\$100/g, '₹999').replace(/\$50/g, '₹499')
+                  : 'Free express shipping on all orders above ₹999'}
               </span>
             </div>
 
-            {/* Product Shipping Details */}
             <div className="grid grid-cols-2 gap-2 text-xs pt-1">
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-[#EFE8E2]">
                 <Package className="w-3.5 h-3.5 text-slate-500 shrink-0" />
@@ -393,7 +466,7 @@ export function ProductPurchasePanel({
         return (
           <div key="returns" className="flex items-center gap-2.5 text-xs text-slate-600">
             <RefreshCw className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>{config.returnPolicyText}</span>
+            <span>{config.returnPolicyText || 'Hassle-free 7-day doorstep exchange and returns guarantee'}</span>
           </div>
         );
 
@@ -412,8 +485,9 @@ export function ProductPurchasePanel({
 
   return (
     <div
+      style={config.stickyDesktop ? { top: 'var(--pdp-sticky-offset, 80px)' } : undefined}
       className={`space-y-5 p-7 rounded-3xl bg-[#FAF7F5] border border-[#EFE8E2] text-slate-900 shadow-xs ${
-        config.stickyDesktop ? 'sticky top-24' : ''
+        config.stickyDesktop ? 'sticky' : ''
       } ${className}`}
     >
       {/* Ordered Elements Pipeline */}
@@ -469,6 +543,54 @@ export function ProductPurchasePanel({
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Notify Me When In Stock Modal */}
+      {isNotifyModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-white p-6 rounded-2xl border border-slate-200 space-y-4 shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => setIsNotifyModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <div className="flex items-center gap-2 text-rose-600">
+              <Bell className="w-5 h-5" />
+              <h3 className="text-sm font-bold text-slate-900">Restock Notification</h3>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Enter your email and we will notify you the moment <strong>{product.title}</strong> is restocked.
+            </p>
+            {notifySuccess ? (
+              <div className="p-3 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                <span>You will receive an alert as soon as it arrives!</span>
+              </div>
+            ) : (
+              <form onSubmit={handleNotifySubmit} className="space-y-3">
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    placeholder="name@domain.com"
+                    value={notifyEmail}
+                    onChange={(e) => setNotifyEmail(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 text-xs bg-slate-50 rounded-xl border border-slate-300 text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-rose-500/30 font-sans"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Notify Me
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}
