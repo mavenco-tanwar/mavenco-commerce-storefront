@@ -45,6 +45,7 @@ import { FloatingWhatsAppWidget } from '@/components/ui/FloatingWhatsAppWidget';
 import { CurrencyProvider } from '@/lib/currency-context';
 import { TopLoadingProgressBar } from '@/components/ui/TopLoadingProgressBar';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { ProductCardConfigProvider } from '@/context/ProductCardConfigContext';
 import Loading from './loading';
 
 export default function RootLayout({
@@ -62,11 +63,13 @@ export default function RootLayout({
                 <CartProvider>
                   <CurrencyProvider>
                     <ThemeProvider>
-                      <Suspense fallback={<Loading />}>
-                        <TopLoadingProgressBar />
-                        <DynamicLayoutWrapper>{children}</DynamicLayoutWrapper>
-                      </Suspense>
-                      <FloatingWhatsAppWidget />
+                      <ProductCardConfigProvider>
+                        <Suspense fallback={<Loading />}>
+                          <TopLoadingProgressBar />
+                          <DynamicLayoutWrapper>{children}</DynamicLayoutWrapper>
+                        </Suspense>
+                        <FloatingWhatsAppWidget />
+                      </ProductCardConfigProvider>
                     </ThemeProvider>
                   </CurrencyProvider>
                 </CartProvider>

@@ -15,6 +15,21 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders() });
 }
 
+function deepMerge<T extends Record<string, any>>(target: T, source?: any): T {
+  if (!source || typeof source !== 'object') return target;
+  const result: any = { ...target };
+  for (const key of Object.keys(source)) {
+    const sVal = source[key];
+    const tVal = target[key];
+    if (sVal && typeof sVal === 'object' && !Array.isArray(sVal) && tVal && typeof tVal === 'object') {
+      result[key] = deepMerge(tVal, sVal);
+    } else if (sVal !== undefined) {
+      result[key] = sVal;
+    }
+  }
+  return result;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tenantSlug = (
@@ -36,23 +51,22 @@ export async function GET(request: NextRequest) {
       });
 
       if (doc) {
+        const headers = {
+          ...corsHeaders(),
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        };
+
         if (isPreview && doc.draft) {
-          return NextResponse.json(
-            { success: true, data: { ...defaultCfg, ...doc.draft, tenantId: tenantSlug } },
-            { headers: corsHeaders() }
-          );
+          const merged = deepMerge(defaultCfg, { ...doc.draft, tenantId: tenantSlug });
+          return NextResponse.json({ success: true, data: merged }, { headers });
         }
         if (doc.published) {
-          return NextResponse.json(
-            { success: true, data: { ...defaultCfg, ...doc.published, tenantId: tenantSlug } },
-            { headers: corsHeaders() }
-          );
+          const merged = deepMerge(defaultCfg, { ...doc.published, tenantId: tenantSlug });
+          return NextResponse.json({ success: true, data: merged }, { headers });
         }
         if (doc.draft) {
-          return NextResponse.json(
-            { success: true, data: { ...defaultCfg, ...doc.draft, tenantId: tenantSlug } },
-            { headers: corsHeaders() }
-          );
+          const merged = deepMerge(defaultCfg, { ...doc.draft, tenantId: tenantSlug });
+          return NextResponse.json({ success: true, data: merged }, { headers });
         }
       }
     }
@@ -60,7 +74,15 @@ export async function GET(request: NextRequest) {
     console.warn('Product card DB Fetch error, using default seed:', err);
   }
 
-  return NextResponse.json({ success: true, data: defaultCfg }, { headers: corsHeaders() });
+  return NextResponse.json(
+    { success: true, data: defaultCfg },
+    {
+      headers: {
+        ...corsHeaders(),
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      },
+    }
+  );
 }
 
 export async function PUT(request: NextRequest) {
