@@ -39,8 +39,8 @@ export function LogoBlock({ block, tenantSlug }: LogoBlockProps) {
         <span
           className="text-base sm:text-lg font-bold tracking-tight text-current transition-colors leading-tight font-heading"
           style={{
-            fontFamily: block.styles?.fontFamily,
-            color: block.styles?.textColor,
+            fontFamily: block.styles?.fontFamily || 'var(--header-main-font-family, var(--theme-font-heading, inherit))',
+            color: block.styles?.textColor || 'var(--header-main-text, currentColor)',
           }}
         >
           {logoText}
@@ -48,7 +48,7 @@ export function LogoBlock({ block, tenantSlug }: LogoBlockProps) {
         {badgeText && (
           <span
             className="text-[9px] sm:text-[10px] uppercase tracking-widest font-semibold opacity-60 leading-none mt-0.5"
-            style={{ color: block.styles?.textColor }}
+            style={{ color: block.styles?.textColor || 'var(--header-main-text, currentColor)' }}
           >
             {badgeText}
           </span>

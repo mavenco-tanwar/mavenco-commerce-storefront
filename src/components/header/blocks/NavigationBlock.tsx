@@ -11,6 +11,7 @@ interface NavigationBlockProps {
   block: HeaderBlock;
   navigationMenu: NavigationItem[];
   accentColor?: string;
+  hoverColor?: string;
   tenantSlug: string;
 }
 
@@ -18,6 +19,7 @@ export function NavigationBlock({
   block,
   navigationMenu = [],
   accentColor = '#E11D48',
+  hoverColor,
   tenantSlug,
 }: NavigationBlockProps) {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -37,11 +39,12 @@ export function NavigationBlock({
     displayedItems = activeItems.slice(half);
   }
 
-  const fontFamily = s.fontFamily || block.styles?.fontFamily || 'inherit';
+  const fontFamily = s.fontFamily || block.styles?.fontFamily || 'var(--header-main-font-family, inherit)';
   const fontSize = s.fontSize || block.styles?.fontSize || '12px';
   const letterSpacing = s.letterSpacing || block.styles?.letterSpacing || '0.12em';
   const textTransform = (s.textTransform || block.styles?.textTransform || 'uppercase') as any;
   const fontWeight = s.fontWeight || block.styles?.fontWeight || '600';
+  const effectiveHoverColor = hoverColor || accentColor || 'var(--header-main-hover, var(--theme-color-accent, #E11D48))';
 
   return (
     <nav
@@ -63,14 +66,14 @@ export function NavigationBlock({
             <Link
               href={formatTenantHref(item.url, tenantSlug)}
               target={item.target || '_self'}
-              className="flex items-center gap-1.5 transition-opacity hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="flex items-center gap-1.5 transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{
                 fontFamily,
                 fontSize,
                 letterSpacing,
                 textTransform,
                 fontWeight,
-                color: isHovered ? accentColor : 'inherit',
+                color: isHovered ? effectiveHoverColor : 'inherit',
               }}
             >
               <span>{item.label}</span>

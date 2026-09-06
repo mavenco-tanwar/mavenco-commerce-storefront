@@ -8,6 +8,9 @@ function corsHeaders() {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Store-ID, X-API-Key, x-tenant-slug',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
   };
 }
 
@@ -39,6 +42,12 @@ export async function GET(request: NextRequest) {
 
       if (doc && (doc.config || doc.navigationMenu || doc.mainHeader || doc.announcementBar)) {
         const raw = doc.config || doc;
+        const rawAnn = raw.announcementBar || doc.announcementBar || {};
+        const rawMain = raw.mainHeader || doc.mainHeader || {};
+        const rawSticky = raw.sticky || doc.sticky || {};
+        const rawMobile = raw.mobile || doc.mobile || {};
+        const rawNav = raw.navigationMenu || doc.navigationMenu;
+
         const mergedConfig: HeaderConfig = {
           ...base,
           ...raw,
@@ -47,36 +56,36 @@ export async function GET(request: NextRequest) {
           theme: raw.theme || doc.theme || base.theme,
           announcementBar: {
             ...base.announcementBar,
-            ...(raw.announcementBar || doc.announcementBar || {}),
+            ...rawAnn,
             styles: {
               ...base.announcementBar.styles,
-              ...(raw.announcementBar?.styles || doc.announcementBar?.styles || {}),
+              ...(rawAnn.styles || {}),
             },
-            blocks: Array.isArray(raw.announcementBar?.blocks || doc.announcementBar?.blocks)
-              ? (raw.announcementBar?.blocks || doc.announcementBar?.blocks)
+            blocks: Array.isArray(rawAnn.blocks)
+              ? rawAnn.blocks
               : base.announcementBar.blocks,
           },
           mainHeader: {
             ...base.mainHeader,
-            ...(raw.mainHeader || doc.mainHeader || {}),
+            ...rawMain,
             styles: {
               ...base.mainHeader.styles,
-              ...(raw.mainHeader?.styles || doc.mainHeader?.styles || {}),
+              ...(rawMain.styles || {}),
             },
-            blocks: Array.isArray(raw.mainHeader?.blocks || doc.mainHeader?.blocks)
-              ? (raw.mainHeader?.blocks || doc.mainHeader?.blocks)
+            blocks: Array.isArray(rawMain.blocks)
+              ? rawMain.blocks
               : base.mainHeader.blocks,
           },
           sticky: {
             ...base.sticky,
-            ...(raw.sticky || doc.sticky || {}),
+            ...rawSticky,
           },
           mobile: {
             ...base.mobile,
-            ...(raw.mobile || doc.mobile || {}),
+            ...rawMobile,
           },
-          navigationMenu: Array.isArray(raw.navigationMenu || doc.navigationMenu)
-            ? (raw.navigationMenu || doc.navigationMenu)
+          navigationMenu: Array.isArray(rawNav)
+            ? rawNav
             : base.navigationMenu,
         };
 

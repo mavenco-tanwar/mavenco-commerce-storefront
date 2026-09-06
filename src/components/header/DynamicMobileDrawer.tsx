@@ -71,9 +71,9 @@ export function DynamicMobileDrawer({
 
   if (!isOpen) return null;
 
-  const bg = drawerSettings?.background || '#FFFDFC';
-  const textColor = drawerSettings?.textColor || '#111111';
-  const accentColor = drawerSettings?.accentColor || '#E11D48';
+  const bg = drawerSettings?.background || 'var(--header-drawer-bg, var(--theme-color-surface, #FFFDFC))';
+  const textColor = drawerSettings?.textColor || 'var(--header-drawer-text, var(--theme-color-text, #111111))';
+  const accentColor = drawerSettings?.accentColor || 'var(--header-drawer-accent, var(--theme-color-accent, #E11D48))';
 
   const toggleAccordion = (id: string) => {
     setExpandedItemId((prev) => (prev === id ? null : id));

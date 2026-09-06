@@ -20,6 +20,15 @@ interface DynamicMainHeaderProps {
   navigationMenu: NavigationItem[];
   tenantSlug: string;
   isScrolled?: boolean;
+  stickyConfig?: {
+    enabled: boolean;
+    behavior?: string;
+    thresholdPx?: number;
+    shrinkOnScroll?: boolean;
+    scrolledHeight?: number;
+    stickyBg?: string;
+    stickyTextColor?: string;
+  };
   onOpenMobileDrawer?: () => void;
   onOpenSearch?: () => void;
   onOpenCart?: () => void;
@@ -42,6 +51,7 @@ export function DynamicMainHeader({
   navigationMenu = [],
   tenantSlug,
   isScrolled = false,
+  stickyConfig,
   onOpenMobileDrawer,
   onOpenSearch,
   onOpenCart,
@@ -65,7 +75,7 @@ export function DynamicMainHeader({
     .filter((b) => b && b.zone === 'main.right' && b.enabled !== false)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  const currentHeight = isScrolled ? scrolledHeight : height;
+  const currentHeight = isScrolled ? (stickyConfig?.scrolledHeight || scrolledHeight) : height;
 
   // Calculate Responsive Main Header Visibility
   const isDesktop = responsive?.desktop !== false;
@@ -94,19 +104,39 @@ export function DynamicMainHeader({
       ? 'w-full px-4 sm:px-6 lg:px-10'
       : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
 
+  const computedBg =
+    isScrolled && stickyConfig?.stickyBg
+      ? stickyConfig.stickyBg
+      : styles?.backgroundColor || 'var(--header-main-bg, var(--theme-color-surface, #FFFDFC))';
+
+  const computedTextColor =
+    isScrolled && stickyConfig?.stickyTextColor
+      ? stickyConfig.stickyTextColor
+      : styles?.textColor || 'var(--header-main-text, var(--theme-color-text, #111111))';
+
+  const computedShadow = isScrolled
+    ? '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04)'
+    : styles?.shadow === 'sm'
+    ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+    : styles?.shadow === 'md'
+    ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+    : styles?.shadow === 'lg'
+    ? '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+    : styles?.shadow === 'none'
+    ? 'none'
+    : undefined;
+
   return (
     <div
       role="banner"
       className={responsiveHeaderClass}
       style={{
-        backgroundColor:
-          styles?.backgroundColor && styles.backgroundColor !== '#FFFFFF' && styles.backgroundColor !== '#FFFDFC'
-            ? styles.backgroundColor
-            : 'var(--theme-color-surface, var(--theme-color-background, #FFFDFC))',
-        color: styles?.textColor || 'var(--theme-color-text, #111111)',
-        borderColor: styles?.borderColor || 'var(--theme-color-border, #E8DED8)',
-        borderBottomWidth: styles?.borderBottomWidth || '1px',
-        fontFamily: styles?.fontFamily || 'var(--theme-font-navigation, inherit)',
+        backgroundColor: computedBg,
+        color: computedTextColor,
+        borderColor: styles?.borderColor || 'var(--header-main-border, var(--theme-color-border, #E8DED8))',
+        borderBottomWidth: styles?.borderBottomWidth || 'var(--header-main-border-width, 1px)',
+        fontFamily: styles?.fontFamily || 'var(--header-main-font-family, var(--theme-font-navigation, inherit))',
+        boxShadow: computedShadow,
       }}
     >
       <div className={containerClasses}>
@@ -134,7 +164,8 @@ export function DynamicMainHeader({
                 block={block}
                 tenantSlug={tenantSlug}
                 navigationMenu={navigationMenu}
-                accentColor={styles.accentColor}
+                accentColor={styles?.accentColor}
+                hoverColor={styles?.hoverColor}
                 isScrolled={isScrolled}
                 onOpenSearch={onOpenSearch}
                 onOpenCart={onOpenCart}
@@ -150,7 +181,8 @@ export function DynamicMainHeader({
                 block={block}
                 tenantSlug={tenantSlug}
                 navigationMenu={navigationMenu}
-                accentColor={styles.accentColor}
+                accentColor={styles?.accentColor}
+                hoverColor={styles?.hoverColor}
                 isScrolled={isScrolled}
                 onOpenSearch={onOpenSearch}
                 onOpenCart={onOpenCart}
@@ -166,7 +198,8 @@ export function DynamicMainHeader({
                 block={block}
                 tenantSlug={tenantSlug}
                 navigationMenu={navigationMenu}
-                accentColor={styles.accentColor}
+                accentColor={styles?.accentColor}
+                hoverColor={styles?.hoverColor}
                 isScrolled={isScrolled}
                 onOpenSearch={onOpenSearch}
                 onOpenCart={onOpenCart}

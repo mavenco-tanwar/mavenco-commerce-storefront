@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { resolveTenant, resolveActiveTenantSlug } from '@/lib/tenant-config';
 import { HeaderConfig, getDefaultHeaderConfig } from '@/lib/header-config';
@@ -32,12 +32,12 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
   const { isDrawerOpen: isCartOpen, closeDrawer: closeCartDrawer } = useCart();
 
   // Fetch live Header configuration from MongoDB Atlas API
-  useEffect(() => {
-    let isMounted = true;
-    fetch(`/api/v1/content/header?tenant=${activeTenantSlug}&_t=${Date.now()}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        if (isMounted && json?.data) {
+  const fetchHeader = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/v1/content/header?tenant=${encodeURIComponent(activeTenantSlug)}&_t=${Date.now()}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data) {
           const raw = json.data;
           const base = getDefaultHeaderConfig(activeTenantSlug);
           setConfig({
@@ -50,7 +50,9 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
                 ...base.announcementBar.styles,
                 ...(raw.announcementBar?.styles || {}),
               },
-              blocks: raw.announcementBar?.blocks || base.announcementBar.blocks,
+              blocks: Array.isArray(raw.announcementBar?.blocks)
+                ? raw.announcementBar.blocks
+                : base.announcementBar.blocks,
             },
             mainHeader: {
               ...base.mainHeader,
@@ -59,18 +61,56 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
                 ...base.mainHeader.styles,
                 ...(raw.mainHeader?.styles || {}),
               },
-              blocks: raw.mainHeader?.blocks || base.mainHeader.blocks,
+              blocks: Array.isArray(raw.mainHeader?.blocks)
+                ? raw.mainHeader.blocks
+                : base.mainHeader.blocks,
             },
-            navigationMenu: raw.navigationMenu || base.navigationMenu,
+            navigationMenu: Array.isArray(raw.navigationMenu)
+              ? raw.navigationMenu
+              : base.navigationMenu,
           });
         }
-      })
-      .catch(() => {});
+      }
+    } catch (err) {
+      console.warn('Failed to fetch header:', err);
+    }
+  }, [activeTenantSlug]);
 
-    return () => {
-      isMounted = false;
+  useEffect(() => {
+    fetchHeader();
+  }, [fetchHeader, pathname, searchParams]);
+
+  // Live broadcast listener from Admin Visual Theme Studio preview / publish
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (
+        event.data?.type === 'HEADER_UPDATED' ||
+        event.data?.type === 'MAVENCO_HEADER_PREVIEW' ||
+        event.data?.type === 'MAVENCO_THEME_PREVIEW'
+      ) {
+        if (event.data?.headerConfig) {
+          setConfig(event.data.headerConfig);
+        } else {
+          fetchHeader();
+        }
+      }
     };
-  }, [activeTenantSlug, pathname, searchParams]);
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === 'jq_header_updated' || event.key === 'jq_active_tenant') {
+        fetchHeader();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [fetchHeader]);
 
   // Sticky Scroll listener
   useEffect(() => {
@@ -89,12 +129,49 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
     return () => window.removeEventListener('scroll', handleScroll);
   }, [config.sticky]);
 
+  // Generate dynamic CSS variables scoped to Header & Navigation
+  const headerCssVariables = useMemo(() => {
+    const annStyles = config.announcementBar?.styles || ({} as any);
+    const mainStyles = config.mainHeader?.styles || ({} as any);
+    const stickyStyles = config.sticky || ({} as any);
+    const drawerStyles = config.mobile?.drawer || ({} as any);
+
+    return `
+      :root {
+        --header-announcement-bg: ${annStyles.backgroundColor || '#1E1B4B'};
+        --header-announcement-text: ${annStyles.textColor || '#FFFFFF'};
+        --header-announcement-accent: ${annStyles.accentColor || '#F59E0B'};
+        --header-announcement-border: ${annStyles.borderColor || 'rgba(255,255,255,0.1)'};
+        --header-announcement-font-size: ${annStyles.fontSize || '11px'};
+        --header-announcement-font-family: ${annStyles.fontFamily || 'inherit'};
+        --header-announcement-letter-spacing: ${annStyles.letterSpacing || '0.05em'};
+
+        --header-main-bg: ${mainStyles.backgroundColor || '#FFFDFC'};
+        --header-main-text: ${mainStyles.textColor || '#111111'};
+        --header-main-hover: ${mainStyles.hoverColor || '#E11D48'};
+        --header-main-accent: ${mainStyles.accentColor || '#E11D48'};
+        --header-main-border: ${mainStyles.borderColor || '#E8DED8'};
+        --header-main-border-width: ${mainStyles.borderBottomWidth || '1px'};
+        --header-main-font-family: ${mainStyles.fontFamily || 'inherit'};
+        --header-main-height: ${config.mainHeader?.height || 80}px;
+        --header-sticky-bg: ${stickyStyles.stickyBg || 'rgba(255,253,252,0.95)'};
+        --header-sticky-text: ${stickyStyles.stickyTextColor || '#111111'};
+        --header-sticky-height: ${stickyStyles.scrolledHeight || 68}px;
+
+        --header-drawer-bg: ${drawerStyles.background || '#FFFDFC'};
+        --header-drawer-text: ${drawerStyles.textColor || '#111111'};
+        --header-drawer-accent: ${drawerStyles.accentColor || '#E11D48'};
+      }
+    `.trim();
+  }, [config]);
+
   const isSticky = config.sticky?.enabled !== false;
   const isTransparent =
     config.transparent?.enabledOnHomepage && (pathname === '/' || pathname === `/stores/${activeTenantSlug}`);
 
   return (
     <>
+      <style id="dynamic-header-tokens" dangerouslySetInnerHTML={{ __html: headerCssVariables }} />
       <header
         className={`${
           isSticky ? 'sticky top-0 z-40' : 'relative z-40'
@@ -131,6 +208,7 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
             navigationMenu={config.navigationMenu}
             tenantSlug={activeTenantSlug}
             isScrolled={isScrolled}
+            stickyConfig={config.sticky}
             onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
             onOpenSearch={() => setIsSearchOpen(true)}
             containerWidth={config.mainHeader.containerWidth}

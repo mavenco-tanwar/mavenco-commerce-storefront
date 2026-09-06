@@ -25,6 +25,7 @@ interface HeaderBlockRendererProps {
   tenantSlug: string;
   navigationMenu?: NavigationItem[];
   accentColor?: string;
+  hoverColor?: string;
   isScrolled?: boolean;
   onOpenSearch?: () => void;
   onOpenCart?: () => void;
@@ -57,6 +58,7 @@ export function HeaderBlockRenderer({
   tenantSlug,
   navigationMenu = [],
   accentColor = '#E11D48',
+  hoverColor,
   isScrolled = false,
   onOpenSearch,
   onOpenCart,
@@ -91,6 +93,7 @@ export function HeaderBlockRenderer({
             block={block}
             navigationMenu={navigationMenu}
             accentColor={accentColor}
+            hoverColor={hoverColor}
             tenantSlug={tenantSlug}
           />
         );

@@ -49,7 +49,7 @@ export function SearchBlock({ block, accentColor = '#E11D48', onOpenSearch }: Se
         onClick={handleTrigger}
         aria-label="Open Search"
         className="flex items-center gap-1.5 hover:opacity-75 transition-opacity text-xs font-semibold tracking-wider uppercase cursor-pointer select-none group focus-visible:outline-2 focus-visible:outline-offset-2"
-        style={{ color: block.styles?.textColor || 'inherit' }}
+        style={{ color: block.styles?.textColor || 'var(--header-main-text, inherit)' }}
       >
         <Search className="w-4 h-4 transition-transform group-hover:scale-110" />
         {mode === 'icon-label' && <span>{label}</span>}

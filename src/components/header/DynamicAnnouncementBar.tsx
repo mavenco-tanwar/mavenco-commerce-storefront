@@ -149,8 +149,18 @@ export function DynamicAnnouncementBar({
 
   // Marquee Mode Render
   if (mode === 'marquee') {
-    const marqueeText = centerBlocks.map((b) => b.settings?.text).filter(Boolean).join('   ✦   ') ||
-      'COMPLIMENTARY WORLDWIDE EXPRESS DELIVERY • EXCLUSIVE ATELIER LUXURY PACKAGING • DEDICATED BESPOKE CLIENT CONCIERGE';
+    const blockTexts = (blocks || [])
+      .filter((b) => (b.type === 'announcement' || b.zone?.startsWith('announcement')) && b.enabled !== false && b.settings?.text)
+      .map((b) => b.settings.text)
+      .filter(Boolean);
+
+    const marqueeText =
+      blockTexts.length > 0
+        ? blockTexts.join('   ✦   ')
+        : centerBlocks.map((b) => b.settings?.text).filter(Boolean).join('   ✦   ') ||
+          'COMPLIMENTARY WORLDWIDE EXPRESS DELIVERY • EXCLUSIVE ATELIER LUXURY PACKAGING • DEDICATED BESPOKE CLIENT CONCIERGE';
+
+    const duration = marqueeSpeed || 30;
 
     return (
       <aside
@@ -159,18 +169,25 @@ export function DynamicAnnouncementBar({
         onMouseLeave={() => setIsPaused(false)}
         className={`${responsiveClass} overflow-hidden whitespace-nowrap`}
         style={{
-          backgroundColor: styles?.backgroundColor || 'var(--theme-color-primary, #1E1B4B)',
-          color: styles?.textColor || '#FFFFFF',
-          borderColor: styles?.borderColor || 'rgba(255,255,255,0.1)',
-          fontSize: styles?.fontSize || '11px',
-          fontFamily: styles?.fontFamily || 'var(--theme-font-body, inherit)',
-          letterSpacing: styles?.letterSpacing || '0.08em',
+          backgroundColor: styles?.backgroundColor || 'var(--header-announcement-bg, var(--theme-color-primary, #1E1B4B))',
+          color: styles?.textColor || 'var(--header-announcement-text, #FFFFFF)',
+          borderColor: styles?.borderColor || 'var(--header-announcement-border, rgba(255,255,255,0.1))',
+          fontSize: styles?.fontSize || 'var(--header-announcement-font-size, 11px)',
+          fontFamily: styles?.fontFamily || 'var(--header-announcement-font-family, var(--theme-font-body, inherit))',
+          letterSpacing: styles?.letterSpacing || 'var(--header-announcement-letter-spacing, 0.08em)',
         }}
       >
-        <div className="flex w-max items-center animate-marquee hover:[animation-play-state:paused]">
-          <span className="px-6 font-semibold uppercase tracking-wider">{marqueeText}</span>
-          <span className="px-6 font-semibold uppercase tracking-wider">{marqueeText}</span>
-          <span className="px-6 font-semibold uppercase tracking-wider">{marqueeText}</span>
+        <div
+          className="flex w-max items-center animate-marquee"
+          style={{
+            animationDuration: `${duration}s`,
+            animationPlayState: isPaused ? 'paused' : 'running',
+          }}
+        >
+          <span className="px-8 font-semibold uppercase tracking-wider">{marqueeText}</span>
+          <span className="px-8 font-semibold uppercase tracking-wider">{marqueeText}</span>
+          <span className="px-8 font-semibold uppercase tracking-wider">{marqueeText}</span>
+          <span className="px-8 font-semibold uppercase tracking-wider">{marqueeText}</span>
         </div>
       </aside>
     );
@@ -183,12 +200,12 @@ export function DynamicAnnouncementBar({
       onMouseLeave={() => setIsPaused(false)}
       className={responsiveClass}
       style={{
-        backgroundColor: styles?.backgroundColor || 'var(--theme-color-primary, #1E1B4B)',
-        color: styles?.textColor || '#FFFFFF',
-        borderColor: styles?.borderColor || 'rgba(255,255,255,0.1)',
-        fontSize: styles?.fontSize || '11px',
-        fontFamily: styles?.fontFamily || 'var(--theme-font-body, inherit)',
-        letterSpacing: styles?.letterSpacing || '0.05em',
+        backgroundColor: styles?.backgroundColor || 'var(--header-announcement-bg, var(--theme-color-primary, #1E1B4B))',
+        color: styles?.textColor || 'var(--header-announcement-text, #FFFFFF)',
+        borderColor: styles?.borderColor || 'var(--header-announcement-border, rgba(255,255,255,0.1))',
+        fontSize: styles?.fontSize || 'var(--header-announcement-font-size, 11px)',
+        fontFamily: styles?.fontFamily || 'var(--header-announcement-font-family, var(--theme-font-body, inherit))',
+        letterSpacing: styles?.letterSpacing || 'var(--header-announcement-letter-spacing, 0.05em)',
       }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
