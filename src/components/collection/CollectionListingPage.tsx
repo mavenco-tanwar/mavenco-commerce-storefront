@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { Product } from '@/types/product';
 import { CollectionPageConfig } from '@/types/collection-page.types';
 import { getDefaultCollectionPageConfig } from '@/lib/collection-page-presets';
@@ -11,7 +12,7 @@ import { CollectionToolbar } from './CollectionToolbar';
 import { CollectionFilterSidebar, FilterState } from './CollectionFilterSidebar';
 import { CollectionFilterDrawer } from './CollectionFilterDrawer';
 import { ProductGrid } from '@/components/product/ProductGrid';
-import { resolveTenant, resolveActiveTenantSlug } from '@/lib/tenant-config';
+import { resolveTenant, resolveActiveTenantSlug, formatTenantHref } from '@/lib/tenant-config';
 
 export interface CollectionListingPageProps {
   initialProducts: Product[];
@@ -40,32 +41,104 @@ function CollectionListingPageContent({
   const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
   const activeTenant = resolveTenant(activeTenantSlug);
 
+  const isPreview = searchParams.get('preview') === 'draft';
+
   // Load Base Configuration
   const [config, setConfig] = useState<CollectionPageConfig>(() => ({
     ...getDefaultCollectionPageConfig(activeTenant.slug || 'demo'),
     ...(templateOverride || {}),
   }));
 
-  // Fetch Live Published Configuration from API
-  useEffect(() => {
-    async function loadTemplate() {
-      try {
-        const slug = activeTenant.slug || 'demo';
-        const res = await fetch(`/api/v1/content/collection-page?tenant=${slug}&template=default_fashion`);
-        const json = await res.json();
-        if (json.success && json.data) {
-          setConfig((prev) => ({
-            ...prev,
-            ...json.data,
-            ...(templateOverride || {}),
-          }));
-        }
-      } catch (err) {
-        console.warn('Failed to load published PLP template, using fallback config:', err);
+  // Fetch Live Published / Draft Configuration from API
+  const loadTemplate = useCallback(async () => {
+    try {
+      const slug = activeTenant.slug || 'demo';
+      const previewParam = isPreview ? '&preview=draft' : '';
+      const res = await fetch(
+        `/api/v1/content/collection-page?tenant=${slug}&template=default_fashion${previewParam}&_t=${Date.now()}`,
+        { cache: 'no-store' }
+      );
+      const json = await res.json();
+      if (json.success && json.data) {
+        setConfig((prev) => ({
+          ...prev,
+          ...json.data,
+          ...(templateOverride || {}),
+        }));
       }
+    } catch (err) {
+      console.warn('Failed to load published PLP template, using fallback config:', err);
     }
+  }, [activeTenant.slug, isPreview, templateOverride]);
+
+  // Initial fetch and draft check
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isPreview) {
+      try {
+        const cachedDraft = localStorage.getItem(`jq_collection_page_${activeTenant.slug}`);
+        if (cachedDraft) {
+          const parsed = JSON.parse(cachedDraft);
+          if (parsed && typeof parsed === 'object') {
+            setConfig((prev) => ({ ...prev, ...parsed, ...(templateOverride || {}) }));
+          }
+        }
+      } catch {}
+    }
+
     loadTemplate();
-  }, [activeTenant.slug, templateOverride]);
+  }, [loadTemplate, isPreview, activeTenant.slug, templateOverride]);
+
+  // Real-time live preview synchronization with Visual PLP Builder Studio iframe and storage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleMessage = (event: MessageEvent) => {
+      const data = event.data;
+      if (!data) return;
+
+      if (
+        data.type === 'PLP_UPDATED' ||
+        data.type === 'COLLECTION_PAGE_UPDATED' ||
+        data.type === 'COLLECTION_CONFIG_UPDATED' ||
+        data.type === 'MAVENCO_COLLECTION_PAGE_PREVIEW' ||
+        data.type === 'VISUAL_BUILDER_UPDATE'
+      ) {
+        const incoming = data.config || data.data;
+        if (incoming && typeof incoming === 'object') {
+          setConfig((prev) => ({ ...prev, ...incoming, ...(templateOverride || {}) }));
+        } else {
+          loadTemplate();
+        }
+      }
+    };
+
+    const handleStorage = (event: StorageEvent) => {
+      if (
+        event.key === 'jq_collection_page_updated' ||
+        event.key === `jq_collection_page_${activeTenant.slug}` ||
+        event.key === 'jq_active_tenant'
+      ) {
+        if (event.newValue) {
+          try {
+            const parsed = JSON.parse(event.newValue);
+            if (parsed && typeof parsed === 'object') {
+              setConfig((prev) => ({ ...prev, ...parsed, ...(templateOverride || {}) }));
+              return;
+            }
+          } catch {}
+        }
+        loadTemplate();
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [activeTenant.slug, loadTemplate, templateOverride]);
 
   // Compute Dynamic Max Price from Loaded Products
   const maxProductPrice = useMemo(() => {
@@ -268,22 +341,60 @@ function CollectionListingPageContent({
   }, [initialProducts]);
 
   return (
-    <div className="min-h-screen bg-[#FFFDFC] text-slate-900 pb-20 space-y-8">
+    <div
+      data-plp-builder="true"
+      className="min-h-screen pb-20 space-y-8 transition-colors duration-200"
+      style={{
+        backgroundColor: 'var(--theme-color-background, #FFFDFC)',
+        color: 'var(--theme-color-text, #111111)',
+        ['--plp-grid-columns' as any]: config.grid?.desktopColumns || 4,
+        ['--plp-grid-gap' as any]: config.grid?.gap || '24px',
+      }}
+    >
       {/* 1. Hero Section */}
       <CollectionHero
         config={config.hero}
         titleOverride={collectionTitle}
         descriptionOverride={collectionDescription}
         imageOverride={collectionBannerImage}
+        tenantSlug={activeTenantSlug}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* 2. Breadcrumbs */}
-        {config.breadcrumbs.enabled && (
+        {config.breadcrumbs?.enabled && (
           <CollectionBreadcrumbs
             items={breadcrumbs}
             separator={config.breadcrumbs.separator}
+            tenantSlug={activeTenantSlug}
           />
+        )}
+
+        {/* 2.1 Optional Collection Header if enabled */}
+        {config.header?.enabled && (
+          <div
+            className={`space-y-1 text-${
+              config.header.alignment === 'center'
+                ? 'center'
+                : config.header.alignment === 'right'
+                ? 'right'
+                : 'left'
+            }`}
+          >
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[var(--theme-color-heading,#111111)]">
+              {collectionTitle}
+            </h1>
+            {config.header.showDescription && collectionDescription && (
+              <p className="text-xs sm:text-sm text-[var(--theme-color-text-secondary,#57534E)] font-sans max-w-xl">
+                {collectionDescription}
+              </p>
+            )}
+            {config.header.showCount && (
+              <span className="text-xs text-[var(--theme-color-text-muted,#777777)] font-medium">
+                {filteredProducts.length} Items Available
+              </span>
+            )}
+          </div>
         )}
 
         {/* 3. Product Toolbar */}
@@ -295,17 +406,21 @@ function CollectionListingPageContent({
           onOpenMobileFilters={() => setIsMobileFiltersOpen(true)}
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
-          sortOptions={config.sorting.items}
-          showViewToggle={config.toolbar.showViewToggle}
+          sortOptions={config.sorting?.items}
+          showViewToggle={config.toolbar?.showViewToggle}
         />
 
         {/* 4. Main Catalog Grid & Filter Sidebar Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Desktop Filter Sidebar */}
-          {config.filters.position !== 'none' && (
-            <div className={`hidden lg:block lg:col-span-3 ${config.filters.sticky ? 'sticky top-24' : ''}`}>
+          {config.filters?.position !== 'none' && (
+            <div
+              className={`hidden lg:block lg:col-span-3 ${
+                config.filters?.sticky ? 'sticky top-24' : ''
+              }`}
+            >
               <CollectionFilterSidebar
-                filterDefs={config.filters.items}
+                filterDefs={config.filters?.items || []}
                 filterState={filterState}
                 onFilterChange={handleFilterChange}
                 onReset={handleResetFilters}
@@ -318,16 +433,24 @@ function CollectionListingPageContent({
           )}
 
           {/* Product Grid Area */}
-          <div className={config.filters.position !== 'none' ? 'lg:col-span-9 space-y-8' : 'lg:col-span-12 space-y-8'}>
+          <div
+            className={
+              config.filters?.position !== 'none'
+                ? 'lg:col-span-9 space-y-8'
+                : 'lg:col-span-12 space-y-8'
+            }
+          >
             {displayedProducts.length === 0 ? (
-              <div className="py-24 text-center rounded-2xl bg-[#FAF6F2] border border-[#E8DED8] space-y-4">
-                <h3 className="text-base font-serif font-bold text-slate-900">No creations found matching your filter criteria.</h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              <div className="py-24 text-center rounded-2xl bg-[var(--theme-color-surface-secondary,#FAF6F2)] border border-[var(--theme-color-border,#E8DED8)] space-y-4">
+                <h3 className="text-base font-serif font-bold text-[var(--theme-color-heading,#111111)]">
+                  No creations found matching your filter criteria.
+                </h3>
+                <p className="text-xs text-[var(--theme-color-text-muted,#777777)] max-w-sm mx-auto">
                   Try adjusting your price range or clearing active color and size selections.
                 </p>
                 <button
                   onClick={handleResetFilters}
-                  className="px-6 py-2.5 rounded-xl bg-slate-950 hover:bg-rose-600 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs"
+                  className="px-6 py-2.5 rounded-xl bg-[var(--theme-color-primary,#111111)] hover:bg-[var(--theme-color-accent,#B77A68)] text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-xs"
                 >
                   Reset All Filters
                 </button>
@@ -336,44 +459,53 @@ function CollectionListingPageContent({
               <>
                 <ProductGrid
                   products={displayedProducts}
-                  columns={config.grid.desktopColumns as any || 4}
+                  columns={(config.grid?.desktopColumns as 2 | 3 | 4) || 4}
+                  gap={config.grid?.gap}
+                  tenantSlug={activeTenantSlug}
                 />
 
                 {/* Promotional Insert Tile */}
-                {config.promo.enabled && displayedProducts.length >= (config.promo.insertAfterIndex || 4) && (
-                  <div className="my-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-950 to-slate-900 text-white border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
-                    <div className="space-y-1.5 max-w-lg">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">
-                        Atelier Exclusives
-                      </span>
-                      <h4 className="text-xl sm:text-2xl font-serif font-bold text-white">
-                        {config.promo.title}
-                      </h4>
-                      <p className="text-xs sm:text-sm text-slate-300">
-                        {config.promo.subtitle}
-                      </p>
-                    </div>
+                {config.promo?.enabled &&
+                  displayedProducts.length >= (config.promo.insertAfterIndex || 4) && (
+                    <div className="my-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-[#1A1625] text-white border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+                      <div className="space-y-1.5 max-w-lg">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">
+                          Atelier Exclusives
+                        </span>
+                        <h4 className="text-xl sm:text-2xl font-serif font-bold text-white">
+                          {config.promo.title}
+                        </h4>
+                        <p className="text-xs sm:text-sm text-slate-300">
+                          {config.promo.subtitle}
+                        </p>
+                      </div>
 
-                    <a
-                      href={config.promo.ctaLink || '/about'}
-                      className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition-all shrink-0 shadow-md"
-                    >
-                      {config.promo.ctaText}
-                    </a>
-                  </div>
-                )}
+                      <Link
+                        href={formatTenantHref(config.promo.ctaLink || '/about', activeTenantSlug)}
+                        className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition-all shrink-0 shadow-md"
+                      >
+                        {config.promo.ctaText}
+                      </Link>
+                    </div>
+                  )}
 
                 {/* Pagination Controls */}
-                {config.pagination.type === 'load_more' && visibleCount < filteredProducts.length && (
-                  <div className="flex justify-center pt-6">
-                    <button
-                      onClick={() => setVisibleCount((prev) => prev + (config.pagination.productsPerPage || 24))}
-                      className="px-8 py-3 rounded-xl bg-slate-950 hover:bg-rose-600 text-white text-xs font-black uppercase tracking-wider transition-all shadow-md"
-                    >
-                      Load More Creations ({filteredProducts.length - visibleCount} Remaining)
-                    </button>
-                  </div>
-                )}
+                {(config.pagination?.type === 'load_more' ||
+                  config.pagination?.type === 'infinite_scroll') &&
+                  visibleCount < filteredProducts.length && (
+                    <div className="flex justify-center pt-6">
+                      <button
+                        onClick={() =>
+                          setVisibleCount(
+                            (prev) => prev + (config.pagination.productsPerPage || 24)
+                          )
+                        }
+                        className="px-8 py-3 rounded-xl bg-[var(--theme-color-primary,#111111)] hover:bg-[var(--theme-color-accent,#B77A68)] text-white text-xs font-black uppercase tracking-wider transition-all shadow-md"
+                      >
+                        Load More Creations ({filteredProducts.length - visibleCount} Remaining)
+                      </button>
+                    </div>
+                  )}
               </>
             )}
           </div>

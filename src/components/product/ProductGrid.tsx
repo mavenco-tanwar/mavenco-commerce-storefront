@@ -10,6 +10,7 @@ export interface ProductGridProps {
   isLoading?: boolean;
   skeletonCount?: number;
   columns?: 2 | 3 | 4;
+  gap?: string;
   className?: string;
   tenantSlug?: string;
 }
@@ -19,6 +20,7 @@ export function ProductGrid({
   isLoading = false,
   skeletonCount = 8,
   columns: explicitColumns,
+  gap,
   className = '',
   tenantSlug,
 }: ProductGridProps) {
@@ -34,7 +36,10 @@ export function ProductGrid({
 
   if (isLoading) {
     return (
-      <div className={`grid ${activeColumnClass} gap-3 sm:gap-6 ${className}`}>
+      <div
+        className={`grid ${activeColumnClass} gap-3 sm:gap-6 ${className}`}
+        style={{ gap: gap || undefined }}
+      >
         {Array.from({ length: skeletonCount }).map((_, i) => (
           <ProductCardSkeleton key={i} />
         ))}
@@ -47,9 +52,12 @@ export function ProductGrid({
   }
 
   return (
-    <div className={`grid ${activeColumnClass} gap-3.5 sm:gap-6 ${className}`}>
+    <div
+      className={`grid ${activeColumnClass} gap-3.5 sm:gap-6 ${className}`}
+      style={{ gap: gap || undefined }}
+    >
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard key={product.id} product={product} tenantSlug={tenantSlug} />
       ))}
     </div>
   );

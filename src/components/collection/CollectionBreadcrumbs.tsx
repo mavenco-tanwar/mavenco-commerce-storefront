@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
 import { formatTenantHref } from '@/lib/tenant-config';
 
 export interface BreadcrumbItem {
@@ -14,16 +13,18 @@ export interface CollectionBreadcrumbsProps {
   items: BreadcrumbItem[];
   separator?: string;
   className?: string;
+  tenantSlug?: string;
 }
 
 export function CollectionBreadcrumbs({
   items,
   separator = '/',
   className = '',
+  tenantSlug,
 }: CollectionBreadcrumbsProps) {
   return (
-    <nav aria-label="Breadcrumb" className={`flex items-center gap-2 text-xs text-slate-500 font-sans select-none ${className}`}>
-      <Link href={formatTenantHref('/')} className="hover:text-rose-600 transition-colors">
+    <nav aria-label="Breadcrumb" className={`flex items-center gap-2 text-xs text-[var(--theme-color-text-secondary,#57534E)] font-sans select-none ${className}`}>
+      <Link href={formatTenantHref('/', tenantSlug)} className="hover:text-[var(--theme-color-accent,#B77A68)] transition-colors">
         Home
       </Link>
 
@@ -32,13 +33,13 @@ export function CollectionBreadcrumbs({
 
         return (
           <React.Fragment key={idx}>
-            <span className="text-slate-400 font-mono">{separator}</span>
+            <span className="text-[var(--theme-color-text-muted,#A8A29E)] font-mono">{separator}</span>
             {isLast || !item.href ? (
-              <span className="text-slate-900 dark:text-white font-bold truncate max-w-[200px]">
+              <span className="text-[var(--theme-color-heading,#111111)] font-bold truncate max-w-[200px]">
                 {item.label}
               </span>
             ) : (
-              <Link href={formatTenantHref(item.href)} className="hover:text-rose-600 transition-colors truncate max-w-[160px]">
+              <Link href={formatTenantHref(item.href, tenantSlug)} className="hover:text-[var(--theme-color-accent,#B77A68)] transition-colors truncate max-w-[160px]">
                 {item.label}
               </Link>
             )}

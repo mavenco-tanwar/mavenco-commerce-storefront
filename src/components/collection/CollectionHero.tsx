@@ -2,13 +2,16 @@
 
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { CollectionPageConfig } from '@/types/collection-page.types';
+import { formatTenantHref } from '@/lib/tenant-config';
 
 export interface CollectionHeroProps {
   config?: CollectionPageConfig['hero'];
   titleOverride?: string;
   descriptionOverride?: string;
   imageOverride?: string;
+  tenantSlug?: string;
 }
 
 export function CollectionHero({
@@ -16,6 +19,7 @@ export function CollectionHero({
   titleOverride,
   descriptionOverride,
   imageOverride,
+  tenantSlug,
 }: CollectionHeroProps) {
   if (!config || config.enabled === false) return null;
 
@@ -23,19 +27,20 @@ export function CollectionHero({
   const description = descriptionOverride || config.description;
   const image = imageOverride || config.bgImage;
 
-  const getHeightClass = (h?: string) => {
-    switch (h) {
-      case 'small':
-        return 'min-h-[180px] sm:min-h-[220px]';
-      case 'large':
-        return 'min-h-[380px] sm:min-h-[460px]';
-      case 'auto':
-        return 'py-12';
-      case 'medium':
-      default:
-        return 'min-h-[260px] sm:min-h-[320px]';
-    }
-  };
+  // Compute Height: support both exact pixel strings (e.g. '340px' or 'Medium (340px)') and keywords
+  const rawHeight = config.height || 'medium';
+  let minHeightStyle: string | undefined = undefined;
+
+  const pxMatch = String(rawHeight).match(/(\d+)px/);
+  if (pxMatch) {
+    minHeightStyle = `${pxMatch[1]}px`;
+  } else if (rawHeight === 'small') {
+    minHeightStyle = '220px';
+  } else if (rawHeight === 'large') {
+    minHeightStyle = '460px';
+  } else if (rawHeight === 'medium') {
+    minHeightStyle = '340px';
+  }
 
   const getAlignClass = (a?: string) => {
     switch (a) {
@@ -49,8 +54,16 @@ export function CollectionHero({
     }
   };
 
+  const rawOpacity = config.overlayOpacity !== undefined ? config.overlayOpacity : 45;
+  const overlayOpacity = rawOpacity <= 1 ? rawOpacity : rawOpacity / 100;
+
   return (
-    <section className={`relative w-full overflow-hidden bg-slate-950 flex flex-col ${getHeightClass(config.height)} ${getAlignClass(config.alignment)} select-none`}>
+    <section
+      className={`relative w-full overflow-hidden bg-slate-950 flex flex-col ${getAlignClass(
+        config.alignment
+      )} select-none transition-all duration-300`}
+      style={{ minHeight: minHeightStyle || '340px' }}
+    >
       {/* Background Image with Dynamic Overlay */}
       {image && (
         <div className="absolute inset-0 z-0">
@@ -60,11 +73,11 @@ export function CollectionHero({
             fill
             priority
             sizes="100vw"
-            className="object-cover"
+            className="object-cover object-center"
           />
           <div
-            className="absolute inset-0 bg-black"
-            style={{ opacity: (config.overlayOpacity ?? 45) / 100 }}
+            className="absolute inset-0 bg-black transition-opacity duration-200"
+            style={{ opacity: overlayOpacity }}
           />
         </div>
       )}
@@ -80,13 +93,13 @@ export function CollectionHero({
           </p>
         )}
         {config.ctaText && (
-          <div className="pt-2">
-            <a
-              href={config.ctaLink || '#products'}
-              className="inline-block px-5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md"
+          <div className="pt-3">
+            <Link
+              href={formatTenantHref(config.ctaLink || '#products', tenantSlug)}
+              className="inline-block px-5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg hover:scale-[1.02]"
             >
               {config.ctaText}
-            </a>
+            </Link>
           </div>
         )}
       </div>

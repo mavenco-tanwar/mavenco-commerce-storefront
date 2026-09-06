@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getDatabase } from '@/lib/mongodb';
 import { getDefaultCollectionPageConfig } from '@/lib/collection-page-presets';
 import { CollectionPageConfig } from '@/types/collection-page.types';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Store-ID, X-API-Key, x-tenant-slug',
+    'Access-Control-Allow-Headers':
+      'Content-Type, Authorization, x-tenant-slug, X-Tenant-Slug, x-tenant, x-store-id, x-store-slug, X-Store-ID, X-API-Key, *',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    Pragma: 'no-cache',
+    Expires: '0',
   };
 }
 
@@ -19,22 +27,30 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tenantSlug = (
     searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
     request.headers.get('x-tenant-slug') ||
+    request.headers.get('x-store-slug') ||
     'lumina'
   )
     .toLowerCase()
     .trim();
   const templateId = searchParams.get('template') || 'default_fashion';
-  const isPreview = searchParams.get('preview') === 'draft';
+  const isPreview = searchParams.get('preview') === 'draft' || searchParams.get('status') === 'draft';
 
   const defaultCfg = getDefaultCollectionPageConfig(tenantSlug);
 
   try {
     const db = await getDatabase();
     if (db) {
+      // 1. Check collection_page_configs first
       const doc = await db.collection('collection_page_configs').findOne({
-        tenantId: tenantSlug,
-        templateId,
+        $or: [
+          { tenantId: tenantSlug, templateId },
+          { tenantId: tenantSlug },
+          { tenantSlug: tenantSlug },
+          { storeId: `store_${tenantSlug}` },
+          { tenantId: 'all' },
+        ],
       });
 
       if (doc) {
@@ -57,6 +73,23 @@ export async function GET(request: NextRequest) {
           );
         }
       }
+
+      // 2. Fallback check in cms_pages
+      const cmsDoc = await db.collection('cms_pages').findOne({
+        $or: [
+          { tenantSlug: tenantSlug, type: 'collection-page' },
+          { tenantSlug: tenantSlug, type: 'plp' },
+          { tenantSlug: 'all', type: 'collection-page' },
+        ],
+      });
+
+      if (cmsDoc?.config || cmsDoc?.published || cmsDoc?.hero) {
+        const payload = cmsDoc.config || cmsDoc.published || cmsDoc;
+        return NextResponse.json(
+          { success: true, data: { ...defaultCfg, ...payload, tenantId: tenantSlug } },
+          { headers: corsHeaders() }
+        );
+      }
     }
   } catch (err) {
     console.warn('Collection page config fetch error, falling back to preset:', err);
@@ -69,7 +102,9 @@ export async function PUT(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tenantSlug = (
     searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
     request.headers.get('x-tenant-slug') ||
+    request.headers.get('x-store-slug') ||
     'lumina'
   )
     .toLowerCase()
@@ -93,13 +128,15 @@ export async function PUT(request: NextRequest) {
     const updateQuery: any = {
       $set: {
         tenantId: tenantSlug,
+        tenantSlug: tenantSlug,
+        storeId: `store_${tenantSlug}`,
         templateId,
         updatedAt: now,
       },
     };
 
     if (isPublish) {
-      const pubVersion = body.version || 1;
+      const pubVersion = body.version || Date.now();
       const publishedDoc: CollectionPageConfig = {
         ...body,
         tenantId: tenantSlug,
@@ -123,6 +160,24 @@ export async function PUT(request: NextRequest) {
         publishedAt: now,
         createdAt: now,
       });
+
+      // Synchronize into cms_pages for unified query accessibility
+      await db.collection('cms_pages').updateOne(
+        { tenantSlug: tenantSlug, type: 'collection-page' },
+        {
+          $set: {
+            tenantSlug: tenantSlug,
+            type: 'collection-page',
+            status: 'published',
+            version: pubVersion,
+            config: publishedDoc,
+            hero: publishedDoc.hero,
+            grid: publishedDoc.grid,
+            updatedAt: now,
+          },
+        },
+        { upsert: true }
+      );
     } else {
       const draftDoc: CollectionPageConfig = {
         ...body,
@@ -139,6 +194,16 @@ export async function PUT(request: NextRequest) {
       updateQuery,
       { upsert: true }
     );
+
+    try {
+      revalidatePath('/collections');
+      revalidatePath(`/stores/${tenantSlug}/collections`);
+      revalidatePath(`/stores/${tenantSlug}/collections/`);
+      revalidatePath('/women');
+      revalidatePath('/kids');
+      revalidatePath('/new-arrivals');
+      revalidatePath('/sale');
+    } catch {}
 
     return NextResponse.json(
       {
