@@ -99,11 +99,14 @@ export function DynamicMainHeader({
       role="banner"
       className={responsiveHeaderClass}
       style={{
-        backgroundColor: styles?.backgroundColor || '#FFFDFC',
-        color: styles?.textColor || '#111111',
-        borderColor: styles?.borderColor || '#E8DED8',
+        backgroundColor:
+          styles?.backgroundColor && styles.backgroundColor !== '#FFFFFF' && styles.backgroundColor !== '#FFFDFC'
+            ? styles.backgroundColor
+            : 'var(--theme-color-surface, var(--theme-color-background, #FFFDFC))',
+        color: styles?.textColor || 'var(--theme-color-text, #111111)',
+        borderColor: styles?.borderColor || 'var(--theme-color-border, #E8DED8)',
         borderBottomWidth: styles?.borderBottomWidth || '1px',
-        fontFamily: styles?.fontFamily,
+        fontFamily: styles?.fontFamily || 'var(--theme-font-navigation, inherit)',
       }}
     >
       <div className={containerClasses}>

@@ -2,16 +2,29 @@
 
 @layer base {
   :root {
-    --background: #FFFDFC;
-    --foreground: #111111;
+    --background: var(--theme-color-background, #FFFDFC);
+    --foreground: var(--theme-color-text, #111111);
     
-    --color-ivory: #FFFDFC;
-    --color-cream: #F8F1EA;
-    --color-cream-dark: #F0E6DC;
-    --color-surface-warm: #FAF6F2;
+    --color-primary: var(--theme-color-primary, #111111);
+    --color-primary-hover: var(--theme-color-primary-hover, #000000);
+    --color-secondary: var(--theme-color-secondary, #E2E8F0);
+    --color-secondary-hover: var(--theme-color-secondary-hover, #CBD5E1);
+    --color-accent: var(--theme-color-accent, #B77A68);
+    --color-accent-hover: var(--theme-color-accent-hover, #9A6050);
+    --color-background: var(--theme-color-background, #FFFDFC);
+    --color-surface: var(--theme-color-surface, #FFFFFF);
+    --color-surface-secondary: var(--theme-color-surface-secondary, #F8F1EA);
+    --color-heading: var(--theme-color-heading, #111111);
+    --color-text: var(--theme-color-text, #111111);
+    --color-border: var(--theme-color-border, #E8DED8);
+
+    --color-ivory: var(--theme-color-background, #FFFDFC);
+    --color-cream: var(--theme-color-surface-secondary, #F8F1EA);
+    --color-cream-dark: var(--theme-color-surface-secondary, #F0E6DC);
+    --color-surface-warm: var(--theme-color-surface-secondary, #FAF6F2);
     
-    --color-black-rich: #111111;
-    --color-charcoal: #222222;
+    --color-black-rich: var(--theme-color-heading, #111111);
+    --color-charcoal: var(--theme-color-heading, #222222);
     --color-soft-gray: #777777;
     --color-muted-gray: #999999;
     
@@ -19,16 +32,25 @@
     --color-blush-light: #F7EBEA;
     --color-blush-dark: #D89F9C;
     --color-rose: #C98282;
-    --color-rose-gold: #B77A68;
-    --color-rose-gold-light: #CF9584;
-    --color-rose-gold-dark: #9A6050;
+    --color-rose-gold: var(--theme-color-accent, #B77A68);
+    --color-rose-gold-light: var(--theme-color-accent-hover, #CF9584);
+    --color-rose-gold-dark: var(--theme-color-accent-hover, #9A6050);
     
-    --color-border-linen: #E8DED8;
-    --color-border-subtle: #F0E9E4;
+    --color-border-linen: var(--theme-color-border, #E8DED8);
+    --color-border-subtle: var(--theme-color-border-light, #F0E9E4);
   }
 }
 
 @theme {
+  --color-primary: var(--color-primary);
+  --color-accent: var(--color-accent);
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+  --color-surface-secondary: var(--color-surface-secondary);
+  --color-heading: var(--color-heading);
+  --color-text: var(--color-text);
+  --color-border: var(--color-border);
+
   --color-ivory: var(--color-ivory);
   --color-cream: var(--color-cream);
   --color-cream-dark: var(--color-cream-dark);
@@ -50,8 +72,8 @@
   --color-border-linen: var(--color-border-linen);
   --color-border-subtle: var(--color-border-subtle);
 
-  --font-serif: var(--font-playfair), Georgia, serif;
-  --font-sans: var(--font-jakarta), system-ui, -apple-system, sans-serif;
+  --font-serif: var(--theme-font-heading, var(--font-playfair), Georgia, serif);
+  --font-sans: var(--theme-font-body, var(--font-jakarta), system-ui, -apple-system, sans-serif);
 }
 
 body {
@@ -61,6 +83,69 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+
+/* Storefront Merchant Dynamic Design System Bindings */
+[data-merchant-store="true"] {
+  background-color: var(--theme-color-background, #FFFDFC) !important;
+  color: var(--theme-color-text, #111111) !important;
+  font-family: var(--theme-font-body, var(--font-jakarta), system-ui, sans-serif) !important;
+}
+
+[data-merchant-store="true"] h1,
+[data-merchant-store="true"] h2,
+[data-merchant-store="true"] h3,
+[data-merchant-store="true"] h4,
+[data-merchant-store="true"] h5,
+[data-merchant-store="true"] h6,
+[data-merchant-store="true"] .font-serif {
+  font-family: var(--theme-font-heading, var(--font-playfair), Georgia, serif) !important;
+  color: var(--theme-color-heading, inherit);
+}
+
+/* Dynamic button, accent, and card overrides */
+[data-merchant-store="true"] .bg-\[\#111111\],
+[data-merchant-store="true"] .bg-black-rich {
+  background-color: var(--theme-btn-primary-bg, var(--theme-color-primary, #111111)) !important;
+  color: var(--theme-btn-primary-text, #FFFFFF) !important;
+}
+
+[data-merchant-store="true"] .text-\[\#B77A68\],
+[data-merchant-store="true"] .text-rose-gold {
+  color: var(--theme-color-accent, #B77A68) !important;
+}
+
+[data-merchant-store="true"] .bg-\[\#B77A68\],
+[data-merchant-store="true"] .bg-rose-gold {
+  background-color: var(--theme-color-accent, #B77A68) !important;
+}
+
+[data-merchant-store="true"] .border-\[\#B77A68\],
+[data-merchant-store="true"] .border-rose-gold {
+  border-color: var(--theme-color-accent, #B77A68) !important;
+}
+
+[data-merchant-store="true"] .bg-\[\#FFFDFC\],
+[data-merchant-store="true"] .bg-ivory {
+  background-color: var(--theme-color-background, #FFFDFC) !important;
+}
+
+[data-merchant-store="true"] .bg-\[\#F8F1EA\],
+[data-merchant-store="true"] .bg-\[\#F5F5F4\],
+[data-merchant-store="true"] .bg-cream,
+[data-merchant-store="true"] .bg-surface-warm {
+  background-color: var(--theme-color-surface-secondary, #F8F1EA) !important;
+}
+
+[data-merchant-store="true"] .text-\[\#111111\],
+[data-merchant-store="true"] .text-black-rich {
+  color: var(--theme-color-heading, #111111) !important;
+}
+
+[data-merchant-store="true"] .border-\[\#E8DED8\],
+[data-merchant-store="true"] .border-\[\#E7E5E4\],
+[data-merchant-store="true"] .border-border-linen {
+  border-color: var(--theme-color-border, #E8DED8) !important;
 }
 
 /* Modern Sleek Minimalist Scrollbar (Adaptive & Translucent) */

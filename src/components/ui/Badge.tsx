@@ -23,13 +23,13 @@ export function Badge({
   };
 
   const variants = {
-    sale: 'bg-[#C98282] text-white shadow-xs',
-    new: 'bg-[#111111] text-[#FFFDFC]',
-    trending: 'bg-[#B77A68] text-white',
-    bestseller: 'bg-[#E8B8B5] text-[#111111] font-extrabold',
-    exclusive: 'bg-gradient-to-r from-[#111111] to-[#3D3430] text-[#CF9584] border border-[#B77A68]/30',
-    neutral: 'bg-[#F8F1EA] text-[#777777] border border-[#E8DED8]',
-    outline: 'bg-transparent text-[#111111] border border-[#111111]/30',
+    sale: 'bg-[var(--theme-color-error,#EF4444)] text-white shadow-xs',
+    new: 'bg-[var(--theme-color-primary,#111111)] text-white',
+    trending: 'bg-[var(--theme-color-accent,#B77A68)] text-white',
+    bestseller: 'bg-[var(--theme-color-warning,#F59E0B)] text-black font-extrabold',
+    exclusive: 'bg-[var(--theme-color-primary,#111111)] text-[var(--theme-color-accent,#CF9584)] border border-[var(--theme-color-accent,#B77A68)]/30',
+    neutral: 'bg-[var(--theme-color-surface-secondary,#F8F1EA)] text-[var(--theme-color-text-secondary,#777777)] border border-[var(--theme-color-border,#E8DED8)]',
+    outline: 'bg-transparent text-[var(--theme-color-heading,#111111)] border border-[var(--theme-color-border,#111111)]',
   };
 
   return (

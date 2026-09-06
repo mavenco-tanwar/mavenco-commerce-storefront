@@ -48,7 +48,14 @@ export function DynamicLayoutWrapper({ children }: { children: React.ReactNode }
 
   // Otherwise, render the dynamic merchant store header and layout
   return (
-    <div className="min-h-screen flex flex-col bg-[#FFFDFC] text-[#111111] antialiased">
+    <div
+      data-merchant-store="true"
+      className="min-h-screen flex flex-col antialiased transition-colors duration-200"
+      style={{
+        backgroundColor: 'var(--theme-color-background, #FFFDFC)',
+        color: 'var(--theme-color-text, #111111)',
+      }}
+    >
       <DynamicHeader tenantSlug={activeTenantSlug} />
       <main className="flex-1">{children}</main>
       <Footer tenantSlug={activeTenantSlug} />

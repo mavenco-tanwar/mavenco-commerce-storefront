@@ -54,9 +54,12 @@ export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: Dyn
     <footer
       suppressHydrationWarning
       style={{
-        backgroundColor: theme?.backgroundColor || '#111111',
-        color: theme?.textColor || '#FAF6F2',
-        fontFamily: theme?.fontFamily,
+        backgroundColor:
+          theme?.backgroundColor && theme.backgroundColor !== '#111111'
+            ? theme.backgroundColor
+            : 'var(--theme-color-surface-secondary, #111111)',
+        color: theme?.textColor || 'var(--theme-color-text, #FAF6F2)',
+        fontFamily: theme?.fontFamily || 'var(--theme-font-body, inherit)',
       }}
       className="border-t border-white/10 select-none pt-12 pb-10 transition-colors duration-300"
     >

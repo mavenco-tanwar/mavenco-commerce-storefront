@@ -159,11 +159,11 @@ export function DynamicAnnouncementBar({
         onMouseLeave={() => setIsPaused(false)}
         className={`${responsiveClass} overflow-hidden whitespace-nowrap`}
         style={{
-          backgroundColor: styles?.backgroundColor || '#1E1B4B',
+          backgroundColor: styles?.backgroundColor || 'var(--theme-color-primary, #1E1B4B)',
           color: styles?.textColor || '#FFFFFF',
           borderColor: styles?.borderColor || 'rgba(255,255,255,0.1)',
           fontSize: styles?.fontSize || '11px',
-          fontFamily: styles?.fontFamily,
+          fontFamily: styles?.fontFamily || 'var(--theme-font-body, inherit)',
           letterSpacing: styles?.letterSpacing || '0.08em',
         }}
       >
@@ -183,11 +183,11 @@ export function DynamicAnnouncementBar({
       onMouseLeave={() => setIsPaused(false)}
       className={responsiveClass}
       style={{
-        backgroundColor: styles?.backgroundColor || '#1E1B4B',
+        backgroundColor: styles?.backgroundColor || 'var(--theme-color-primary, #1E1B4B)',
         color: styles?.textColor || '#FFFFFF',
         borderColor: styles?.borderColor || 'rgba(255,255,255,0.1)',
         fontSize: styles?.fontSize || '11px',
-        fontFamily: styles?.fontFamily,
+        fontFamily: styles?.fontFamily || 'var(--theme-font-body, inherit)',
         letterSpacing: styles?.letterSpacing || '0.05em',
       }}
     >

@@ -32,24 +32,24 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        'bg-[#111111] text-[#FFFDFC] hover:bg-[#2A2523] hover:text-[#FFFDFC] border border-[#111111] shadow-sm',
+        'bg-[var(--theme-btn-primary-bg,var(--theme-color-primary,#111111))] text-[var(--theme-btn-primary-text,#FFFFFF)] hover:bg-[var(--theme-btn-primary-hover-bg,var(--theme-color-primary-hover,#2A2523))] hover:text-[var(--theme-btn-primary-hover-text,#FFFFFF)] border border-transparent shadow-sm',
       secondary:
-        'bg-[#F8F1EA] text-[#111111] hover:bg-[#EFE4D9] border border-[#E8DED8]',
+        'bg-[var(--theme-btn-secondary-bg,var(--theme-color-surface-secondary,#F8F1EA))] text-[var(--theme-btn-secondary-text,var(--theme-color-text,#111111))] hover:bg-[var(--theme-btn-secondary-hover-bg,var(--theme-color-border,#EFE4D9))] border border-[var(--theme-btn-secondary-border,var(--theme-color-border,#E8DED8))]',
       accent:
-        'bg-[#B77A68] text-white hover:bg-[#9A6050] border border-[#B77A68] shadow-sm',
+        'bg-[var(--theme-color-accent,#B77A68)] text-white hover:bg-[var(--theme-color-accent-hover,#9A6050)] border border-[var(--theme-color-accent,#B77A68)] shadow-sm',
       'luxury-gold':
-        'bg-gradient-to-r from-[#B77A68] via-[#CF9584] to-[#B77A68] text-white hover:opacity-95 shadow-md shadow-rose-gold/20',
+        'bg-[var(--theme-color-accent,#B77A68)] text-white hover:opacity-95 shadow-md',
       outline:
-        'bg-transparent text-[#111111] border border-[#111111] hover:bg-[#111111] hover:text-[#FFFDFC]',
+        'bg-transparent text-[var(--theme-color-text,#111111)] border border-[var(--theme-color-text,#111111)] hover:bg-[var(--theme-btn-primary-bg,var(--theme-color-primary,#111111))] hover:text-[var(--theme-btn-primary-text,#FFFFFF)]',
       ghost:
-        'bg-transparent text-[#111111] hover:bg-[#F8F1EA] text-inherit',
+        'bg-transparent text-[var(--theme-color-text,#111111)] hover:bg-[var(--theme-color-surface-secondary,#F8F1EA)] text-inherit',
     };
 
     const sizes = {
-      sm: 'text-xs px-3.5 py-1.5 rounded-sm gap-1.5 uppercase font-semibold tracking-wider',
-      md: 'text-sm px-5 py-2.5 rounded-sm gap-2 uppercase font-semibold tracking-wider',
-      lg: 'text-base px-7 py-3.5 rounded-sm gap-2.5 uppercase font-semibold tracking-widest',
-      icon: 'p-2.5 rounded-sm aspect-square',
+      sm: 'text-xs px-3.5 py-1.5 rounded-[var(--theme-btn-radius,4px)] gap-1.5 uppercase font-semibold tracking-wider',
+      md: 'text-sm px-5 py-2.5 rounded-[var(--theme-btn-radius,6px)] gap-2 uppercase font-semibold tracking-wider',
+      lg: 'text-base px-7 py-3.5 rounded-[var(--theme-btn-radius,8px)] gap-2.5 uppercase font-semibold tracking-widest',
+      icon: 'p-2.5 rounded-[var(--theme-btn-radius,6px)] aspect-square',
     };
 
     return (
@@ -57,6 +57,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
+        style={{
+          borderRadius: 'var(--theme-btn-radius, 8px)',
+          fontFamily: 'var(--theme-font-button, inherit)',
+          ...props.style,
+        }}
         {...props}
       >
         {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin text-current" />}
