@@ -41,6 +41,7 @@ export function DynamicAnnouncementBar({
   blocks = [],
   styles,
   mode = 'static',
+  marqueeSpeed = 30,
   countdown,
   rotationEnabled = false,
   rotationInterval = 5,

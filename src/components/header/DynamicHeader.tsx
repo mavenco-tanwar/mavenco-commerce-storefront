@@ -189,6 +189,7 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
             blocks={config.announcementBar.blocks}
             styles={config.announcementBar.styles}
             mode={config.announcementBar.mode}
+            marqueeSpeed={config.announcementBar.marqueeSpeed}
             countdown={config.announcementBar.countdown}
             rotationEnabled={config.announcementBar.rotationEnabled}
             rotationInterval={config.announcementBar.rotationInterval}
