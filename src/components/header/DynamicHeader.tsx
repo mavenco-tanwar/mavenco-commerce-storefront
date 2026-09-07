@@ -88,7 +88,10 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
       if (
         event.data?.type === 'HEADER_UPDATED' ||
         event.data?.type === 'MAVENCO_HEADER_PREVIEW' ||
-        event.data?.type === 'MAVENCO_THEME_PREVIEW'
+        event.data?.type === 'MAVENCO_THEME_PREVIEW' ||
+        event.data?.type === 'NAVIGATION_UPDATED' ||
+        event.data?.type === 'MENU_UPDATED' ||
+        event.data?.type === 'CMS_MENU_UPDATED'
       ) {
         if (event.data?.headerConfig) {
           setConfig(event.data.headerConfig);
@@ -99,7 +102,12 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
     };
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === 'jq_header_updated' || event.key === 'jq_active_tenant') {
+      if (
+        event.key === 'jq_header_updated' ||
+        event.key === 'jq_navigation_updated' ||
+        event.key === 'jq_menu_updated' ||
+        event.key === 'jq_active_tenant'
+      ) {
         fetchHeader();
       }
     };

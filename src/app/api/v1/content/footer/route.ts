@@ -48,6 +48,47 @@ export async function GET(request: NextRequest) {
           : Array.isArray(doc.sections)
           ? doc.sections
           : base.sections;
+
+        // Dynamically hydrate footer menu blocks from cms_menus
+        try {
+          const menus = await db.collection('cms_menus').find({
+            $and: [
+              {
+                $or: [
+                  ...(tenantSlug && tenantSlug !== 'all' ? [{ tenantSlug }] : []),
+                  { tenantSlug: 'all' },
+                  { tenantSlug: { $exists: false } },
+                ],
+              },
+              { slug: { $in: ['footer-menu-shop', 'footer-menu-care'] } },
+            ],
+          }).toArray();
+
+          if (menus && menus.length > 0) {
+            const menuMap = new Map(menus.map((m) => [m.slug, m.items]));
+            for (const sec of rawSections) {
+              if (sec && Array.isArray(sec.blocks)) {
+                for (const blk of sec.blocks) {
+                  const mCode = blk?.content?.menuCode;
+                  if (mCode && menuMap.has(mCode)) {
+                    const dbItems = menuMap.get(mCode);
+                    if (Array.isArray(dbItems) && dbItems.length > 0) {
+                      blk.content.items = dbItems
+                        .filter((it: any) => it.isVisible !== false)
+                        .map((it: any) => ({
+                          label: it.label || it.title,
+                          href: it.url || it.href,
+                        }));
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('[Footer] Dynamic menu hydration warning:', err);
+        }
+
         const rawTheme = raw.theme || doc.theme || {};
 
         const merged: FooterConfig = {

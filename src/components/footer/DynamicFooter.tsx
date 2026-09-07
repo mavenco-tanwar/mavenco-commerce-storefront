@@ -56,7 +56,10 @@ export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: Dyn
       if (
         event.data?.type === 'FOOTER_UPDATED' ||
         event.data?.type === 'MAVENCO_FOOTER_PREVIEW' ||
-        event.data?.type === 'MAVENCO_THEME_PREVIEW'
+        event.data?.type === 'MAVENCO_THEME_PREVIEW' ||
+        event.data?.type === 'NAVIGATION_UPDATED' ||
+        event.data?.type === 'MENU_UPDATED' ||
+        event.data?.type === 'CMS_MENU_UPDATED'
       ) {
         if (event.data?.footerConfig) {
           setConfig(event.data.footerConfig);
@@ -67,7 +70,12 @@ export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: Dyn
     };
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === 'jq_footer_updated' || event.key === 'jq_active_tenant') {
+      if (
+        event.key === 'jq_footer_updated' ||
+        event.key === 'jq_navigation_updated' ||
+        event.key === 'jq_menu_updated' ||
+        event.key === 'jq_active_tenant'
+      ) {
         fetchFooter();
       }
     };

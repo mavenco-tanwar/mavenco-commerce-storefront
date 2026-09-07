@@ -46,7 +46,31 @@ export async function GET(request: NextRequest) {
         const rawMain = raw.mainHeader || doc.mainHeader || {};
         const rawSticky = raw.sticky || doc.sticky || {};
         const rawMobile = raw.mobile || doc.mobile || {};
-        const rawNav = raw.navigationMenu || doc.navigationMenu;
+        // Dynamically hydrate navigationMenu from cms_menus collection
+        let rawNav = raw.navigationMenu || doc.navigationMenu;
+        try {
+          const menuDoc = await db.collection('cms_menus').findOne({
+            $and: [
+              {
+                $or: [
+                  ...(tenantSlug && tenantSlug !== 'all' ? [{ tenantSlug }] : []),
+                  { tenantSlug: 'all' },
+                  { tenantSlug: { $exists: false } },
+                ],
+              },
+              { $or: [{ slug: 'header-menu' }, { id: 'menu_header' }] },
+            ],
+          });
+          if (menuDoc && Array.isArray(menuDoc.items) && menuDoc.items.length > 0) {
+            rawNav = menuDoc.items.map((it: any) => ({
+              id: it.id,
+              label: it.label || it.title,
+              url: it.url || it.href,
+              enabled: it.isVisible !== false,
+              children: it.children || [],
+            }));
+          }
+        } catch {}
 
         const mergedConfig: HeaderConfig = {
           ...base,
