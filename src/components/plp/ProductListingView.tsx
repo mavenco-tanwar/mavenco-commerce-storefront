@@ -221,7 +221,7 @@ export function ProductListingView({
       {/* Category Banner */}
       {showHero && (
         <div
-          className="relative bg-[#111111] overflow-hidden flex items-center justify-center text-center transition-all duration-300"
+          className="relative bg-gradient-to-br from-slate-950 via-[#131726] to-[#0A0D15] overflow-hidden flex items-center justify-center text-center transition-all duration-300 shadow-xl"
           style={{
             minHeight: plpConfig?.hero?.height?.includes('px')
               ? plpConfig.hero.height
@@ -232,10 +232,12 @@ export function ProductListingView({
               : '320px',
           }}
         >
-          <div
-            className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity"
-            style={{ backgroundImage: `url(${effectiveBannerImage})` }}
-          />
+          {effectiveBannerImage && (
+            <div
+              className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity"
+              style={{ backgroundImage: `url(${effectiveBannerImage})` }}
+            />
+          )}
           <div
             className="absolute inset-0 bg-black/60"
             style={{
@@ -247,13 +249,18 @@ export function ProductListingView({
                   : 0.5,
             }}
           />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(244,63,94,0.15),transparent_50%)] pointer-events-none" />
 
-          <div className="relative z-10 max-w-2xl px-4 py-8 space-y-2">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-tight">
+          <div className="relative z-10 max-w-3xl px-4 py-10 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-rose-300 text-[10px] font-bold uppercase tracking-widest mx-auto">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+              <span>Signature Lookbook</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-tight drop-shadow-md">
               {pageTitle || plpConfig?.hero?.title || 'Collection'}
             </h1>
             {(pageSubtitle || plpConfig?.hero?.description) && (
-              <p className="text-xs sm:text-sm md:text-base text-slate-200 font-sans max-w-md mx-auto leading-relaxed">
+              <p className="text-xs sm:text-sm md:text-base text-slate-200 font-sans max-w-xl mx-auto leading-relaxed drop-shadow">
                 {pageSubtitle || plpConfig?.hero?.description}
               </p>
             )}
@@ -266,15 +273,22 @@ export function ProductListingView({
         <Breadcrumbs items={breadcrumbs} />
 
         {!showHero && (
-          <div className="pt-2 pb-6 border-b border-[var(--theme-color-border,#E8DED8)] mb-6">
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[var(--theme-color-heading,#111111)]">
-              {pageTitle}
-            </h1>
-            {pageSubtitle && (
-              <p className="text-xs text-[var(--theme-color-text-secondary,#57534E)] font-sans mt-1">
-                {pageSubtitle}
-              </p>
-            )}
+          <div className="relative overflow-hidden my-6 p-8 sm:p-10 rounded-2xl bg-gradient-to-b from-slate-900 via-slate-900/90 to-[#121624] border border-slate-800/80 shadow-2xl transition-all">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="relative z-10 max-w-3xl space-y-2.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+                <span>Curated Boutique Collection</span>
+              </div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-tight drop-shadow-sm">
+                {pageTitle}
+              </h1>
+              {pageSubtitle && (
+                <p className="text-xs sm:text-sm md:text-base text-slate-300 font-sans leading-relaxed max-w-2xl pt-1">
+                  {pageSubtitle}
+                </p>
+              )}
+            </div>
           </div>
         )}
 

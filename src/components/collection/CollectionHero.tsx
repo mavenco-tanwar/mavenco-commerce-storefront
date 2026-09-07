@@ -59,11 +59,13 @@ export function CollectionHero({
 
   return (
     <section
-      className={`relative w-full overflow-hidden bg-slate-950 flex flex-col ${getAlignClass(
+      className={`relative w-full overflow-hidden bg-gradient-to-br from-slate-950 via-[#121626] to-[#0A0D15] flex flex-col ${getAlignClass(
         config.alignment
       )} select-none transition-all duration-300`}
       style={{ minHeight: minHeightStyle || '340px' }}
     >
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(244,63,94,0.12),transparent_50%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(59,130,246,0.08),transparent_50%)] pointer-events-none" />
       {/* Background Image with Dynamic Overlay */}
       {image && (
         <div className="absolute inset-0 z-0">
