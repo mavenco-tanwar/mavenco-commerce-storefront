@@ -207,6 +207,7 @@ export class PermissionService {
     if (modules['dashboard'] === undefined || entitlements.length === 0) modules['dashboard'] = true;
     if (modules['storefront'] === undefined || entitlements.length === 0) modules['storefront'] = true;
     if (modules['products'] === undefined || entitlements.length === 0) modules['products'] = true;
+    if (modules['pages'] === undefined || entitlements.length === 0) modules['pages'] = true;
 
     // Filter permissions only for modules that are actually enabled
     const activePermissions = SYSTEM_PERMISSIONS.filter((p) => modules[p.moduleKey] === true).map(
