@@ -140,6 +140,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="flex items-center gap-3">
           <Link
+            href="/admin/pages"
+            className="text-xs bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 font-bold shadow-lg shadow-pink-500/20"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Visual Page Builder</span>
+          </Link>
+          <Link
             href="/superadmin/tenants"
             className="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-3 py-1.5 rounded-md transition flex items-center gap-1.5 border border-amber-500/30 font-semibold"
           >

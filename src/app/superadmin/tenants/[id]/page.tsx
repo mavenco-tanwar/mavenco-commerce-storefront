@@ -255,13 +255,22 @@ export default function TenantDetailPage() {
             <p className="text-xs text-zinc-400 max-w-md mx-auto">
               Edit homepage, manage custom pages, preview on desktop/tablet/mobile, and publish immutable versions.
             </p>
-            <Link
-              href={`/superadmin/tenants/${tenantId}/storefront`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold transition shadow-lg shadow-amber-500/20"
-            >
-              <span>Launch Storefront Management</span>
-              <ExternalLink className="w-4 h-4" />
-            </Link>
+            <div className="flex items-center justify-center gap-3">
+              <Link
+                href="/admin/pages"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white text-xs font-bold transition shadow-lg shadow-pink-500/20"
+              >
+                <span>Launch Visual Page Builder</span>
+                <Sparkles className="w-4 h-4" />
+              </Link>
+              <Link
+                href={`/superadmin/tenants/${tenantId}/storefront`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-xs font-bold transition border border-zinc-700"
+              >
+                <span>Storefront Governance Hub</span>
+                <ExternalLink className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         )}
 

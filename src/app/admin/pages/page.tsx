@@ -375,11 +375,11 @@ export default function AdminPagesPage() {
                           {/* Open Visual Builder */}
                           <Link
                             href={`/admin/pages/${p.id}/builder`}
-                            className="px-2.5 py-1 bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 rounded font-semibold text-[11px] transition flex items-center gap-1 border border-amber-400/30"
+                            className="px-3 py-1.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white rounded-lg font-bold text-xs transition flex items-center gap-1.5 shadow-md shadow-pink-500/20"
                             title="Open in Visual Builder"
                           >
-                            <Edit className="w-3 h-3" />
-                            <span>Builder</span>
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>Open Visual Builder</span>
                           </Link>
 
                           {/* Toggle Publish */}
