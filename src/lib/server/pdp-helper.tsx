@@ -23,13 +23,29 @@ export async function getPdpTemplateConfig(tenantSlug: string = 'lumina') {
         { storeId: `store_${cleanSlug}` },
       ];
 
-      // 1. Authoritative lookup in product_page_templates
-      const doc = await db.collection('product_page_templates').findOne({
-        $and: [
+      // 1. Authoritative lookup in product_page_templates: latest published or default template
+      let doc = await db.collection('product_page_templates').findOne(
+        {
+          $and: [
+            { $or: tenantMatchConditions },
+            {
+              $or: [
+                { status: 'published' },
+                { published: { $exists: true, $ne: null } },
+                { isDefault: true },
+              ],
+            },
+          ],
+        },
+        { sort: { publishedAt: -1, updatedAt: -1 } }
+      );
+
+      if (!doc) {
+        doc = await db.collection('product_page_templates').findOne(
           { $or: tenantMatchConditions },
-          { templateId: 'default_fashion' },
-        ],
-      });
+          { sort: { updatedAt: -1 } }
+        );
+      }
 
       if (doc?.published) {
         return doc.published;
@@ -39,12 +55,13 @@ export async function getPdpTemplateConfig(tenantSlug: string = 'lumina') {
       }
 
       // 2. Interoperability fallback in cms_pages
-      const cmsDoc = await db.collection('cms_pages').findOne({
-        $and: [
-          { type: 'product-page' },
-          { $or: tenantMatchConditions },
-        ],
-      });
+      const cmsDoc = await db.collection('cms_pages').findOne(
+        {
+          type: 'product-page',
+          $or: tenantMatchConditions,
+        },
+        { sort: { updatedAt: -1 } }
+      );
 
       if (cmsDoc?.config) {
         return cmsDoc.config;

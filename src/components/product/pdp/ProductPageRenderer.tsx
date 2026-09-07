@@ -52,7 +52,7 @@ export function ProductPageRenderer({
     try {
       const slug = activeTenant.slug || 'lumina';
       const isDraftPreview = searchParams.get('preview') === 'draft' || searchParams.get('preview') === 'true';
-      const url = `/api/v1/content/product-page?tenant=${slug}&template=default_fashion${isDraftPreview ? '&preview=draft' : ''}`;
+      const url = `/api/v1/content/product-page?tenant=${slug}${isDraftPreview ? '&preview=draft' : ''}`;
       const res = await fetch(url, { cache: 'no-store' });
       const json = await res.json();
       if (json.success && json.data) {

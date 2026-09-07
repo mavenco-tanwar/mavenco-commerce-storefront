@@ -1,25 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { getDefaultPdpConfig, PDP_PRESET_TEMPLATES } from '@/lib/pdp-presets';
-import { ProductPageConfig } from '@/types/pdp-template.types';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const NO_CACHE_HEADERS = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
-  'Pragma': 'no-cache',
-  'Expires': '0',
-};
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers':
+      'Content-Type, Authorization, x-tenant-slug, X-Tenant-Slug, x-tenant, x-store-id, x-store-slug, X-Store-ID, X-API-Key, *',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+    Pragma: 'no-cache',
+    Expires: '0',
+  };
+}
 
-/**
- * GET /api/v1/content/product-page?tenant=slug&template=id&preview=draft
- */
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders() });
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const tenant = (searchParams.get('tenant') || 'lumina').toLowerCase().trim();
-    const templateId = searchParams.get('template') || 'default_fashion';
+    const tenant = (
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-store-slug') ||
+      'lumina'
+    )
+      .toLowerCase()
+      .trim();
+    const templateId = searchParams.get('template');
     const isPreview = searchParams.get('preview') === 'draft' || searchParams.get('status') === 'draft';
 
     const db = await getDatabase();
@@ -32,13 +46,40 @@ export async function GET(req: NextRequest) {
         { storeId: `store_${tenant}` },
       ];
 
-      // 1. Authoritative check in product_page_templates collection
-      const doc = await db.collection('product_page_templates').findOne({
-        $and: [
+      let doc = null;
+      if (templateId && templateId !== 'default_fashion') {
+        doc = await db.collection('product_page_templates').findOne({
+          $and: [
+            { $or: tenantMatchConditions },
+            { templateId: templateId },
+          ],
+        });
+      }
+
+      if (!doc) {
+        doc = await db.collection('product_page_templates').findOne(
+          {
+            $and: [
+              { $or: tenantMatchConditions },
+              {
+                $or: [
+                  { status: 'published' },
+                  { published: { $exists: true, $ne: null } },
+                  { isDefault: true },
+                ],
+              },
+            ],
+          },
+          { sort: { publishedAt: -1, updatedAt: -1 } }
+        );
+      }
+
+      if (!doc) {
+        doc = await db.collection('product_page_templates').findOne(
           { $or: tenantMatchConditions },
-          { templateId: templateId },
-        ],
-      });
+          { sort: { updatedAt: -1 } }
+        );
+      }
 
       if (doc) {
         const activeConfig = isPreview && doc.draft ? doc.draft : doc.published || doc.draft;
@@ -49,23 +90,24 @@ export async function GET(req: NextRequest) {
               data: activeConfig,
               draft: doc.draft || doc.published,
               published: doc.published,
-              templateId: doc.templateId || templateId,
+              templateId: doc.templateId || templateId || 'default_fashion',
               isDefault: doc.isDefault ?? true,
               updatedAt: doc.updatedAt,
               source: 'product_page_templates',
             },
-            { headers: NO_CACHE_HEADERS }
+            { headers: corsHeaders() }
           );
         }
       }
 
-      // 2. Fallback check in cms_pages collection
-      const cmsDoc = await db.collection('cms_pages').findOne({
-        $and: [
-          { type: 'product-page' },
-          { $or: tenantMatchConditions },
-        ],
-      });
+      // cms_pages fallback
+      const cmsDoc = await db.collection('cms_pages').findOne(
+        {
+          type: 'product-page',
+          $or: tenantMatchConditions,
+        },
+        { sort: { updatedAt: -1 } }
+      );
 
       if (cmsDoc?.config) {
         return NextResponse.json(
@@ -74,126 +116,101 @@ export async function GET(req: NextRequest) {
             data: cmsDoc.config,
             draft: cmsDoc.config,
             published: cmsDoc.config,
-            templateId: templateId,
+            templateId: templateId || 'default_fashion',
             isDefault: true,
             updatedAt: cmsDoc.updatedAt,
             source: 'cms_pages',
           },
-          { headers: NO_CACHE_HEADERS }
+          { headers: corsHeaders() }
         );
       }
     }
 
-    // 3. Preset Fallback
-    const fallbackPreset = PDP_PRESET_TEMPLATES[templateId]?.config || getDefaultPdpConfig(tenant);
+    const fallbackPreset = PDP_PRESET_TEMPLATES[templateId || 'default_fashion']?.config || getDefaultPdpConfig(tenant);
     return NextResponse.json(
       {
         success: true,
         data: fallbackPreset,
         draft: fallbackPreset,
         published: fallbackPreset,
-        templateId: templateId,
+        templateId: templateId || 'default_fashion',
         isDefault: true,
         fallback: true,
       },
-      { headers: NO_CACHE_HEADERS }
+      { headers: corsHeaders() }
     );
   } catch (error: any) {
-    console.error('Failed to fetch PDP template:', error);
+    console.error('PDP GET error:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Internal server error' },
-      { status: 500, headers: NO_CACHE_HEADERS }
+      { status: 500, headers: corsHeaders() }
     );
   }
 }
 
-/**
- * POST /api/v1/content/product-page
- * Body: { tenant: string, templateId: string, status: 'draft' | 'published', config: ProductPageConfig, isDefault?: boolean }
- */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const {
-      tenant = 'lumina',
-      templateId = 'default_fashion',
-      status = 'published',
-      config,
-      isDefault,
-    } = body;
+    const { searchParams } = new URL(req.url);
+    const tenantParam = searchParams.get('tenant') || searchParams.get('tenantSlug');
 
-    if (!config) {
+    const tenant = (body.tenant || body.tenantSlug || tenantParam || 'lumina').toLowerCase().trim();
+    const templateId = body.templateId || 'default_fashion';
+    const status = body.status || 'published';
+    const config = body.config || body;
+    const isDefault = body.isDefault !== undefined ? body.isDefault : true;
+
+    if (!config || typeof config !== 'object') {
       return NextResponse.json(
-        { success: false, error: 'Missing configuration' },
-        { status: 400, headers: NO_CACHE_HEADERS }
+        { success: false, error: 'Missing or invalid configuration object' },
+        { status: 400, headers: corsHeaders() }
       );
     }
 
     const cleanTenant = String(tenant).toLowerCase().trim();
     const db = await getDatabase();
-    if (db) {
-      const collection = db.collection('product_page_templates');
-      const now = new Date().toISOString();
 
-      const updateDoc: any = {
-        updatedAt: now,
+    if (!db) {
+      return NextResponse.json(
+        { success: true, message: 'MongoDB unavailable, acknowledged locally', data: config },
+        { headers: corsHeaders() }
+      );
+    }
+
+    const collection = db.collection('product_page_templates');
+    const now = new Date().toISOString();
+
+    const updateDoc: any = {
+      updatedAt: now,
+      tenantSlug: cleanTenant,
+      tenantId: cleanTenant,
+      storeSlug: cleanTenant,
+      storeId: `store_${cleanTenant}`,
+      templateId: templateId,
+      isDefault: isDefault,
+      status: status,
+    };
+
+    if (status === 'published') {
+      updateDoc.published = config;
+      updateDoc.draft = config;
+      updateDoc.publishedAt = now;
+
+      // 1. Archive to versions
+      await db.collection('product_page_versions').insertOne({
         tenantSlug: cleanTenant,
         tenantId: cleanTenant,
         templateId: templateId,
-      };
+        config: config,
+        versionId: `ver_${Date.now()}`,
+        publishedAt: now,
+        summary: `Published ${templateId} template`,
+      });
 
-      if (isDefault !== undefined) {
-        updateDoc.isDefault = isDefault;
-      }
-
-      if (status === 'published') {
-        updateDoc.published = config;
-        updateDoc.draft = config;
-        updateDoc.publishedAt = now;
-
-        // Archive into versions collection
-        await db.collection('product_page_versions').insertOne({
-          tenantSlug: cleanTenant,
-          tenantId: cleanTenant,
-          templateId: templateId,
-          config: config,
-          versionId: `ver_${Date.now()}`,
-          publishedAt: now,
-          summary: 'Published from Visual PDP Builder Studio',
-        });
-
-        // Mirror to cms_pages for universal CMS interoperability
-        await db.collection('cms_pages').updateOne(
-          {
-            type: 'product-page',
-            $or: [
-              { tenantSlug: cleanTenant },
-              { tenantId: cleanTenant },
-              { storeSlug: cleanTenant },
-              { tenantId: `store_${cleanTenant}` },
-            ],
-          },
-          {
-            $set: {
-              type: 'product-page',
-              tenantSlug: cleanTenant,
-              tenantId: cleanTenant,
-              title: `PDP Template (${cleanTenant})`,
-              config: config,
-              status: 'published',
-              updatedAt: now,
-            },
-          },
-          { upsert: true }
-        );
-      } else {
-        updateDoc.draft = config;
-      }
-
-      // Upsert into product_page_templates
-      await collection.updateOne(
+      // 2. Mirror to cms_pages
+      await db.collection('cms_pages').updateOne(
         {
-          templateId: templateId,
+          type: 'product-page',
           $or: [
             { tenantSlug: cleanTenant },
             { tenantId: cleanTenant },
@@ -201,35 +218,72 @@ export async function POST(req: NextRequest) {
             { tenantId: `store_${cleanTenant}` },
           ],
         },
-        { $set: updateDoc },
+        {
+          $set: {
+            type: 'product-page',
+            tenantSlug: cleanTenant,
+            tenantId: cleanTenant,
+            title: `PDP Template (${cleanTenant})`,
+            config: config,
+            status: 'published',
+            updatedAt: now,
+          },
+        },
         { upsert: true }
       );
-
-      return NextResponse.json(
-        {
-          success: true,
-          message: `PDP template ${templateId} saved as ${status}`,
-          data: config,
-          status,
-          updatedAt: now,
-        },
-        { headers: NO_CACHE_HEADERS }
-      );
+    } else {
+      updateDoc.draft = config;
     }
+
+    // 3. Upsert into product_page_templates
+    await collection.updateOne(
+      {
+        $or: [
+          { tenantSlug: cleanTenant, templateId: templateId },
+          { tenantId: cleanTenant, templateId: templateId },
+          { tenantSlug: cleanTenant, isDefault: true },
+          { tenantId: cleanTenant, isDefault: true },
+          { tenantSlug: cleanTenant },
+        ],
+      },
+      { $set: updateDoc },
+      { upsert: true }
+    );
+
+    // Also update the primary default record so generic queries find this newly published configuration
+    await collection.updateOne(
+      {
+        tenantSlug: cleanTenant,
+        templateId: 'default_fashion',
+      },
+      {
+        $set: {
+          ...updateDoc,
+          templateId: 'default_fashion',
+        },
+      },
+      { upsert: true }
+    );
 
     return NextResponse.json(
       {
         success: true,
-        message: 'MongoDB unavailable, simulated local response',
+        message: `Product Page template for ${cleanTenant} successfully ${status}!`,
         data: config,
+        status,
+        updatedAt: now,
       },
-      { headers: NO_CACHE_HEADERS }
+      { headers: corsHeaders() }
     );
   } catch (error: any) {
-    console.error('Failed to save PDP template:', error);
+    console.error('PDP POST error:', error);
     return NextResponse.json(
       { success: false, error: error.message || 'Internal server error' },
-      { status: 500, headers: NO_CACHE_HEADERS }
+      { status: 500, headers: corsHeaders() }
     );
   }
+}
+
+export async function PUT(req: NextRequest) {
+  return POST(req);
 }
