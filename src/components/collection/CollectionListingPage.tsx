@@ -55,7 +55,7 @@ function CollectionListingPageContent({
       const slug = activeTenant.slug || 'demo';
       const previewParam = isPreview ? '&preview=draft' : '';
       const res = await fetch(
-        `/api/v1/content/collection-page?tenant=${slug}&template=default_fashion${previewParam}&_t=${Date.now()}`,
+        `/api/v1/content/collection-page?tenant=${slug}${previewParam}&_t=${Date.now()}`,
         { cache: 'no-store' }
       );
       const json = await res.json();
