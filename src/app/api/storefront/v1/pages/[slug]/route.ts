@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TenantDatabaseResolver } from '@/server/db/tenant-database.resolver';
+import { getDatabase } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(
   req: NextRequest,
@@ -9,12 +11,20 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const context = TenantDatabaseResolver.resolveContext(req);
-    const db = await TenantDatabaseResolver.getTenantDatabase(context.tenantId);
+    const cleanSlug = slug.replace(/^\//, '').toLowerCase().trim();
+    const slugMatches = [
+      cleanSlug,
+      `/${cleanSlug}`,
+      slug,
+    ];
 
-    if (db) {
-      const pageDoc = await db.collection('cms_pages').findOne({
-        slug,
+    const context = TenantDatabaseResolver.resolveContext(req);
+
+    // 1. Try tenant-scoped database
+    const tenantDb = await TenantDatabaseResolver.getTenantDatabase(context.tenantId);
+    if (tenantDb) {
+      const pageDoc = await tenantDb.collection('cms_pages').findOne({
+        $or: [{ slug: { $in: slugMatches } }, { id: cleanSlug }],
         status: 'published',
       });
 
@@ -22,8 +32,28 @@ export async function GET(
         const { _id, ...cleanPage } = pageDoc;
         return NextResponse.json({
           success: true,
-          data: cleanPage,
-          source: 'mongodb',
+          data: { id: cleanPage.id || _id.toString(), ...cleanPage },
+          source: 'tenant_db',
+        });
+      }
+    }
+
+    // 2. Primary platform database lookup
+    const primaryDb = await getDatabase();
+    if (primaryDb) {
+      const pageDoc = await primaryDb.collection('cms_pages').findOne({
+        $and: [
+          { $or: [{ slug: { $in: slugMatches } }, { id: cleanSlug }] },
+          { status: 'published' },
+        ],
+      });
+
+      if (pageDoc) {
+        const { _id, ...cleanPage } = pageDoc;
+        return NextResponse.json({
+          success: true,
+          data: { id: cleanPage.id || _id.toString(), ...cleanPage },
+          source: 'primary_db',
         });
       }
     }
