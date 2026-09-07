@@ -230,3 +230,14 @@ html {
   display: inline-flex;
   animation: marquee 30s linear infinite;
 }
+
+/* Force hero titles and hero content to remain pure luminous white */
+[data-merchant-store="true"] [data-hero-title="true"],
+[data-merchant-store="true"] [data-hero-content="true"] h1,
+[data-merchant-store="true"] [data-hero-content="true"] h2 {
+  color: #FFFFFF !important;
+}
+
+[data-merchant-store="true"] [data-hero-content="true"] p {
+  color: #E2E8F0 !important;
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { SlidersHorizontal, Grid3X3, Grid2X2 } from 'lucide-react';
@@ -204,8 +205,11 @@ export function ProductListingView({
     });
   };
 
-  const effectiveBannerImage = bannerImage || plpConfig?.hero?.bgImage;
-  const showHero = plpConfig?.hero?.enabled !== false && !!effectiveBannerImage;
+  const effectiveBannerImage =
+    bannerImage ||
+    plpConfig?.hero?.bgImage ||
+    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop';
+  const showHero = plpConfig?.hero?.enabled !== false;
 
   return (
     <div
@@ -221,49 +225,69 @@ export function ProductListingView({
       {/* Category Banner */}
       {showHero && (
         <div
-          className="relative bg-gradient-to-br from-slate-950 via-[#131726] to-[#0A0D15] overflow-hidden flex items-center justify-center text-center transition-all duration-300 shadow-xl"
+          data-hero-section="true"
+          className="relative w-full overflow-hidden flex items-center justify-center text-center transition-all duration-300 shadow-2xl"
           style={{
             minHeight: plpConfig?.hero?.height?.includes('px')
               ? plpConfig.hero.height
               : plpConfig?.hero?.height === 'large'
-              ? '440px'
+              ? '480px'
               : plpConfig?.hero?.height === 'small'
-              ? '220px'
-              : '320px',
+              ? '260px'
+              : '380px',
           }}
         >
+          {/* High-Resolution Background Image */}
           {effectiveBannerImage && (
-            <div
-              className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity"
-              style={{ backgroundImage: `url(${effectiveBannerImage})` }}
-            />
-          )}
-          <div
-            className="absolute inset-0 bg-black/60"
-            style={{
-              opacity:
-                plpConfig?.hero?.overlayOpacity !== undefined
-                  ? plpConfig.hero.overlayOpacity <= 1
-                    ? plpConfig.hero.overlayOpacity
-                    : plpConfig.hero.overlayOpacity / 100
-                  : 0.5,
-            }}
-          />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(244,63,94,0.15),transparent_50%)] pointer-events-none" />
-
-          <div className="relative z-10 max-w-3xl px-4 py-10 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-rose-300 text-[10px] font-bold uppercase tracking-widest mx-auto">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
-              <span>Signature Lookbook</span>
+            <div className="absolute inset-0 z-0">
+              <Image
+                src={effectiveBannerImage}
+                alt={pageTitle}
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover object-center brightness-95 contrast-105"
+              />
+              {/* Dynamic Gradient Overlay */}
+              <div
+                className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/45 to-black/80 transition-opacity duration-200"
+                style={{
+                  opacity:
+                    plpConfig?.hero?.overlayOpacity !== undefined
+                      ? plpConfig.hero.overlayOpacity <= 1
+                        ? plpConfig.hero.overlayOpacity
+                        : plpConfig.hero.overlayOpacity / 100
+                      : 0.45,
+                }}
+              />
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-tight drop-shadow-md">
+          )}
+
+          {/* Hero Content */}
+          <div data-hero-content="true" className="relative z-10 max-w-4xl px-4 py-12 space-y-3.5 mx-auto">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-rose-300 text-[11px] font-bold uppercase tracking-widest mx-auto shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse shadow-sm" />
+              <span style={{ color: '#FDA4AF' }}>Signature Lookbook</span>
+            </div>
+
+            <h1
+              data-hero-title="true"
+              className="text-3xl sm:text-5xl md:text-6xl font-serif font-black tracking-tight drop-shadow-lg"
+              style={{ color: '#FFFFFF' }}
+            >
               {pageTitle || plpConfig?.hero?.title || 'Collection'}
             </h1>
+
             {(pageSubtitle || plpConfig?.hero?.description) && (
-              <p className="text-xs sm:text-sm md:text-base text-slate-200 font-sans max-w-xl mx-auto leading-relaxed drop-shadow">
+              <p
+                className="text-xs sm:text-sm md:text-base font-sans max-w-2xl mx-auto leading-relaxed drop-shadow-sm font-medium"
+                style={{ color: '#E2E8F0' }}
+              >
                 {pageSubtitle || plpConfig?.hero?.description}
               </p>
             )}
+
+            <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-rose-400 to-transparent mx-auto mt-4" />
           </div>
         </div>
       )}
@@ -280,11 +304,18 @@ export function ProductListingView({
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
                 <span>Curated Boutique Collection</span>
               </div>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-tight drop-shadow-sm">
+              <h1
+                data-hero-title="true"
+                className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold tracking-tight drop-shadow-sm"
+                style={{ color: '#FFFFFF' }}
+              >
                 {pageTitle}
               </h1>
               {pageSubtitle && (
-                <p className="text-xs sm:text-sm md:text-base text-slate-300 font-sans leading-relaxed max-w-2xl pt-1">
+                <p
+                  className="text-xs sm:text-sm md:text-base font-sans leading-relaxed max-w-2xl pt-1"
+                  style={{ color: '#CBD5E1' }}
+                >
                   {pageSubtitle}
                 </p>
               )}

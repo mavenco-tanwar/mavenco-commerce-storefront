@@ -266,10 +266,7 @@ export default async function StoreCategoryOrWebsitePage({
             category.description ||
             'Artisanal tailoring and modern silhouettes handcrafted for effortless luxury.'
           }
-          bannerImage={
-            category.imageUrl ||
-            'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop'
-          }
+          bannerImage={category.imageUrl || undefined}
           breadcrumbs={[
             { label: 'Store', href: formatTenantHref('/', tenantSlug) },
             { label: category.name },

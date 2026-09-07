@@ -85,12 +85,19 @@ export function CollectionHero({
       )}
 
       {/* Hero Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-2 text-white w-full">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-black tracking-tight drop-shadow-md">
+      <div data-hero-content="true" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-3 text-white w-full">
+        <h1
+          data-hero-title="true"
+          className="text-3xl sm:text-4xl md:text-5xl font-serif font-black tracking-tight drop-shadow-md"
+          style={{ color: '#FFFFFF' }}
+        >
           {title}
         </h1>
         {description && (
-          <p className="text-xs sm:text-sm md:text-base text-slate-200 font-sans max-w-2xl leading-relaxed drop-shadow">
+          <p
+            className="text-xs sm:text-sm md:text-base font-sans max-w-2xl leading-relaxed drop-shadow"
+            style={{ color: '#E2E8F0' }}
+          >
             {description}
           </p>
         )}
