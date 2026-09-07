@@ -48,7 +48,11 @@ export async function GET(
     return NextResponse.json(
       {
         success: true,
-        data: { id: clean.id || _id.toString(), ...clean },
+        data: {
+          id: clean.id || _id.toString(),
+          builderUrl: `/admin/pages/${(clean.slug || clean.id || _id.toString()).replace(/^\//, '')}/builder`,
+          ...clean,
+        },
       },
       { headers: corsHeaders() }
     );

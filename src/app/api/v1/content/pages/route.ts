@@ -120,6 +120,8 @@ export async function GET(request: NextRequest) {
           blocks: clean.blocks || [],
           seo: clean.seo || { title: clean.title },
           tenantSlug: clean.tenantSlug || 'all',
+          builderUrl: `/admin/pages/${(clean.slug || clean.id || _id.toString()).replace(/^\//, '')}/builder`,
+          content: clean.content || null,
           updatedAt: clean.updatedAt || new Date().toISOString(),
           createdAt: clean.createdAt || new Date().toISOString(),
         };
