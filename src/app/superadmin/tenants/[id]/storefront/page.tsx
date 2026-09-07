@@ -152,14 +152,6 @@ export default function SuperadminStorefrontPage() {
 
           <div className="flex items-center gap-3">
             <Link
-              href="/admin/pages"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white text-xs font-bold transition shadow-lg shadow-pink-500/20"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Launch Visual Page Builder</span>
-            </Link>
-
-            <Link
               href="/"
               target="_blank"
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold transition border border-zinc-700"
@@ -261,11 +253,11 @@ export default function SuperadminStorefrontPage() {
                     </td>
                     <td className="py-3.5 px-6 text-right space-x-2">
                       <Link
-                        href={`/admin/pages/${p.slug || p.id}/builder`}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white text-[11px] font-bold transition shadow-sm"
+                        href={`/superadmin/tenants/${tenantId}/storefront/pages/${p.id}/edit`}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-[11px] font-semibold transition border border-amber-500/30"
                       >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span>Open Builder</span>
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>Visual Editor</span>
                       </Link>
                     </td>
                   </tr>

@@ -37,16 +37,6 @@ export const SYSTEM_PERMISSIONS: Permission[] = [
   { id: 'p_sf_update', key: 'storefront.update', name: 'Update Storefront Config', description: 'Edit page sections, theme tokens, menus', moduleKey: 'storefront', resource: 'storefront', action: 'update', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
   { id: 'p_sf_publish', key: 'storefront.publish', name: 'Publish Storefront', description: 'Publish storefront drafts to live store', moduleKey: 'storefront', resource: 'storefront', action: 'publish', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
   { id: 'p_sf_rollback', key: 'storefront.rollback', name: 'Rollback Storefront', description: 'Rollback to previous published version', moduleKey: 'storefront', resource: 'storefront', action: 'manage', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
-
-  // Visual Page Builder
-  { id: 'p_pb_view', key: 'page_builder.view', name: 'View Pages & Builder', description: 'Access visual builder and page list', moduleKey: 'pages', resource: 'pages', action: 'view', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
-  { id: 'p_pb_create', key: 'page_builder.create', name: 'Create Pages', description: 'Create new builder pages', moduleKey: 'pages', resource: 'pages', action: 'create', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
-  { id: 'p_pb_edit', key: 'page_builder.edit', name: 'Edit Pages', description: 'Design pages in visual builder', moduleKey: 'pages', resource: 'pages', action: 'update', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
-  { id: 'p_pb_delete', key: 'page_builder.delete', name: 'Delete Pages', description: 'Delete or archive builder pages', moduleKey: 'pages', resource: 'pages', action: 'delete', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
-  { id: 'p_pb_publish', key: 'page_builder.publish', name: 'Publish Pages', description: 'Publish builder pages to storefront', moduleKey: 'pages', resource: 'pages', action: 'publish', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
-  { id: 'p_pb_templates', key: 'page_builder.templates', name: 'Manage Templates', description: 'Save and manage reusable templates', moduleKey: 'pages', resource: 'pages', action: 'manage', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
-  { id: 'p_pb_global_styles', key: 'page_builder.global_styles', name: 'Manage Global Styles', description: 'Configure global design system', moduleKey: 'pages', resource: 'pages', action: 'manage', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
-  { id: 'p_pb_theme_builder', key: 'page_builder.theme_builder', name: 'Theme Builder', description: 'Customize headers, footers and templates', moduleKey: 'pages', resource: 'pages', action: 'manage', status: 'active', createdAt: '2026-01-01', updatedAt: '2026-01-01' },
 ];
 
 export class PermissionService {
@@ -207,7 +197,6 @@ export class PermissionService {
     if (modules['dashboard'] === undefined || entitlements.length === 0) modules['dashboard'] = true;
     if (modules['storefront'] === undefined || entitlements.length === 0) modules['storefront'] = true;
     if (modules['products'] === undefined || entitlements.length === 0) modules['products'] = true;
-    if (modules['pages'] === undefined || entitlements.length === 0) modules['pages'] = true;
 
     // Filter permissions only for modules that are actually enabled
     const activePermissions = SYSTEM_PERMISSIONS.filter((p) => modules[p.moduleKey] === true).map(

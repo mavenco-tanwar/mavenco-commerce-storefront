@@ -214,44 +214,29 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
     );
   }
 
-  // 3. Direct MongoDB lookup for Editorial CMS Page or Visual Builder Page
+  // 3. Direct MongoDB lookup for Editorial CMS Page (e.g. 'about-us', 'shipping-policy', etc.)
   let page: any = null;
   try {
-    const cleanSlug = slug.replace(/^\//, '').toLowerCase().trim();
-    const slugQuery = {
-      $and: [
-        {
-          $or: [
-            { slug: cleanSlug },
-            { slug: `/${cleanSlug}` },
-            { slug: slug },
-            { id: cleanSlug },
-          ],
-        },
-        { status: 'published' },
-      ],
-    };
+    const db = await getDatabase();
+    if (db) {
+      const cleanSlug = slug.replace(/^\//, '').toLowerCase().trim();
+      const pageDoc = await db.collection('cms_pages').findOne({
+        $and: [
+          {
+            $or: [
+              { slug: cleanSlug },
+              { slug: `/${cleanSlug}` },
+              { slug: slug },
+              { id: cleanSlug },
+            ],
+          },
+          { status: 'published' },
+        ],
+      });
 
-    // 1. Try tenant-scoped database
-    const { TenantDatabaseResolver } = await import('@/server/db/tenant-database.resolver');
-    const tenantDb = await TenantDatabaseResolver.getTenantDatabase(tenantSlug);
-    if (tenantDb) {
-      const pageDoc = await tenantDb.collection('cms_pages').findOne(slugQuery);
       if (pageDoc) {
         const { _id, ...clean } = pageDoc;
         page = { id: clean.id || _id.toString(), ...clean };
-      }
-    }
-
-    // 2. Primary database fallback
-    if (!page) {
-      const db = await getDatabase();
-      if (db) {
-        const pageDoc = await db.collection('cms_pages').findOne(slugQuery);
-        if (pageDoc) {
-          const { _id, ...clean } = pageDoc;
-          page = { id: clean.id || _id.toString(), ...clean };
-        }
       }
     }
   } catch (err) {
@@ -268,14 +253,6 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
   }
 
   if (page) {
-    // If the page was built with the Visual Builder (has component children), use PageRenderer
-    const builderContent = page.publishedContent || page.content;
-    if (builderContent?.children && Array.isArray(builderContent.children) && builderContent.children.length > 0) {
-      const { PageRenderer } = await import('@/components/builder/renderer/PageRenderer');
-      return <PageRenderer document={page} content={builderContent} />;
-    }
-
-    // Legacy block renderer fallback
     const { WebsitePageRenderer } = await import('@/components/cms/WebsitePageRenderer');
     return <WebsitePageRenderer initialPage={page} tenantSlug={tenantSlug} />;
   }

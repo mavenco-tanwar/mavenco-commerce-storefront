@@ -22,7 +22,6 @@ import {
   Sparkles,
   RefreshCw,
   Lock,
-  Layout,
 } from 'lucide-react';
 
 interface NavItemDef {
@@ -35,7 +34,6 @@ interface NavItemDef {
 
 const ALL_NAV_ITEMS: NavItemDef[] = [
   { label: 'Catalog Overview', href: '/admin/catalog', icon: Layers, moduleKey: 'catalog' },
-  { label: 'Website Pages & Builder', href: '/admin/pages', icon: Layout, moduleKey: 'pages', requiredPermission: 'page_builder.view' },
   { label: 'Products', href: '/admin/products', icon: Package, moduleKey: 'products', requiredPermission: 'products.view' },
   { label: 'Subscriptions', href: '/admin/subscriptions', icon: RefreshCw, moduleKey: 'subscriptions', requiredPermission: 'subscriptions.view' },
   { label: 'Subscription Plans', href: '/admin/subscriptions/plans', icon: Sliders, moduleKey: 'subscriptions', requiredPermission: 'subscriptions.view' },
@@ -62,13 +60,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }>({
     modules: {
       catalog: true,
-      pages: true,
       products: true,
       subscriptions: true,
       memberships: true,
       pim: true,
     },
-    permissions: ['products.view', 'subscriptions.view', 'page_builder.view'],
+    permissions: ['products.view', 'subscriptions.view'],
   });
 
   useEffect(() => {
@@ -139,13 +136,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/admin/pages"
-            className="text-xs bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 font-bold shadow-lg shadow-pink-500/20"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Visual Page Builder</span>
-          </Link>
           <Link
             href="/superadmin/tenants"
             className="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-3 py-1.5 rounded-md transition flex items-center gap-1.5 border border-amber-500/30 font-semibold"
