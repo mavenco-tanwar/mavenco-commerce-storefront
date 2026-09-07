@@ -20,6 +20,14 @@ import { NewsletterSection } from './NewsletterSection';
 import { PromotionalBanner } from './PromotionalBanner';
 import { ValueProps } from './ValueProps';
 import { CollectionsShowcase } from './CollectionsShowcase';
+import { SmartSearchSection } from './SmartSearchSection';
+import { PromoTagsSection } from './PromoTagsSection';
+import { SalesAnalyticsSection } from './SalesAnalyticsSection';
+import { StarRatingsQaSection } from './StarRatingsQaSection';
+import { StoreLocatorSection } from './StoreLocatorSection';
+import { GiftCardsSection } from './GiftCardsSection';
+import { ReferralLoyaltySection } from './ReferralLoyaltySection';
+import { OrderTrackingSection } from './OrderTrackingSection';
 
 interface DynamicSectionRendererProps {
   sections?: CmsHomepageSection[];
@@ -517,12 +525,171 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
             );
             break;
 
+          // 16. Smart Search & Filters [SMART_SEARCH]
+          case 'smart-search':
+          case 'smart_search':
+          case 'search-filter':
+            sectionElement = (
+              <SmartSearchSection
+                key={section.id}
+                customTitle={title}
+                customSubtitle={subtitle}
+                customBadge={badge}
+                placeholder={sData.placeholder}
+                showFilters={sData.showFilters}
+                showAutocomplete={sData.showAutocomplete}
+                showRecommendations={sData.showRecommendations}
+                tenantSlug={resolvedTenant}
+              />
+            );
+            break;
+
+          // 17. Promo Tag & Badge Engine [PROMO_TAGS]
+          case 'promo-tags':
+          case 'promo_tags':
+          case 'badge-engine':
+          case 'product-badges':
+            sectionElement = (
+              <PromoTagsSection
+                key={section.id}
+                customTitle={title}
+                customSubtitle={subtitle}
+                customBadge={badge}
+                badges={sData.badges}
+                tenantSlug={resolvedTenant}
+              />
+            );
+            break;
+
+          // 18. Sales Analytics Dashboard [ANALYTICS]
+          case 'analytics-dashboard':
+          case 'analytics_dashboard':
+          case 'analytics':
+          case 'sales-analytics':
+            sectionElement = (
+              <SalesAnalyticsSection
+                key={section.id}
+                customTitle={title}
+                customSubtitle={subtitle}
+                customBadge={badge}
+                showRevenue={sData.showRevenue}
+                showConversionFunnel={sData.showConversionFunnel}
+                showTopProducts={sData.showTopProducts}
+                dateRange={sData.dateRange}
+              />
+            );
+            break;
+
+          // 19. Star Ratings & Q&A [STAR_RATINGS_QA]
+          case 'star-ratings-qa':
+          case 'star_ratings_qa':
+          case 'ratings-qa':
+          case 'reviews-qa':
+            sectionElement = (
+              <StarRatingsQaSection
+                key={section.id}
+                customTitle={title}
+                customSubtitle={subtitle}
+                customBadge={badge}
+                allowPhotoReviews={sData.allowPhotoReviews}
+                allowMerchantReply={sData.allowMerchantReply}
+                showQASection={sData.showQASection}
+                minRatingToShow={sData.minRatingToShow}
+              />
+            );
+            break;
+
+          // 20. Store Locator & Map [STORE_LOCATOR]
+          case 'store-locator':
+          case 'store_locator':
+          case 'locations':
+          case 'map':
+            sectionElement = (
+              <StoreLocatorSection
+                key={section.id}
+                customTitle={title}
+                customSubtitle={subtitle}
+                customBadge={badge}
+                locations={sData.locations}
+                showOpeningHours={sData.showOpeningHours}
+                showDirectionsButton={sData.showDirectionsButton}
+                tenantSlug={resolvedTenant}
+              />
+            );
+            break;
+
+          // 21. Gift Card & Voucher Block [GIFT_CARDS]
+          case 'gift-cards':
+          case 'gift_cards':
+          case 'gift-card':
+          case 'vouchers':
+            sectionElement = (
+              <GiftCardsSection
+                key={section.id}
+                customTitle={title}
+                customSubtitle={subtitle}
+                customBadge={badge}
+                denominations={sData.denominations}
+                allowCustomAmount={sData.allowCustomAmount}
+                ctaText={sData.ctaText}
+                tenantSlug={resolvedTenant}
+              />
+            );
+            break;
+
+          // 22. Referral & Loyalty Module [REFERRAL_LOYALTY]
+          case 'referral-loyalty':
+          case 'referral_loyalty':
+          case 'loyalty':
+          case 'rewards':
+            sectionElement = (
+              <ReferralLoyaltySection
+                key={section.id}
+                customTitle={title}
+                customSubtitle={subtitle}
+                customBadge={badge}
+                pointsPerRupee={sData.pointsPerRupee}
+                tiers={sData.tiers}
+                referralBonusPoints={sData.referralBonusPoints}
+                tenantSlug={resolvedTenant}
+              />
+            );
+            break;
+
+          // 23. Order Tracking Timeline [ORDER_TRACKING]
+          case 'order-tracking':
+          case 'order_tracking':
+          case 'tracking':
+          case 'shipment-tracking':
+            sectionElement = (
+              <OrderTrackingSection
+                key={section.id}
+                customTitle={title}
+                customSubtitle={subtitle}
+                customBadge={badge}
+                showEtaCountdown={sData.showEtaCountdown}
+                showCourierDetails={sData.showCourierDetails}
+                supportEmail={sData.supportEmail}
+              />
+            );
+            break;
+
           default:
             sectionElement = null;
             break;
         }
 
         if (!sectionElement) return null;
+
+        // Responsive visibility based on section.visibilityDevice
+        let deviceVisibilityClass = '';
+        if (section.visibilityDevice) {
+          const { desktop, tablet, mobile } = section.visibilityDevice;
+          if (desktop === false && tablet === false && mobile === false) return null;
+          if (desktop === false) deviceVisibilityClass += ' lg:hidden';
+          if (tablet === false) deviceVisibilityClass += ' md:max-lg:hidden';
+          if (mobile === false) deviceVisibilityClass += ' max-md:hidden';
+        }
 
         // Wrap each section with dynamic CSS variables and section styles configured in Visual Theme Studio
         const sectionStyle: React.CSSProperties = {
@@ -545,7 +712,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
             id={`section-${section.id}`}
             data-section-type={section.type}
             data-section-order={section.order ?? section.displayOrder}
-            className={`w-full relative transition-colors duration-200 ${section.className || ''}`}
+            className={`w-full relative transition-colors duration-200 ${deviceVisibilityClass} ${section.className || ''}`}
             style={sectionStyle}
           >
             {sectionElement}
