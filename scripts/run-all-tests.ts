@@ -20,6 +20,9 @@ import { runTenantAdminApiIntegrationTests } from '../tests/integration/admin-ap
 import { runDbSyncTestSuite } from '../src/server/db/__tests__/db-sync.test';
 import { runStaticDataAudit } from './audit-static-data';
 
+import { runVisualPageBuilderUnitTests } from '../tests/unit/visual-page-builder.test';
+import { runVisualPageBuilderApiIntegrationTests } from '../tests/integration/builder-api.test';
+
 interface SuiteResult {
   name: string;
   category: 'Unit' | 'Integration' | 'Security' | 'Quality Gate';
@@ -41,11 +44,13 @@ async function runQualityGate() {
     { name: 'Cart & Pricing Engine (Minor Units & Tax)', category: 'Unit', fn: runCartPricingUnitTests },
     { name: 'Global Commerce & Multi-Market Engine', category: 'Unit', fn: runGlobalCommerceUnitTests },
     { name: 'Headless Storefront & SDK Experience', category: 'Unit', fn: runHeadlessExperienceUnitTests },
+    { name: 'Visual Page Builder Engine (40+ Elements & Tree)', category: 'Unit', fn: runVisualPageBuilderUnitTests },
     { name: 'Enterprise PIM & Catalog Governance', category: 'Unit', fn: runPimTestSuite },
     { name: 'Subscriptions & Recurring Commerce', category: 'Unit', fn: runSubscriptionTestSuite },
     { name: 'Tenant Entitlements & Storefront Governance', category: 'Unit', fn: runModule36TestSuite },
     { name: 'Multi-Tenant Isolation & Security Boundary', category: 'Security', fn: runTenantIsolationSecurityTests },
     { name: 'Storefront Route Handlers Integration', category: 'Integration', fn: runStorefrontApiIntegrationTests },
+    { name: 'Visual Page Builder Route Handlers Integration', category: 'Integration', fn: runVisualPageBuilderApiIntegrationTests },
     { name: 'Superadmin Route Handlers Integration', category: 'Integration', fn: runSuperadminApiIntegrationTests },
     { name: 'Tenant Admin Route Handlers Integration', category: 'Integration', fn: runTenantAdminApiIntegrationTests },
     { name: 'Database-First Synchronization Contract', category: 'Quality Gate', fn: runDbSyncTestSuite },

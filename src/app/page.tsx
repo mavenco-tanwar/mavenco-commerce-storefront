@@ -28,6 +28,36 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     return <StoreUnavailableView tenantSlug={tenantSlug} isSuspended={isSuspended} />;
   }
 
+  // Check if tenant has a published custom Visual Builder Homepage
+  let customHomeDoc: any = null;
+  let customHomeContent: any = null;
+  try {
+    const { TenantDatabaseResolver } = await import('@/server/db/tenant-database.resolver');
+    const tenantDb = await TenantDatabaseResolver.getTenantDatabase(tenantSlug);
+    if (tenantDb) {
+      const doc = await tenantDb.collection('cms_pages').findOne({
+        $and: [
+          { $or: [{ slug: '/' }, { slug: 'home' }, { type: 'homepage' }] },
+          { status: isPreview ? { $in: ['draft', 'published'] } : 'published' },
+        ],
+      });
+      if (doc) {
+        const active = isPreview && doc.content ? doc.content : (doc.publishedContent || doc.content);
+        if (active?.children && active.children.length > 0) {
+          customHomeDoc = doc;
+          customHomeContent = active;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[HomePage] Custom visual homepage check fallback:', err);
+  }
+
+  if (customHomeDoc && customHomeContent) {
+    const { PageRenderer } = await import('@/components/builder/renderer/PageRenderer');
+    return <PageRenderer document={customHomeDoc} content={customHomeContent} />;
+  }
+
   // Otherwise, load and render that specific tenant's store
   const sections = await CmsApiService.getHomepageSections(isPreview, tenantSlug);
 
