@@ -87,6 +87,7 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
     const handleMessage = (event: MessageEvent) => {
       if (
         event.data?.type === 'HEADER_UPDATED' ||
+        event.data?.type === 'HEADER_CONFIG_UPDATED' ||
         event.data?.type === 'MAVENCO_HEADER_PREVIEW' ||
         event.data?.type === 'MAVENCO_THEME_PREVIEW' ||
         event.data?.type === 'NAVIGATION_UPDATED' ||
