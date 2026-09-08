@@ -55,7 +55,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${playfair.variable} ${jakarta.variable}`}>
-      <body className="min-h-screen flex flex-col bg-[#0A0C10] text-[#111111] antialiased">
+      <body className="min-h-screen flex flex-col bg-[var(--theme-color-background,#FFFDFC)] text-[var(--theme-color-text,#111111)] antialiased transition-colors duration-200">
         <ToastProvider>
           <StoreProvider>
             <AuthProvider>
