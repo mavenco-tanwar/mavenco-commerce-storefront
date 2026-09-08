@@ -82,6 +82,22 @@ export function generateThemeCssVariables(theme: ThemeDocument): string {
     --theme-color-info: ${c.info || '#3B82F6'};
     --theme-color-overlay: ${c.overlay || 'rgba(0, 0, 0, 0.65)'};
 
+    /* Dedicated Section & Component Granular Colors */
+    --theme-hero-bg: ${c.heroBackground || c.background || '#0A0D15'};
+    --theme-hero-title: ${c.heroTitle || c.heading || '#FFFFFF'};
+    --theme-hero-subtitle: ${c.heroSubtitle || c.textSecondary || '#CBD5E1'};
+    --theme-header-bg: ${c.headerBackground || c.background || '#FFFFFF'};
+    --theme-header-text: ${c.headerText || c.text || '#111111'};
+    --theme-announcement-bg: ${c.announcementBackground || c.primary || '#111111'};
+    --theme-announcement-text: ${c.announcementText || '#FFFFFF'};
+    --theme-footer-bg: ${c.footerBackground || c.surfaceSecondary || '#F8F1EA'};
+    --theme-footer-heading: ${c.footerHeading || c.heading || '#111111'};
+    --theme-footer-text: ${c.footerText || c.textSecondary || '#57534E'};
+    --theme-card-bg: ${cd?.productCardDefaults?.cardBackground || c.surface || '#FFFFFF'};
+    --theme-card-title: ${cd?.productCardDefaults?.titleColor || c.heading || '#111111'};
+    --theme-card-price: ${c.cardPrice || cd?.productCardDefaults?.priceColor || c.primary || '#111111'};
+    --theme-card-sale-price: ${c.cardSalePrice || cd?.productCardDefaults?.comparePriceColor || c.accent || '#E11D48'};
+
     /* Standard Core Overrides mapped to Dynamic Theme */
     --background: ${c.background || '#FFFDFC'};
     --foreground: ${c.text || '#111111'};

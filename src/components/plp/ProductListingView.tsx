@@ -273,7 +273,7 @@ export function ProductListingView({
             <h1
               data-hero-title="true"
               className="text-3xl sm:text-5xl md:text-6xl font-serif font-black tracking-tight drop-shadow-lg"
-              style={{ color: '#FFFFFF' }}
+              style={{ color: 'var(--theme-hero-title, var(--theme-color-heading, #FFFFFF))' }}
             >
               {pageTitle || plpConfig?.hero?.title || 'Collection'}
             </h1>
@@ -281,7 +281,7 @@ export function ProductListingView({
             {(pageSubtitle || plpConfig?.hero?.description) && (
               <p
                 className="text-xs sm:text-sm md:text-base font-sans max-w-2xl mx-auto leading-relaxed drop-shadow-sm font-medium"
-                style={{ color: '#E2E8F0' }}
+                style={{ color: 'var(--theme-hero-subtitle, var(--theme-color-text-secondary, #CBD5E1))' }}
               >
                 {pageSubtitle || plpConfig?.hero?.description}
               </p>
@@ -307,7 +307,7 @@ export function ProductListingView({
               <h1
                 data-hero-title="true"
                 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold tracking-tight drop-shadow-sm"
-                style={{ color: '#FFFFFF' }}
+                style={{ color: 'var(--theme-hero-title, var(--theme-color-heading, #FFFFFF))' }}
               >
                 {pageTitle}
               </h1>

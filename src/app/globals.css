@@ -100,7 +100,7 @@ body {
 [data-merchant-store="true"] h6,
 [data-merchant-store="true"] .font-serif {
   font-family: var(--theme-font-heading, var(--font-playfair), Georgia, serif) !important;
-  color: var(--theme-color-heading, inherit);
+  color: var(--theme-color-heading, inherit) !important;
 }
 
 /* Dynamic button, accent, and card overrides */
@@ -231,13 +231,13 @@ html {
   animation: marquee 30s linear infinite;
 }
 
-/* Force hero titles and hero content to remain pure luminous white */
+/* Dynamic Hero & Banner Section Title and Subtitle Customization */
 [data-merchant-store="true"] [data-hero-title="true"],
 [data-merchant-store="true"] [data-hero-content="true"] h1,
 [data-merchant-store="true"] [data-hero-content="true"] h2 {
-  color: #FFFFFF !important;
+  color: var(--theme-hero-title, var(--theme-color-heading, #FFFFFF)) !important;
 }
 
 [data-merchant-store="true"] [data-hero-content="true"] p {
-  color: #E2E8F0 !important;
+  color: var(--theme-hero-subtitle, var(--theme-color-text-secondary, #CBD5E1)) !important;
 }
