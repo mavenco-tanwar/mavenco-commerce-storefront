@@ -42,3 +42,33 @@ export async function getDatabase(dbName: string = 'mavenco_platform'): Promise<
     return null;
   }
 }
+
+/**
+ * Returns the platform-level database (mavenco_platform).
+ * Use for: tenant registry, users, platform_tenants_registry, broadcasts, roadmap, etc.
+ */
+export async function getPlatformDatabase(): Promise<Db | null> {
+  return getDatabase('mavenco_platform');
+}
+
+/**
+ * Returns the tenant-scoped database (tenant_<slug>).
+ * ALL tenant business data (products, orders, customers, collections, etc.)
+ * must be read/written through this function — NEVER through getDatabase().
+ */
+export async function getTenantDatabase(tenantSlug: string): Promise<Db | null> {
+  if (!tenantSlug) {
+    console.warn('[getTenantDatabase] No tenant slug provided');
+    return null;
+  }
+  const safeTenantId = tenantSlug
+    .replace(/^store_/, '')
+    .replace(/[^a-zA-Z0-9_-]/g, '')
+    .toLowerCase();
+  if (!safeTenantId) {
+    console.warn('[getTenantDatabase] Invalid tenant slug after sanitization:', tenantSlug);
+    return null;
+  }
+  const dbName = `tenant_${safeTenantId}`;
+  return getDatabase(dbName);
+}

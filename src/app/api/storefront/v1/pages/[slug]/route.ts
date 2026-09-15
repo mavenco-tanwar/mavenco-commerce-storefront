@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TenantDatabaseResolver } from '@/server/db/tenant-database.resolver';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;

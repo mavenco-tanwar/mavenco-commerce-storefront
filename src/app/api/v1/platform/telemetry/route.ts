@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getPlatformDatabase } from '@/lib/mongodb';
 
 export async function GET(req: NextRequest) {
   const startTime = performance.now();

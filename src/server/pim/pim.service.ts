@@ -20,7 +20,7 @@ import {
   ProductVersion,
   Vendor,
 } from '@/types/pim-commerce.types';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { productsData } from '@/data/products'; // audit:ignore - Seed bootstrap for offline PIM testing
 import { ProductCompletenessService } from './product-completeness.service';
 import { ProductQualityService } from './product-quality.service';
@@ -520,12 +520,12 @@ export class PimService {
 
     // Optional MongoDB Atlas acceleration
     try {
-      const db = await getDatabase();
+      const db = await getTenantDatabase(tenantId);
       if (db) {
         const col = db.collection('pim_products');
-        const dbCount = await col.countDocuments({ tenantId });
+        const dbCount = await col.countDocuments();
         if (dbCount > 0) {
-          const docs = await col.find({ tenantId }).toArray();
+          const docs = await col.find({}).toArray();
           list = docs.map(({ _id, ...rest }) => rest as PimProduct);
         }
       }
@@ -663,10 +663,10 @@ export class PimService {
 
     // Sync to MongoDB if available
     try {
-      const db = await getDatabase();
+      const db = await getTenantDatabase(tenantId);
       if (db) {
         await db.collection('pim_products').updateOne(
-          { id: merged.id, tenantId },
+          { id: merged.id },
           { $set: merged },
           { upsert: true }
         );
@@ -686,6 +686,16 @@ export class PimService {
     list[idx].status = 'archived';
     list[idx].updatedAt = new Date().toISOString();
     list[idx].lastEditor = operator;
+
+    try {
+      const db = await getTenantDatabase(tenantId);
+      if (db) {
+        await db.collection('pim_products').updateOne(
+          { id: productId },
+          { $set: { status: 'archived', updatedAt: list[idx].updatedAt, lastEditor: operator } }
+        );
+      }
+    } catch {}
 
     this.auditLogs.unshift({
       action: 'product.archived',

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { PimService } from '@/server/pim/pim.service';
 import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
@@ -31,8 +31,9 @@ export async function GET(request: NextRequest) {
   const page = parseInt(searchParams.get('page') || '1', 10);
 
   try {
-    const db = await getDatabase();
-    const tenantSlug = await resolveRequestTenantSlug(request, searchParams, db);
+    const platformDb = await getDatabase();
+    const tenantSlug = await resolveRequestTenantSlug(request, searchParams, platformDb);
+    const db = await getTenantDatabase(tenantSlug);
     let dbProducts: any[] = [];
     if (db) {
       const tenantMatchConditions: any[] = [];
@@ -164,7 +165,6 @@ export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const body = await request.json();
-    const db = await getDatabase();
     const rawResolved =
       searchParams.get('tenant') ||
       searchParams.get('store') ||
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
       body.tenantSlug ||
       body.storeSlug ||
       body.tenantId ||
-      (await resolveRequestTenantSlug(request, searchParams, db));
+      (await resolveRequestTenantSlug(request, searchParams));
     const tenantSlug = (rawResolved || '').replace(/^store_/, '').toLowerCase().trim() || 'jq-trends';
     const operator = request.headers.get('x-user-name') || 'Admin Curator';
 
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
 
     // Sync to MongoDB products and pim_products collections with safe upsert
     try {
-      const db = await getDatabase();
+      const db = await getTenantDatabase(tenantSlug);
       if (db) {
         const payload = {
           ...saved,
@@ -230,6 +230,11 @@ export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
     const { ids, id, status, updates } = body;
+    const tenantSlug = (
+      request.headers.get('x-tenant-slug') ||
+      request.headers.get('x-tenant') ||
+      body.tenantSlug || body.storeSlug || body.tenantId || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
     const targetIds: string[] = [];
     if (Array.isArray(ids)) targetIds.push(...ids);
     if (id) targetIds.push(id);
@@ -242,7 +247,7 @@ export async function PATCH(request: NextRequest) {
       updatePayload.status = status;
     }
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db && targetIds.length > 0) {
       const { ObjectId } = await import('mongodb');
       const orConditions: any[] = [];
@@ -277,11 +282,16 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const tenantSlug = (
+      searchParams.get('tenant') ||
+      request.headers.get('x-tenant-slug') ||
+      request.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
     const id = searchParams.get('id') || searchParams.get('slug');
     const ids = searchParams.get('ids')?.split(',') || [];
     if (id) ids.push(id);
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db && ids.length > 0) {
       const { ObjectId } = await import('mongodb');
       const orConditions: any[] = [];

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
@@ -33,7 +33,6 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const db = await getDatabase();
     const { searchParams } = new URL(req.url);
 
     const rawTenant =
@@ -46,9 +45,11 @@ export async function PATCH(
       req.headers.get('x-tenant') ||
       req.headers.get('X-Tenant-Slug');
 
+    const platformDb = await getDatabase();
     let tenantSlug = rawTenant
       ? rawTenant.replace(/^store_/, '').trim().toLowerCase()
-      : await resolveRequestTenantSlug(req, searchParams, db);
+      : await resolveRequestTenantSlug(req, searchParams, platformDb);
+    const db = await getTenantDatabase(tenantSlug);
 
     if (!tenantSlug || tenantSlug === 'all' || tenantSlug === 'lumina') {
       tenantSlug = 'jq-trends';
@@ -114,7 +115,10 @@ export async function DELETE(
       );
     }
 
-    const db = await getDatabase();
+    const tenantSlug = (
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (!db) {
       return NextResponse.json(
         { success: false, error: 'Database unavailable' },

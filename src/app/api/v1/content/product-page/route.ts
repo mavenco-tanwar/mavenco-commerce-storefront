@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 import { getDefaultPdpConfig, PDP_PRESET_TEMPLATES } from '@/lib/pdp-presets';
 
 export const dynamic = 'force-dynamic';
@@ -36,7 +37,11 @@ export async function GET(req: NextRequest) {
     const templateId = searchParams.get('template');
     const isPreview = searchParams.get('preview') === 'draft' || searchParams.get('status') === 'draft';
 
-    const db = await getDatabase();
+    const tenantSlug = (
+      searchParams.get('tenant') || searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const tenantMatchConditions = [
         { tenantSlug: tenant },
@@ -168,7 +173,10 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanTenant = String(tenant).toLowerCase().trim();
-    const db = await getDatabase();
+    const tenantSlug = (
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
 
     if (!db) {
       return NextResponse.json(

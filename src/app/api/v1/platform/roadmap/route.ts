@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getPlatformDatabase } from '@/lib/mongodb';
 
 const DEFAULT_ROADMAP_ITEMS = [
   {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { getProductsForTenant } from '@/data/products';
 import { PimService } from '@/server/pim/pim.service';
 import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
@@ -23,8 +23,9 @@ export async function GET(
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug).trim();
   const { searchParams } = new URL(request.url);
-  const db = await getDatabase();
-  const tenantSlug = await resolveRequestTenantSlug(request, searchParams, db);
+  const platformDb = await getDatabase();
+  const tenantSlug = await resolveRequestTenantSlug(request, searchParams, platformDb);
+  const db = await getTenantDatabase(tenantSlug);
 
   // Try PIM first
   try {
@@ -100,8 +101,9 @@ async function handleUpdate(
 ) {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug).trim();
-  const db = await getDatabase();
-  const tenantSlug = await resolveRequestTenantSlug(request, undefined, db);
+  const platformDb = await getDatabase();
+  const tenantSlug = await resolveRequestTenantSlug(request, undefined, platformDb);
+  const db = await getTenantDatabase(tenantSlug);
   const operator = request.headers.get('x-user-name') || 'Admin User';
 
   try {
@@ -227,7 +229,7 @@ export async function DELETE(
       }
     }
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const { ObjectId } = await import('mongodb');
       let objId = null;

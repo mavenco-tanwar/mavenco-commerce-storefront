@@ -1,4 +1,4 @@
-import { getDatabase } from '@/lib/mongodb';
+import { getTenantDatabase } from '@/lib/mongodb';
 import {
   CommerceOrder,
   ShippingAddressData,
@@ -41,7 +41,7 @@ export class CheckoutService {
       notes,
     } = params;
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantId);
 
     // 1. Fetch live cart
     const cart = await CartService.getOrCreateCart(tenantId, sessionId, customerId);
@@ -88,11 +88,11 @@ export class CheckoutService {
 
     if (db) {
       // Insert into tenant orders collection
-      await db.collection('orders').insertOne({ ...order, _id: order.id });
+      await db.collection('orders').insertOne({ ...order, _id: order.id as any });
 
       // Mark cart as CONVERTED so it is no longer active
       await db.collection('carts').updateOne(
-        { id: cart.id, tenantId },
+        { id: cart.id },
         {
           $set: {
             status: 'CONVERTED',
@@ -112,11 +112,10 @@ export class CheckoutService {
     tenantId: string,
     orderNumber: string
   ): Promise<CommerceOrder | null> {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantId);
     if (!db) return null;
 
     const doc = await db.collection('orders').findOne({
-      tenantId,
       orderNumber,
     });
 

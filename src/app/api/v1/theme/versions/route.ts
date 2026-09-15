@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 function corsHeaders() {
   return {
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
     .trim();
 
   try {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const versions = await db
         .collection('theme_versions')
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { version } = await request.json();
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
 
     if (!db) {
       return NextResponse.json(

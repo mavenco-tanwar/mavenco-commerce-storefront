@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   try {
     const { id } = params;
     const body = await req.json();
-    const db = await getDatabase();
+    const tenantSlug = (
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') ||
+      body?.tenantSlug || body?.storeSlug || body?.tenantId || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       await db.collection('customers').updateOne(
         { id },
@@ -35,7 +40,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
-    const db = await getDatabase();
+    const tenantSlug = (
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       await db.collection('customers').deleteOne({ id });
     }

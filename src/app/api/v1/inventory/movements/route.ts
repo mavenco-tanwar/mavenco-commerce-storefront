@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +59,11 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const tenant = searchParams.get('tenant') || 'lumina';
 
-    const db = await getDatabase();
+    const tenantSlug = (
+      searchParams.get('tenant') || searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const docs = await db
         .collection('stock_movements')

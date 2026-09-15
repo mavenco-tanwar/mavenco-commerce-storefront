@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +10,11 @@ export async function GET(req: NextRequest) {
     const tenant = searchParams.get('tenant') || 'lumina';
     const status = searchParams.get('status');
 
-    const db = await getDatabase();
+    const tenantSlug = (
+      searchParams.get('tenant') || searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const query: any = { tenantId: tenant };
       if (status && status !== 'all') query.status = status;
@@ -46,7 +51,11 @@ export async function PATCH(req: NextRequest) {
       actor = 'Staff Admin',
     } = body;
 
-    const db = await getDatabase();
+    const tenantSlug = (
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') ||
+      body?.tenantSlug || body?.storeSlug || body?.tenantId || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     const now = new Date().toISOString();
 
     if (db) {

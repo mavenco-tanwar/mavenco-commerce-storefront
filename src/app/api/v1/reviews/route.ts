@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -145,7 +146,6 @@ export async function GET(req: NextRequest) {
     const type = searchParams.get('type') || 'product';
     const status = searchParams.get('status');
 
-    const db = await getDatabase();
 
     // =========================================================================
     // 1. SAAS FOUNDER TESTIMONIALS (Landing Page Showcase)
@@ -180,6 +180,7 @@ export async function GET(req: NextRequest) {
     // 2. PRODUCT STORE REVIEWS (Customer Reviews & UGC)
     // =========================================================================
     const tenantSlug = (searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'lumina').toLowerCase();
+    const db = await getTenantDatabase(tenantSlug);
     const productId = searchParams.get('productId');
 
     let reviews = DEFAULT_REVIEWS;
@@ -239,7 +240,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const type = body.type || 'product';
-    const db = await getDatabase();
     const now = new Date().toISOString();
 
     if (type === 'saas') {
@@ -273,6 +273,7 @@ export async function POST(req: NextRequest) {
     }
 
     const tenantSlug = (req.headers.get('x-tenant-slug') || body.tenantId || 'lumina').toLowerCase();
+    const db = await getTenantDatabase(tenantSlug);
     const newReview = {
       ...body,
       id: body.id || `rev_${Date.now()}`,
@@ -308,7 +309,11 @@ export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
     const type = body.type || 'product';
-    const db = await getDatabase();
+    const tenantSlug = (
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') ||
+      body?.tenantSlug || body?.storeSlug || body?.tenantId || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     const now = new Date().toISOString();
 
     if (type === 'saas') {
@@ -351,7 +356,11 @@ export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     const type = searchParams.get('type') || 'product';
-    const db = await getDatabase();
+    const tenantSlug = (
+      searchParams.get('tenant') || searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
 
     if (!id) {
       return NextResponse.json({ error: 'Review ID required' }, { status: 400, headers: corsHeaders() });

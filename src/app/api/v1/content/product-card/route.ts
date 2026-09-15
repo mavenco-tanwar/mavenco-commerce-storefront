@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 import { getDefaultProductCardConfig } from '@/lib/product-card-presets';
 import { ProductCardConfig } from '@/types/product-card.types';
 
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
   const defaultCfg = getDefaultProductCardConfig(tenantSlug);
 
   try {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const doc = await db.collection('product_card_configs').findOne({
         tenantId: tenantSlug,
@@ -97,7 +98,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body: ProductCardConfig = await request.json();
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
 
     if (!db) {
       return NextResponse.json(

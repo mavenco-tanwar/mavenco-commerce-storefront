@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 import { getDefaultHeaderConfig, HeaderConfig } from '@/lib/header-config';
 
 function corsHeaders() {
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
   const base = getDefaultHeaderConfig(tenantSlug);
 
   try {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const doc = await db.collection('cms_pages').findOne({
         $or: [
@@ -163,7 +164,7 @@ async function handleSave(request: NextRequest) {
     }
     if (!tenantSlug) tenantSlug = 'lumina';
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const existing = await db.collection('cms_pages').findOne({
         tenantSlug: tenantSlug,

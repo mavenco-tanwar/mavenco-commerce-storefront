@@ -10,7 +10,7 @@ import {
   StorefrontSection,
   StorefrontVersion,
 } from '@/types/tenant-governance.types';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 
 export class StorefrontPageService {
   private static storefontsStore: Map<string, Storefront> = new Map();
@@ -112,9 +112,9 @@ export class StorefrontPageService {
     }
 
     try {
-      const db = await getDatabase();
+      const db = await getTenantDatabase(safeTenantId);
       if (db) {
-        const doc = await db.collection('storefront_pages').findOne({ id: pageId, tenantId: safeTenantId });
+        const doc = await db.collection('storefront_pages').findOne({ id: pageId });
         if (doc) {
           const { _id, ...clean } = doc;
           return clean as any;
@@ -150,10 +150,10 @@ export class StorefrontPageService {
     storefront.draftVersion += 1;
 
     try {
-      const db = await getDatabase();
+      const db = await getTenantDatabase(tenantId);
       if (db) {
         await db.collection('storefront_pages').updateOne(
-          { id: pageId, tenantId: tenantId.toLowerCase().trim() },
+          { id: pageId },
           { $set: page },
           { upsert: true }
         );

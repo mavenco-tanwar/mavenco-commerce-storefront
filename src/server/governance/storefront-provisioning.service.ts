@@ -137,9 +137,72 @@ export class StorefrontProvisioningService {
       }
       record.completedSteps.push('REGISTERING_TENANT');
 
-      // Step 3: Connect & Initialize Tenant Database
+      // Step 3: Connect & Initialize Tenant Database with all required collections
       record.currentStep = 'PROVISIONING_TENANT_DATABASE';
       const tenantDb = await TenantDatabaseResolver.getTenantDatabase(safeTenantId);
+      if (tenantDb) {
+        // Create all tenant-scoped collections with basic indexes
+        const tenantCollections = [
+          'products', 'pim_products', 'pim_collections',
+          'orders', 'customers', 'collections', 'categories',
+          'carts', 'abandoned_carts', 'reviews', 'product_reviews', 'product_questions',
+          'media', 'promotions', 'discounts',
+          'cms_pages', 'cms_menus', 'cms_versions',
+          'builder_page_versions',
+          'themes', 'theme_versions',
+          'product_page_templates', 'product_page_versions',
+          'product_card_configs', 'product_card_versions',
+          'collection_page_configs', 'collection_page_versions',
+          'contact_inquiries',
+          'stores', 'store_settings', 'navigation',
+          'sales_channels', 'stock_transfers', 'warehouses',
+          'invoices', 'invoice_series', 'invoice_templates', 'credit_notes',
+          'gift_cards', 'vouchers', 'wallet_transactions', 'store_credit',
+          'loyalty_programs', 'loyalty_points', 'loyalty_rewards',
+          'referrals', 'notifications', 'notification_templates', 'notification_logs',
+          'payment_methods', 'payment_providers', 'payment_intents', 'payment_webhooks',
+          'shipping_methods', 'shipping_zones', 'shipping_carriers', 'shipments',
+          'tax_zones', 'tax_rules', 'tax_categories', 'tax_registrations',
+          'inventory', 'inventory_movements', 'inventory_adjustments', 'fulfillments',
+          'marketing_campaigns', 'marketing_segments', 'marketing_automations',
+          'finance_ledger', 'finance_accounts', 'finance_periods', 'finance_payouts', 'finance_settlements',
+          'search_synonyms', 'search_merchandising',
+          'billing_subscriptions', 'billing_invoices',
+          'customer_returns', 'admin_returns',
+          'settings',
+        ];
+        const existingColls = await tenantDb.listCollections().toArray();
+        const existingNames = new Set(existingColls.map((c: any) => c.name));
+        for (const collName of tenantCollections) {
+          if (!existingNames.has(collName)) {
+            try {
+              await tenantDb.createCollection(collName);
+            } catch {}
+          }
+        }
+        // Create indexes on key collections
+        try {
+          await Promise.all([
+            tenantDb.collection('products').createIndex({ id: 1 }, { sparse: true }),
+            tenantDb.collection('products').createIndex({ slug: 1 }, { sparse: true }),
+            tenantDb.collection('products').createIndex({ status: 1 }),
+            tenantDb.collection('pim_products').createIndex({ id: 1 }, { sparse: true }),
+            tenantDb.collection('orders').createIndex({ id: 1 }, { sparse: true }),
+            tenantDb.collection('orders').createIndex({ orderNumber: 1 }, { sparse: true }),
+            tenantDb.collection('customers').createIndex({ email: 1 }, { sparse: true }),
+            tenantDb.collection('collections').createIndex({ id: 1 }, { sparse: true }),
+            tenantDb.collection('collections').createIndex({ slug: 1 }, { sparse: true }),
+            tenantDb.collection('categories').createIndex({ id: 1 }, { sparse: true }),
+            tenantDb.collection('categories').createIndex({ slug: 1 }, { sparse: true }),
+            tenantDb.collection('carts').createIndex({ sessionId: 1, status: 1 }),
+            tenantDb.collection('reviews').createIndex({ productId: 1 }),
+            tenantDb.collection('media').createIndex({ id: 1 }, { sparse: true }),
+            tenantDb.collection('cms_pages').createIndex({ slug: 1 }, { sparse: true }),
+          ]);
+        } catch (indexErr) {
+          console.warn('[Provisioning] Index creation warning:', indexErr);
+        }
+      }
       record.completedSteps.push('PROVISIONING_TENANT_DATABASE');
 
       // Step 4: Seed Module Entitlements

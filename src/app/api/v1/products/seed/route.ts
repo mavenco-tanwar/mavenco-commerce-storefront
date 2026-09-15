@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 import {
   AURA_LIVING_PRODUCTS,
   APEX_ATHLETICS_PRODUCTS,
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     const tenantSlug = (body.tenantSlug || body.slug || 'lumina').toLowerCase().trim();
     const preset = body.preset || 'apparel';
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (!db) {
       return NextResponse.json({ error: 'Database unavailable' }, { status: 500, headers: corsHeaders() });
     }

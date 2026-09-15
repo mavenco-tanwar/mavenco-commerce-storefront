@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 import { resolveTenant } from '@/lib/tenant-config';
 
 function corsHeaders() {
@@ -21,7 +22,11 @@ export async function GET(request: NextRequest) {
   const defaultTenant = resolveTenant();
 
   try {
-    const db = await getDatabase();
+    const tenantSlug = (
+      searchParams.get('tenant') || searchParams.get('store') ||
+      request.headers.get('x-tenant-slug') || request.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const cleanHost = domain.replace(/^https?:\/\//, '').split(':')[0].toLowerCase().trim();
       const store = await db.collection('tenants').findOne({

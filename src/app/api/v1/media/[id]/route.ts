@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 function corsHeaders() {
   return {
@@ -21,7 +22,10 @@ export async function DELETE(
   const decodedId = decodeURIComponent(id).trim();
 
   try {
-    const db = await getDatabase();
+    const tenantSlug = (
+      request.headers.get('x-tenant-slug') || request.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       await db.collection('media').deleteOne({
         $or: [{ id: decodedId }, { filename: decodedId }],

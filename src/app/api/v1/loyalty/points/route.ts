@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,7 +62,7 @@ export async function GET(req: NextRequest) {
     const tenantSlug = (searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'lumina').toLowerCase();
     const customerId = searchParams.get('customerId') || 'cust_1';
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     let ledger = DEFAULT_POINTS_LEDGER;
 
     if (db) {
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const tenantSlug = (req.headers.get('x-tenant-slug') || body.tenantId || 'lumina').toLowerCase();
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
 
     const points = Number(body.points) || 100;
     const now = new Date().toISOString();

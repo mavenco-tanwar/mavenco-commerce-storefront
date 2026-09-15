@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { getTenantConfig, updateTenantConfig, archiveTenantSlug, checkTenantValidity } from '@/lib/tenant-config';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 function corsHeaders() {
   return {
@@ -21,7 +22,6 @@ export async function GET(request: NextRequest) {
   // If requesting list of all active tenants for Showcase & Navbar
   if (searchParams.get('list') === 'all') {
     try {
-      const db = await getDatabase();
       if (db) {
         const docs = await db
           .collection('tenants')
@@ -60,10 +60,11 @@ export async function GET(request: NextRequest) {
   }
 
   const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'demo';
+      const db = await getTenantDatabase(tenantSlug);
   const clean = tenantSlug.toLowerCase().trim();
 
   try {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const doc = await db.collection('tenants').findOne({
         $or: [
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
     const updated = updateTenantConfig(clean, body);
 
     try {
-      const db = await getDatabase();
+      const db = await getTenantDatabase(tenantSlug);
       if (db) {
         const ownerEmail = (body.ownerEmail || body.contact?.email || '').toLowerCase().trim();
         const ownerName = body.ownerName || '';
@@ -244,7 +245,7 @@ export async function DELETE(request: NextRequest) {
     archiveTenantSlug(clean);
 
     try {
-      const db = await getDatabase();
+      const db = await getTenantDatabase(tenantSlug);
       if (db) {
         await db.collection('tenants').updateOne(
           { slug: clean },

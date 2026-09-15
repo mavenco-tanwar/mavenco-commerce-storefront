@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +21,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { reviewId, type = 'helpful' } = body;
 
-    const db = await getDatabase();
+    const tenantSlug = (
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') ||
+      body?.tenantSlug || body?.storeSlug || body?.tenantId || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const field = type === 'report' ? 'reportCount' : 'helpfulCount';
       await db.collection('product_reviews').updateOne(

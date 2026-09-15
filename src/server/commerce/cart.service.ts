@@ -1,4 +1,4 @@
-import { getDatabase } from '@/lib/mongodb';
+import { getTenantDatabase } from '@/lib/mongodb';
 import { CommerceCart, CommerceCartItem } from '@/types/cart-commerce.types';
 import { PricingService } from './pricing.service';
 import { ProductService } from '@/services/products';
@@ -12,9 +12,8 @@ export class CartService {
     sessionId: string,
     customerId?: string
   ): Promise<CommerceCart> {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantId);
     const query: any = {
-      tenantId,
       status: 'ACTIVE',
     };
 
@@ -47,7 +46,7 @@ export class CartService {
       };
 
       if (db) {
-        await db.collection('carts').insertOne({ ...newCart, _id: newCart.id });
+        await db.collection('carts').insertOne({ ...newCart, _id: newCart.id as any });
       }
 
       return newCart;
@@ -146,10 +145,10 @@ export class CartService {
       updatedAt: now,
     };
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantId);
     if (db) {
       await db.collection('carts').updateOne(
-        { id: cart.id, tenantId },
+        { id: cart.id },
         {
           $set: {
             items: updatedItems,
@@ -207,10 +206,10 @@ export class CartService {
       updatedAt: now,
     };
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantId);
     if (db) {
       await db.collection('carts').updateOne(
-        { id: cart.id, tenantId },
+        { id: cart.id },
         {
           $set: {
             items: updatedItems,
@@ -260,10 +259,10 @@ export class CartService {
       updatedAt: now,
     };
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantId);
     if (db) {
       await db.collection('carts').updateOne(
-        { id: cart.id, tenantId },
+        { id: cart.id },
         {
           $set: {
             couponCodes: [clean],
@@ -298,10 +297,10 @@ export class CartService {
       updatedAt: now,
     };
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantId);
     if (db) {
       await db.collection('carts').updateOne(
-        { id: cart.id, tenantId },
+        { id: cart.id },
         {
           $set: {
             items: [],

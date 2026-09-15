@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 import { ProductService } from '@/services/products';
 
 export const dynamic = 'force-dynamic';
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
     const inStockOnly = searchParams.get('inStock') === 'true';
     const sort = searchParams.get('sort') || 'relevance';
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
 
     // 1. Check for Query Redirects in Merchandising
     if (db && query) {

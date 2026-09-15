@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
     .trim();
 
   try {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const query: any = {
         $or: [
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest) {
       .toLowerCase()
       .trim();
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (!db) {
       return NextResponse.json(
         { success: false, error: 'Database unavailable' },

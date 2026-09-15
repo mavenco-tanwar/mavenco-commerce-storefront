@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getPlatformDatabase } from '@/lib/mongodb';
 import { SEED_TENANTS } from '@/lib/tenant-config';
 
 function corsHeaders() {

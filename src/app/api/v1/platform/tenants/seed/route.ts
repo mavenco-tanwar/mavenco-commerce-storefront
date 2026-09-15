@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getPlatformDatabase } from '@/lib/mongodb';
 import {
   AURA_LIVING_PRODUCTS,
   APEX_ATHLETICS_PRODUCTS,

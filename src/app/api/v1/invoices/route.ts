@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,7 +73,7 @@ export async function GET(req: NextRequest) {
     const tenantSlug = (searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'lumina').toLowerCase();
     const orderId = searchParams.get('orderId');
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     let invoices = DEFAULT_INVOICES;
 
     if (db) {

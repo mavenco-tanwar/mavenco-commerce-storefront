@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
@@ -19,7 +19,6 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const db = await getDatabase();
 
     const rawTenant =
       searchParams.get('tenant') ||
@@ -30,9 +29,11 @@ export async function GET(req: NextRequest) {
       req.headers.get('x-tenant') ||
       req.headers.get('X-Tenant-Slug');
 
+    const platformDb = await getDatabase();
     let tenantSlug = rawTenant
       ? rawTenant.replace(/^store_/, '').trim().toLowerCase()
-      : await resolveRequestTenantSlug(req, searchParams, db);
+      : await resolveRequestTenantSlug(req, searchParams, platformDb);
+    const db = await getTenantDatabase(tenantSlug);
 
     if (!tenantSlug || tenantSlug === 'all' || tenantSlug === 'lumina') {
       tenantSlug = 'jq-trends';
@@ -89,7 +90,6 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const db = await getDatabase();
     const { searchParams } = new URL(req.url);
 
     // Explicit tenant from body has highest precedence, followed by query params, then headers
@@ -103,9 +103,11 @@ export async function POST(req: NextRequest) {
       req.headers.get('x-tenant') ||
       req.headers.get('X-Tenant-Slug');
 
+    const platformDb = await getDatabase();
     let tenantSlug = rawTenant
       ? rawTenant.replace(/^store_/, '').trim().toLowerCase()
-      : await resolveRequestTenantSlug(req, searchParams, db);
+      : await resolveRequestTenantSlug(req, searchParams, platformDb);
+    const db = await getTenantDatabase(tenantSlug);
 
     if (!tenantSlug || tenantSlug === 'all' || tenantSlug === 'lumina') {
       tenantSlug = 'jq-trends';
@@ -168,7 +170,11 @@ export async function DELETE(req: NextRequest) {
     }
 
     const cleanId = decodeURIComponent(id).trim();
-    const db = await getDatabase();
+    const tenantSlug = (
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') ||
+      body?.tenantSlug || body?.storeSlug || body?.tenantId || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (!db) {
       return NextResponse.json(
         { success: false, error: 'Database unavailable' },

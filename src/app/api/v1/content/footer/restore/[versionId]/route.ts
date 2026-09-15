@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 import { revalidatePath } from 'next/cache';
 
 function corsHeaders() {
@@ -29,7 +30,7 @@ export async function POST(
     .trim();
 
   try {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const verDoc = await db.collection('cms_versions').findOne({
         tenantSlug: tenantSlug,

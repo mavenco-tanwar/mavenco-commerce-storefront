@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     const { code, amountMinorToRedeem = 0 } = body;
     const tenantSlug = (req.headers.get('x-tenant-slug') || body.tenantId || 'lumina').toLowerCase();
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (!code) {
       return NextResponse.json({ success: false, error: 'Gift card code is required' }, { status: 400, headers: corsHeaders() });
     }

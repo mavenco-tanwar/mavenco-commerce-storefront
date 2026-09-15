@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
   const pageType = (searchParams.get('type') || '').toLowerCase().trim();
 
   try {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       // 1. Single page lookup by slug or specific type
       if (slug || (pageType && pageType !== 'custom' && pageType !== 'page' && pageType !== 'website-page')) {
@@ -191,7 +192,7 @@ export async function POST(request: NextRequest) {
       updatedAt: now,
     };
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       await db.collection('cms_pages').updateOne(
         { $or: [{ id: pageId }, { slug: cleanSlug }] },
@@ -248,7 +249,7 @@ export async function PUT(request: NextRequest) {
       updatedAt: now,
     };
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       await db.collection('cms_pages').updateOne(
         { $or: [{ id: pageId }, { slug: cleanSlug }] },

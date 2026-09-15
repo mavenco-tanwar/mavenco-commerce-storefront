@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const tenantSlug = req.headers.get('x-tenant-slug') || body.tenantId || 'lumina';
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
 
     const eventRecord = {
       id: body.id || `evt_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,

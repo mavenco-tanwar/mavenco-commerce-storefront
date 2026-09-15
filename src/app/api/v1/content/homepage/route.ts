@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { getStoredHomepageSections, saveStoredHomepageSections } from '@/lib/cms-store';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
   const isDraft = searchParams.get('status') === 'draft' || searchParams.get('preview') === 'draft';
 
   try {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       // Find published or draft depending on query
       const query: any = {
@@ -118,7 +119,7 @@ export async function PUT(request: NextRequest) {
       saveStoredHomepageSections(newSections, tenantSlug);
 
       try {
-        const db = await getDatabase();
+        const db = await getTenantDatabase(tenantSlug);
         if (db) {
           await db.collection('cms_pages').updateOne(
             { tenantSlug: tenantSlug, type: 'homepage' },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +58,7 @@ export async function GET(req: NextRequest) {
     const tenantSlug = (searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'lumina').toLowerCase();
     const customerId = searchParams.get('customerId') || 'cust_1';
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     let notifications = DEFAULT_IN_APP_NOTIFICATIONS;
 
     if (db) {
@@ -88,7 +89,11 @@ export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
     const { id, readAll, customerId = 'cust_1' } = body;
-    const db = await getDatabase();
+    const tenantSlug = (
+      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') ||
+      body?.tenantSlug || body?.storeSlug || body?.tenantId || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
 
     if (db) {
       if (readAll) {

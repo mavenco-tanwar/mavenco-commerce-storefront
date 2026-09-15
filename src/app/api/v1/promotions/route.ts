@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -133,7 +134,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const tenantSlug = (searchParams.get('tenant') || req.headers.get('x-tenant-slug') || 'lumina').toLowerCase();
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const collection = db.collection('promotions');
       const count = await collection.countDocuments({ tenantId: tenantSlug });
@@ -163,7 +164,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const tenantSlug = (req.headers.get('x-tenant-slug') || body.tenantId || 'lumina').toLowerCase();
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     const now = new Date().toISOString();
     const newPromotion = {
       ...body,

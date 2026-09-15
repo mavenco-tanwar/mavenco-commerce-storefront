@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 import { generateCustomerToken } from '@/lib/server/auth-token';
 
@@ -30,16 +30,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const db = await getDatabase();
+    const platformDb = await getDatabase();
     const rawResolved =
       req.headers.get('x-tenant-slug') ||
       req.headers.get('x-store-slug') ||
       body.tenantId ||
       body.storeSlug ||
       body.tenantSlug ||
-      (await resolveRequestTenantSlug(req, undefined, db));
+      (await resolveRequestTenantSlug(req, undefined, platformDb));
 
     const tenantSlug = (rawResolved || 'demo').replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
 
     let customer: any = null;
 

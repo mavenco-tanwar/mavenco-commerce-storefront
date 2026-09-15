@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     .trim();
 
   try {
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const doc = await db.collection('cms_menus').findOne({
         $and: [
@@ -150,7 +151,7 @@ async function handleUpdate(request: NextRequest, params: Promise<{ code: string
     const items = Array.isArray(body.items) ? body.items : body;
     const now = new Date().toISOString();
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (!db) {
       return NextResponse.json(
         { success: false, error: 'Database unavailable' },
@@ -277,7 +278,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const code = decodeURIComponent(rawCode || '').trim();
 
   try {
-    const db = await getDatabase();
+    const tenantSlug = (
+      request.headers.get('x-tenant-slug') || request.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       await db.collection('cms_menus').deleteOne({ $or: [{ slug: code }, { id: code }] });
       return NextResponse.json(

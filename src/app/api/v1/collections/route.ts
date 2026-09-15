@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +33,8 @@ export async function GET(req: NextRequest) {
     if (tenantSlug) tenantAliases.add(tenantSlug);
     if (cleanTenant) tenantAliases.add(cleanTenant);
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(cleanTenant || tenantSlug);
+    const platformDb = await getDatabase();
     if (db) {
       const collection = db.collection('collections');
 
@@ -41,7 +43,7 @@ export async function GET(req: NextRequest) {
         const collectionsToInspect = ['tenants', 'platform_tenants_registry'];
         for (const collName of collectionsToInspect) {
           try {
-            const tenantDocs = await db.collection(collName).find({
+            const tenantDocs = await platformDb!.collection(collName).find({
               $or: [
                 { slug: cleanTenant },
                 { tenantId: cleanTenant },
@@ -185,7 +187,7 @@ export async function POST(req: NextRequest) {
 
     const tenantSlug = rawTenant.replace(/^store_/, '').trim().toLowerCase();
 
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     const now = new Date().toISOString();
     const cleanId = body.id || `col_${Date.now()}`;
     const cleanTitle = body.title || body.name || 'New Collection';
@@ -244,8 +246,13 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
+    const tenantSlug = (
+      searchParams.get('tenant') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') || 'jq-trends'
+    ).replace(/^store_/, '').toLowerCase().trim();
     const cleanId = decodeURIComponent(id).trim();
-    const db = await getDatabase();
+    const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const { ObjectId } = await import('mongodb');
       let objId = null;

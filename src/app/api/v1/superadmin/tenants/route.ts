@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StorefrontProvisioningService } from '@/server/governance/storefront-provisioning.service';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getPlatformDatabase } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 

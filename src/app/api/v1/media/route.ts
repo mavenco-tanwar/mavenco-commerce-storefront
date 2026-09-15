@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 export const dynamic = 'force-dynamic';
@@ -19,8 +19,9 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const db = await getDatabase();
-    const tenantSlug = await resolveRequestTenantSlug(req, searchParams, db);
+    const platformDb = await getDatabase();
+    const tenantSlug = await resolveRequestTenantSlug(req, searchParams, platformDb);
+    const db = await getTenantDatabase(tenantSlug);
     const folder = searchParams.get('folder') || undefined;
 
     let mediaDocs: any[] = [];
@@ -101,8 +102,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const db = await getDatabase();
-    const tenantSlug = await resolveRequestTenantSlug(req, undefined, db);
+    const platformDb = await getDatabase();
+    const tenantSlug = await resolveRequestTenantSlug(req, undefined, platformDb);
+    const db = await getTenantDatabase(tenantSlug);
 
     const now = new Date().toISOString();
     const newMedia = {
