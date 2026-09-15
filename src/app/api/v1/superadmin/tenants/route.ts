@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StorefrontProvisioningService } from '@/server/governance/storefront-provisioning.service';
-import { getDatabase, getPlatformDatabase } from '@/lib/mongodb';
+import { getDatabase } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-tenant-id',
   };
 }
@@ -21,8 +21,21 @@ export async function GET(req: NextRequest) {
     const db = await getDatabase();
     let tenants: any[] = [];
     if (db) {
-      const docs = await db.collection('platform_tenants_registry').find({}).sort({ createdAt: -1 }).toArray();
-      tenants = docs.map(({ _id, ...rest }) => rest);
+      const [registryDocs, tenantsDocs] = await Promise.all([
+        db.collection('platform_tenants_registry').find({ status: { $ne: 'deleted' } }).sort({ createdAt: -1 }).toArray(),
+        db.collection('tenants').find({ status: { $ne: 'deleted' } }).sort({ createdAt: -1 }).toArray(),
+      ]);
+
+      const seen = new Set<string>();
+      const combined = [...registryDocs, ...tenantsDocs];
+      for (const doc of combined) {
+        const { _id, ...rest } = doc;
+        const key = (rest.slug || rest.tenantId || rest.id || '').replace(/^store_/, '').toLowerCase().trim();
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          tenants.push(rest);
+        }
+      }
     }
     return NextResponse.json({ success: true, data: tenants }, { headers: corsHeaders() });
   } catch (error: any) {
@@ -59,6 +72,32 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(result, { status: result.success ? 201 : 400, headers: corsHeaders() });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    let targetId = searchParams.get('tenantId') || searchParams.get('id') || searchParams.get('slug');
+
+    if (!targetId) {
+      try {
+        const body = await req.json();
+        targetId = body.tenantId || body.id || body.slug;
+      } catch {}
+    }
+
+    if (!targetId) {
+      return NextResponse.json(
+        { success: false, error: 'tenantId, id, or slug is required for deletion' },
+        { status: 400, headers: corsHeaders() }
+      );
+    }
+
+    const result = await StorefrontProvisioningService.deleteTenant(targetId);
+    return NextResponse.json(result, { headers: corsHeaders() });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
   }

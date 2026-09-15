@@ -9,7 +9,7 @@ import { ModuleCatalogService } from './module-catalog.service';
 import { PermissionService } from './permission.service';
 import { StorefrontPageService } from './storefront-page.service';
 import { TenantDatabaseResolver } from '@/server/db/tenant-database.resolver';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getMongoClient } from '@/lib/mongodb';
 
 export interface TenantProvisioningInput {
   tenantName: string;
@@ -271,5 +271,151 @@ export class StorefrontProvisioningService {
    */
   public static getProvisioningStatus(tenantId: string): TenantProvisioningRecord | null {
     return this.provisioningJobs.get(tenantId.toLowerCase().trim()) || null;
+  }
+
+  /**
+   * Completely and safely purges a tenant and all its associated data:
+   * 1. Resolves all tenant aliases (id, slug, tenantId, storeId) from platform DB
+   * 2. Deletes records across all platform collections:
+   *    - platform_tenants_registry
+   *    - tenants
+   *    - users
+   *    - tenant_module_entitlements
+   *    - tenant_roles
+   *    - storefronts
+   *    - storefront_pages
+   *    - storefront_versions
+   *    - stores
+   *    - store_domains
+   *    - store_environments
+   * 3. Drops the dedicated tenant database(s) in MongoDB
+   */
+  public static async deleteTenant(identifier: string): Promise<{
+    success: boolean;
+    deletedCount: number;
+    deletedTenantId: string;
+    message: string;
+  }> {
+    const rawId = (identifier || '').trim();
+    if (!rawId) {
+      return { success: false, deletedCount: 0, deletedTenantId: '', message: 'Tenant identifier is required' };
+    }
+
+    const cleanId = rawId.toLowerCase();
+    const safeSlug = cleanId.replace(/^store_/, '');
+
+    const db = await getDatabase();
+    let totalDeleted = 0;
+    const aliases = new Set<string>([cleanId, safeSlug, `store_${safeSlug}`]);
+
+    if (db) {
+      // Find all records across platform_tenants_registry and tenants to harvest all identifiers
+      const searchFilter = {
+        $or: [
+          { id: cleanId },
+          { tenantId: cleanId },
+          { slug: cleanId },
+          { id: safeSlug },
+          { tenantId: safeSlug },
+          { slug: safeSlug },
+          { id: `store_${safeSlug}` },
+          { tenantId: `store_${safeSlug}` },
+        ],
+      };
+
+      const [regDocs, tenantDocs] = await Promise.all([
+        db.collection('platform_tenants_registry').find(searchFilter).toArray(),
+        db.collection('tenants').find(searchFilter).toArray(),
+      ]);
+
+      const allMatchingDocs = [...regDocs, ...tenantDocs];
+      const databasesToDrop = new Set<string>([
+        `tenant_${safeSlug}`,
+        `tenant_${safeSlug.replace(/[^a-z0-9_-]/g, '')}`,
+      ]);
+
+      for (const d of allMatchingDocs) {
+        if (d.id) aliases.add(String(d.id).toLowerCase());
+        if (d.tenantId) aliases.add(String(d.tenantId).toLowerCase());
+        if (d.slug) {
+          const s = String(d.slug).toLowerCase();
+          aliases.add(s);
+          databasesToDrop.add(`tenant_${s}`);
+          databasesToDrop.add(`tenant_${s.replace(/[^a-z0-9_-]/g, '')}`);
+        }
+        if (d.databaseIdentifier) {
+          databasesToDrop.add(String(d.databaseIdentifier).toLowerCase());
+        }
+      }
+
+      const aliasArray = Array.from(aliases);
+      const multiFilter = {
+        $or: [
+          { id: { $in: aliasArray } },
+          { tenantId: { $in: aliasArray } },
+          { slug: { $in: aliasArray } },
+          { storeSlug: { $in: aliasArray } },
+        ],
+      };
+
+      // 1. Delete from platform_tenants_registry
+      const r1 = await db.collection('platform_tenants_registry').deleteMany(multiFilter);
+      // 2. Delete from tenants
+      const r2 = await db.collection('tenants').deleteMany(multiFilter);
+      totalDeleted += (r1.deletedCount || 0) + (r2.deletedCount || 0);
+
+      // 3. Delete users associated with this tenant
+      await db.collection('users').deleteMany({
+        $or: [
+          { tenantSlug: { $in: aliasArray } },
+          { tenantId: { $in: aliasArray } },
+          { storeSlug: { $in: aliasArray } },
+        ],
+      });
+
+      // 4. Delete tenant configurations & storefront governance records
+      await Promise.allSettled([
+        db.collection('tenant_module_entitlements').deleteMany({ tenantId: { $in: aliasArray } }),
+        db.collection('tenant_roles').deleteMany({ tenantId: { $in: aliasArray } }),
+        db.collection('storefronts').deleteMany({
+          $or: [{ tenantId: { $in: aliasArray } }, { slug: { $in: aliasArray } }],
+        }),
+        db.collection('storefront_pages').deleteMany({ tenantId: { $in: aliasArray } }),
+        db.collection('storefront_versions').deleteMany({ tenantId: { $in: aliasArray } }),
+        db.collection('stores').deleteMany({
+          $or: [{ tenantId: { $in: aliasArray } }, { slug: { $in: aliasArray } }, { id: { $in: aliasArray } }],
+        }),
+        db.collection('store_domains').deleteMany({
+          $or: [{ tenantId: { $in: aliasArray } }, { storeSlug: { $in: aliasArray } }],
+        }),
+        db.collection('store_environments').deleteMany({
+          $or: [{ tenantId: { $in: aliasArray } }, { storeSlug: { $in: aliasArray } }],
+        }),
+      ]);
+
+      // 5. Drop the dedicated tenant databases
+      try {
+        const client = await getMongoClient();
+        if (client) {
+          for (const dbName of databasesToDrop) {
+            try {
+              await client.db(dbName).dropDatabase();
+            } catch {}
+          }
+        }
+      } catch (dropErr) {
+        console.warn(`[StorefrontProvisioningService.deleteTenant] Drop DB error:`, dropErr);
+      }
+    }
+
+    this.provisioningJobs.delete(safeSlug);
+    this.provisioningJobs.delete(cleanId);
+
+    return {
+      success: true,
+      deletedCount: totalDeleted,
+      deletedTenantId: safeSlug,
+      message: `Tenant '${safeSlug}' and all its isolated databases were permanently deleted.`,
+    };
   }
 }

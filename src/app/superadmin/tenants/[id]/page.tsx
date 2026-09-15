@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   Layout,
@@ -16,10 +16,12 @@ import {
   ExternalLink,
   Users,
   Settings,
+  Trash2,
 } from 'lucide-react';
 
 export default function TenantDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const tenantId = (params?.id as string) || '';
 
   const [tenant, setTenant] = useState<any>(null);
@@ -27,6 +29,7 @@ export default function TenantDetailPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'modules' | 'storefront' | 'settings'>('overview');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!tenantId) return;
@@ -65,6 +68,30 @@ export default function TenantDetailPage() {
       }
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  const handleDeleteTenant = async () => {
+    const idToDelete = tenant?.slug || tenantId;
+    const confirmMessage = `Are you sure you want to permanently delete tenant '${tenant?.name || idToDelete}' (${idToDelete})?\n\nThis will completely purge all its stores, users, and drop its dedicated database (${tenant?.databaseIdentifier || `tenant_${idToDelete}`}).`;
+    if (!window.confirm(confirmMessage)) return;
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/v1/superadmin/tenants/${encodeURIComponent(idToDelete)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Tenant '${idToDelete}' deleted successfully.`);
+        router.push('/superadmin/tenants');
+      } else {
+        alert(`Failed to delete tenant: ${data.error || data.message || 'Unknown error'}`);
+        setDeleting(false);
+      }
+    } catch (err: any) {
+      alert(`Error deleting tenant: ${err.message}`);
+      setDeleting(false);
     }
   };
 
@@ -116,6 +143,15 @@ export default function TenantDetailPage() {
               <Layout className="w-4 h-4" />
               <span>Open Storefront Editor</span>
             </Link>
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={handleDeleteTenant}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-semibold transition border border-rose-500/30 disabled:opacity-50"
+            >
+              {deleting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              <span>Delete Tenant</span>
+            </button>
           </div>
         </div>
 
@@ -275,6 +311,22 @@ export default function TenantDetailPage() {
             <div className="flex justify-between border-b border-zinc-800 pb-2">
               <span className="text-zinc-500">Isolation Invariant:</span>
               <span className="font-mono text-emerald-400">ONE TENANT = ONE SEPARATE DB</span>
+            </div>
+
+            <div className="pt-4 border-t border-rose-900/40 mt-4 space-y-2">
+              <span className="text-rose-400 font-bold uppercase tracking-wider text-[11px]">Danger Zone</span>
+              <p className="text-zinc-400 text-xs">
+                Permanently purge this tenant, its store configs, user records, and drop its dedicated database. This action is irreversible.
+              </p>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleDeleteTenant}
+                className="inline-flex items-center gap-1.5 px-4 py-2 mt-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition shadow-lg shadow-rose-600/20 disabled:opacity-50"
+              >
+                {deleting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                <span>Delete This Tenant Permanently</span>
+              </button>
             </div>
           </div>
         )}

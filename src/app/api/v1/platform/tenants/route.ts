@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase, getMongoClient } from '@/lib/mongodb';
+import { StorefrontProvisioningService } from '@/server/governance/storefront-provisioning.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -373,39 +374,8 @@ export async function DELETE(req: NextRequest) {
       return tid !== cleanTargetId && tslug !== cleanTargetId && tid !== safeSlug && tslug !== safeSlug;
     });
 
-    const filter = {
-      $or: [
-        { slug: cleanTargetId },
-        { id: cleanTargetId },
-        { tenantId: cleanTargetId },
-        { slug: safeSlug },
-        { id: `store_${safeSlug}` },
-      ],
-    };
-
-    if (db) {
-      // Synchronize deletion across both 'tenants' and 'platform_tenants_registry'
-      const [delTenants, delRegistry] = await Promise.all([
-        db.collection('tenants').deleteMany(filter),
-        db.collection('platform_tenants_registry').deleteMany(filter),
-      ]);
-      deletedCount = delTenants.deletedCount || delRegistry.deletedCount || 0;
-
-      await Promise.all([
-        db.collection('tenant_module_entitlements').deleteMany({ $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }] }),
-        db.collection('tenant_roles').deleteMany({ $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }] }),
-        db.collection('storefronts').deleteMany({ $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }] }),
-        db.collection('storefront_pages').deleteMany({ $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }] }),
-        db.collection('storefront_versions').deleteMany({ $or: [{ tenantId: cleanTargetId }, { tenantId: safeSlug }] }),
-        db.collection('stores').deleteMany({ $or: [{ slug: cleanTargetId }, { slug: safeSlug }] }),
-      ]);
-    }
-
-    return NextResponse.json({
-      success: true,
-      deletedCount,
-      message: `Tenant '${safeSlug}' deleted completely from MongoDB.`,
-    }, { headers: corsHeaders() });
+    const result = await StorefrontProvisioningService.deleteTenant(targetId);
+    return NextResponse.json(result, { headers: corsHeaders() });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500, headers: corsHeaders() });
   }

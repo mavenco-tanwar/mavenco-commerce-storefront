@@ -15,6 +15,7 @@ import {
   Cpu,
   RefreshCw,
   Layout,
+  Trash2,
 } from 'lucide-react';
 
 interface TenantRecord {
@@ -34,8 +35,10 @@ export default function SuperadminTenantsPage() {
   const [tenants, setTenants] = useState<TenantRecord[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchTenants = () => {
+    setLoading(true);
     fetch(`/api/v1/superadmin/tenants?_t=${Date.now()}`)
       .then((res) => res.json())
       .then((json) => {
@@ -44,7 +47,36 @@ export default function SuperadminTenantsPage() {
         }
       })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchTenants();
   }, []);
+
+  const handleDeleteTenant = async (tenant: TenantRecord) => {
+    const idToDelete = tenant.slug || tenant.tenantId;
+    const confirmMessage = `Are you sure you want to permanently delete tenant '${tenant.name}' (${idToDelete})?\n\nThis will completely purge all its stores, users, and drop its dedicated database (${tenant.databaseIdentifier || `tenant_${idToDelete}`}).`;
+    if (!window.confirm(confirmMessage)) return;
+
+    setDeletingId(idToDelete);
+    try {
+      const res = await fetch(`/api/v1/superadmin/tenants/${encodeURIComponent(idToDelete)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTenants((prev) =>
+          prev.filter((t) => t.slug !== tenant.slug && t.tenantId !== tenant.tenantId)
+        );
+      } else {
+        alert(`Failed to delete tenant: ${data.error || data.message || 'Unknown error'}`);
+      }
+    } catch (err: any) {
+      alert(`Error deleting tenant: ${err.message}`);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filtered = tenants.filter(
     (t) =>
@@ -165,6 +197,20 @@ export default function SuperadminTenantsPage() {
                         <span>Manage</span>
                         <ArrowRight className="w-3 h-3" />
                       </Link>
+                      <button
+                        type="button"
+                        disabled={deletingId === (tenant.slug || tenant.tenantId)}
+                        onClick={() => handleDeleteTenant(tenant)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 hover:text-rose-300 text-[11px] font-medium transition border border-rose-500/30 disabled:opacity-50"
+                        title="Permanently delete tenant"
+                      >
+                        {deletingId === (tenant.slug || tenant.tenantId) ? (
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3 h-3" />
+                        )}
+                        <span>Delete</span>
+                      </button>
                     </td>
                   </tr>
                 ))}
