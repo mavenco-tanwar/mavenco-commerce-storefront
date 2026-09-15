@@ -32,10 +32,53 @@ export async function GET() {
 
       const mergedMap = new Map<string, any>();
       for (const t of [...rDocs, ...tDocs]) {
-        const slug = (t.slug || t.id || t.tenantId || '').toLowerCase().trim();
+        const slug = (t.slug || t.id || t.tenantId || '').replace(/^store_/, '').toLowerCase().trim();
         if (slug && !mergedMap.has(slug)) {
           mergedMap.set(slug, t);
         }
+      }
+
+      // Also dynamically discover any tenant databases from the cluster
+      try {
+        const client = await getMongoClient();
+        if (client) {
+          const dbsList = await client.db().admin().listDatabases();
+          const tenantDbs = dbsList.databases.filter((d) => d.name.startsWith('tenant_'));
+          for (const d of tenantDbs) {
+            const rawSlug = d.name.replace(/^tenant_/, '').trim().toLowerCase();
+            if (rawSlug && !mergedMap.has(rawSlug)) {
+              const autoName = rawSlug
+                .split(/[-_]/)
+                .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(' ');
+              const newTenantDoc = {
+                id: `store_${rawSlug}`,
+                tenantId: rawSlug,
+                slug: rawSlug,
+                name: autoName,
+                status: 'active',
+                planId: 'plan_growth',
+                planName: 'Professional Scale',
+                databaseName: d.name,
+                databaseIdentifier: d.name,
+                currency: 'USD',
+                ownerName: 'Store Administrator',
+                ownerEmail: `admin@${rawSlug}.com`,
+                primaryDomain: `${rawSlug}.com`,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              };
+              mergedMap.set(rawSlug, newTenantDoc);
+              // Asynchronously upsert to both registries
+              await Promise.allSettled([
+                db.collection('platform_tenants_registry').updateOne({ slug: rawSlug }, { $set: newTenantDoc }, { upsert: true }),
+                db.collection('tenants').updateOne({ slug: rawSlug }, { $set: newTenantDoc }, { upsert: true }),
+              ]);
+            }
+          }
+        }
+      } catch (clusterErr) {
+        console.warn('Auto cluster DB discovery notice:', clusterErr);
       }
 
       const docs = Array.from(mergedMap.values());
