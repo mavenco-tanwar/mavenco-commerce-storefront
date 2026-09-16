@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { getTenantConfig, updateTenantConfig, archiveTenantSlug, checkTenantValidity } from '@/lib/tenant-config';
 import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
+import { StorefrontProvisioningService } from '@/server/governance/storefront-provisioning.service';
 
 function corsHeaders() {
   return {
@@ -245,20 +246,9 @@ export async function DELETE(request: NextRequest) {
     archiveTenantSlug(clean);
 
     try {
-      const db = await getTenantDatabase(tenantSlug);
-      if (db) {
-        await db.collection('tenants').updateOne(
-          { slug: clean },
-          {
-            $set: {
-              status: 'deleted',
-              deletedAt: new Date().toISOString(),
-            },
-          }
-        );
-      }
+      await StorefrontProvisioningService.deleteTenant(clean);
     } catch (err) {
-      console.error('MongoDB tenant delete error:', err);
+      console.error('StorefrontProvisioningService.deleteTenant error:', err);
     }
 
     try {

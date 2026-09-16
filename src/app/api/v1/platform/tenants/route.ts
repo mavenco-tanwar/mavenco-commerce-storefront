@@ -365,13 +365,20 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const deleteAll = searchParams.get('all') === 'true';
-    let targetId = searchParams.get('tenantId') || searchParams.get('id') || searchParams.get('slug');
+    let targetId = searchParams.get('tenantId') || searchParams.get('id') || searchParams.get('slug') || searchParams.get('target');
 
     if (!targetId && !deleteAll) {
       try {
         const body = await req.json();
-        targetId = body.tenantId || body.id || body.slug;
+        targetId = body.tenantId || body.id || body.slug || body.target;
       } catch {}
+    }
+
+    if (!targetId && !deleteAll) {
+      const qTenant = (searchParams.get('tenant') || '').toLowerCase().trim();
+      if (qTenant && qTenant !== 'all' && qTenant !== 'lumina' && !qTenant.startsWith('_')) {
+        targetId = qTenant;
+      }
     }
 
     if (!targetId && !deleteAll) {
