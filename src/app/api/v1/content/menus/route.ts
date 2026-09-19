@@ -65,35 +65,24 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tenantSlug = (
     searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
     request.headers.get('x-tenant-slug') ||
-    ''
+    'demo'
   )
+    .replace(/^store_/, '')
     .toLowerCase()
     .trim();
 
   try {
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
-      const query: any = {
-        $or: [
-          ...(tenantSlug && tenantSlug !== 'all'
-            ? [
-                { tenantSlug: tenantSlug },
-                { storeSlug: tenantSlug },
-                { tenantId: tenantSlug },
-                { tenantId: `store_${tenantSlug}` },
-              ]
-            : []),
-          { tenantSlug: 'all' },
-          { tenantSlug: 'platform' },
-          { tenantSlug: { $exists: false } },
-        ],
-      };
-
-      const docs = await db.collection('cms_menus').find(query).toArray();
+      const docs = await db.collection('cms_menus').find({}).toArray();
 
       if (docs && docs.length > 0) {
-        const cleanDocs = docs.map(({ _id, ...rest }) => rest);
+        const cleanDocs = docs.map(({ _id, ...rest }) => ({
+          ...rest,
+          tenantSlug,
+        }));
         return NextResponse.json(
           {
             success: true,
@@ -129,10 +118,12 @@ export async function POST(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const tenantSlug = (
       searchParams.get('tenant') ||
-      request.headers.get('x-tenant-slug') ||
+      searchParams.get('tenantSlug') ||
       body.tenantSlug ||
-      'all'
+      request.headers.get('x-tenant-slug') ||
+      'demo'
     )
+      .replace(/^store_/, '')
       .toLowerCase()
       .trim();
 

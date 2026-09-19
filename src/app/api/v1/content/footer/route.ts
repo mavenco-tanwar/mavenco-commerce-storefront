@@ -23,9 +23,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tenantSlug = (
     searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
     request.headers.get('x-tenant-slug') ||
-    'lumina'
+    request.headers.get('x-store-slug') ||
+    'demo'
   )
+    .replace(/^store_/, '')
     .toLowerCase()
     .trim();
 
@@ -36,10 +39,8 @@ export async function GET(request: NextRequest) {
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const doc = await db.collection('cms_pages').findOne({
-        $or: [
-          { tenantSlug: tenantSlug, type: 'footer' },
-          { tenantSlug: 'all', type: 'footer' },
-        ],
+        tenantSlug: tenantSlug,
+        type: 'footer',
       });
 
       if (doc && (doc.sections || doc.config?.sections || doc.theme || doc.config?.theme)) {
@@ -53,16 +54,8 @@ export async function GET(request: NextRequest) {
         // Dynamically hydrate footer menu blocks from cms_menus
         try {
           const menus = await db.collection('cms_menus').find({
-            $and: [
-              {
-                $or: [
-                  ...(tenantSlug && tenantSlug !== 'all' ? [{ tenantSlug }] : []),
-                  { tenantSlug: 'all' },
-                  { tenantSlug: { $exists: false } },
-                ],
-              },
-              { slug: { $in: ['footer-menu-shop', 'footer-menu-care'] } },
-            ],
+            tenantSlug: tenantSlug,
+            slug: { $in: ['footer-menu-shop', 'footer-menu-care'] },
           }).toArray();
 
           if (menus && menus.length > 0) {
@@ -143,15 +136,24 @@ export async function POST(request: NextRequest) {
 
 async function handleSave(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  let tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || '').toLowerCase().trim();
+  let tenantSlug = (
+    searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
+    request.headers.get('x-tenant-slug') ||
+    request.headers.get('x-store-slug') ||
+    ''
+  )
+    .replace(/^store_/, '')
+    .toLowerCase()
+    .trim();
 
   try {
     const body = await request.json();
     const incoming: FooterConfig = body.config || body;
     if (!tenantSlug && incoming.tenantSlug) {
-      tenantSlug = incoming.tenantSlug.toLowerCase().trim();
+      tenantSlug = incoming.tenantSlug.replace(/^store_/, '').toLowerCase().trim();
     }
-    if (!tenantSlug) tenantSlug = 'lumina';
+    if (!tenantSlug) tenantSlug = 'demo';
 
     const db = await getTenantDatabase(tenantSlug);
     if (db) {

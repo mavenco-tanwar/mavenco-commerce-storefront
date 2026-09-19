@@ -27,7 +27,15 @@ export async function OPTIONS() {
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const tenantSlug = (searchParams.get('tenant') || request.headers.get('x-tenant-slug') || '').toLowerCase().trim();
+  const tenantSlug = (
+    searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
+    request.headers.get('x-tenant-slug') ||
+    'demo'
+  )
+    .replace(/^store_/, '')
+    .toLowerCase()
+    .trim();
   const slug = (searchParams.get('slug') || '').toLowerCase().trim();
   const pageType = (searchParams.get('type') || '').toLowerCase().trim();
 
@@ -37,34 +45,8 @@ export async function GET(request: NextRequest) {
       // 1. Single page lookup by slug or specific type
       if (slug || (pageType && pageType !== 'custom' && pageType !== 'page' && pageType !== 'website-page')) {
         const targetSlug = slug || pageType;
-        const tenantMatches = [
-          ...(tenantSlug && tenantSlug !== 'all'
-            ? [
-                { tenantSlug: tenantSlug },
-                { storeSlug: tenantSlug },
-                { tenantId: tenantSlug },
-                { tenantId: `store_${tenantSlug}` },
-              ]
-            : []),
-          { tenantSlug: 'all' },
-          { tenantSlug: 'demo' },
-          { tenantSlug: 'jq-trends' },
-          { tenantSlug: { $exists: false } },
-        ];
 
         const doc = await db.collection('cms_pages').findOne({
-          $and: [
-            {
-              $or: [
-                { slug: targetSlug },
-                { slug: `/${targetSlug}` },
-                { id: targetSlug },
-                { type: targetSlug },
-              ],
-            },
-            { $or: tenantMatches },
-          ],
-        }) || await db.collection('cms_pages').findOne({
           $or: [
             { slug: targetSlug },
             { slug: `/${targetSlug}` },
@@ -81,6 +63,7 @@ export async function GET(request: NextRequest) {
               data: {
                 id: cleanDoc.id || _id.toString(),
                 ...cleanDoc,
+                tenantSlug,
               },
               status: 'success',
               source: 'mongodb',
@@ -120,7 +103,7 @@ export async function GET(request: NextRequest) {
           status: clean.status || 'published',
           blocks: clean.blocks || [],
           seo: clean.seo || { title: clean.title },
-          tenantSlug: clean.tenantSlug || 'all',
+          tenantSlug: tenantSlug,
           updatedAt: clean.updatedAt || new Date().toISOString(),
           createdAt: clean.createdAt || new Date().toISOString(),
         };
@@ -162,7 +145,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { searchParams } = new URL(request.url);
-    const tenantSlug = (body.tenantSlug || searchParams.get('tenant') || 'all').toLowerCase().trim();
+    const tenantSlug = (
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      body.tenantSlug ||
+      body.tenant ||
+      request.headers.get('x-tenant-slug') ||
+      'demo'
+    )
+      .replace(/^store_/, '')
+      .toLowerCase()
+      .trim();
 
     if (!body.title) {
       return NextResponse.json(
@@ -183,8 +176,8 @@ export async function POST(request: NextRequest) {
       type: 'page',
       blocks: body.blocks || [],
       seo: body.seo || {
-        title: `${body.title} | Luxury Fashion`,
-        description: `Explore ${body.title} boutique collections.`,
+        title: `${body.title} | Store`,
+        description: `Explore ${body.title}.`,
       },
       tenantSlug: tenantSlug,
       tenantId: tenantSlug,
@@ -231,7 +224,18 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { searchParams } = new URL(request.url);
-    const tenantSlug = (body.tenantSlug || searchParams.get('tenant') || 'all').toLowerCase().trim();
+    const tenantSlug = (
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      body.tenantSlug ||
+      body.tenant ||
+      request.headers.get('x-tenant-slug') ||
+      'demo'
+    )
+      .replace(/^store_/, '')
+      .toLowerCase()
+      .trim();
+
     const cleanSlug = (body.slug || (body.title ? body.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'page')).replace(/^\//, '');
     const pageId = body.id || `page_${Date.now()}`;
     const now = new Date().toISOString();

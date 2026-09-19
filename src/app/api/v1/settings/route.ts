@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { resolveTenant } from '@/lib/tenant-config';
+import { getDatabase, getPlatformDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { getTenantConfig } from '@/lib/tenant-config';
 
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Store-ID, X-API-Key, x-tenant-slug',
+    'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Store-ID, X-API-Key, x-tenant-slug, x-tenant, x-store-slug',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
   };
 }
 
@@ -14,18 +18,141 @@ export async function OPTIONS() {
 }
 
 export async function GET(request: NextRequest) {
-  const t = resolveTenant();
+  const { searchParams } = new URL(request.url);
+  const tenantSlug = (
+    searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
+    request.headers.get('x-tenant-slug') ||
+    request.headers.get('x-store-slug') ||
+    'demo'
+  )
+    .replace(/^store_/, '')
+    .toLowerCase()
+    .trim();
+
+  const baseConfig = getTenantConfig(tenantSlug);
+
+  try {
+    const db = await getTenantDatabase(tenantSlug);
+    if (db) {
+      const doc = await db.collection('tenants').findOne({
+        $or: [
+          { slug: tenantSlug },
+          { id: tenantSlug },
+          { id: `store_${tenantSlug}` },
+        ],
+        status: { $ne: 'deleted' },
+      });
+
+      if (doc) {
+        return NextResponse.json(
+          {
+            success: true,
+            tenant: tenantSlug,
+            data: {
+              storeName: doc.name || baseConfig.name,
+              tagline: doc.tagline || baseConfig.tagline,
+              currency: doc.currency || baseConfig.currency,
+              currencySymbol: doc.currencySymbol || baseConfig.currencySymbol,
+              contact: doc.contact || baseConfig.contact,
+              theme: doc.theme || baseConfig.theme,
+              announcements: doc.announcements || baseConfig.announcements,
+            },
+          },
+          { headers: corsHeaders() }
+        );
+      }
+    }
+  } catch (err) {
+    console.error('Settings DB fetch error:', err);
+  }
 
   return NextResponse.json(
     {
       success: true,
+      tenant: tenantSlug,
       data: {
-        storeName: t.name,
-        currency: 'USD',
-        currencySymbol: '$',
-        theme: t.theme,
+        storeName: baseConfig.name,
+        tagline: baseConfig.tagline,
+        currency: baseConfig.currency,
+        currencySymbol: baseConfig.currencySymbol,
+        contact: baseConfig.contact,
+        theme: baseConfig.theme,
+        announcements: baseConfig.announcements,
       },
     },
     { headers: corsHeaders() }
   );
+}
+
+export async function PUT(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const tenantSlug = (
+    searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
+    request.headers.get('x-tenant-slug') ||
+    request.headers.get('x-store-slug') ||
+    'demo'
+  )
+    .replace(/^store_/, '')
+    .toLowerCase()
+    .trim();
+
+  try {
+    const body = await request.json();
+    const db = await getTenantDatabase(tenantSlug);
+
+    if (db) {
+      const updateData: any = {
+        updatedAt: new Date().toISOString(),
+      };
+      if (body.storeName || body.name) updateData.name = body.storeName || body.name;
+      if (body.tagline) updateData.tagline = body.tagline;
+      if (body.currency) updateData.currency = body.currency;
+      if (body.contact) updateData.contact = body.contact;
+      if (body.theme) updateData.theme = body.theme;
+      if (body.announcements) updateData.announcements = body.announcements;
+
+      await db.collection('tenants').updateOne(
+        {
+          $or: [
+            { slug: tenantSlug },
+            { id: tenantSlug },
+            { id: `store_${tenantSlug}` },
+          ],
+        },
+        { $set: updateData },
+        { upsert: true }
+      );
+    }
+
+    try {
+      const platformDb = await getPlatformDatabase();
+      if (platformDb) {
+        const regUpdate: any = { updatedAt: new Date().toISOString() };
+        if (body.storeName || body.name) regUpdate.name = body.storeName || body.name;
+        if (body.currency) regUpdate.currency = body.currency;
+        if (body.theme) regUpdate.theme = body.theme;
+
+        await platformDb.collection('platform_tenants_registry').updateOne(
+          { slug: tenantSlug },
+          { $set: regUpdate }
+        );
+      }
+    } catch {}
+
+    return NextResponse.json(
+      {
+        success: true,
+        tenant: tenantSlug,
+        message: `Settings for tenant ${tenantSlug} successfully updated in tenant DB.`,
+      },
+      { headers: corsHeaders() }
+    );
+  } catch (err: any) {
+    return NextResponse.json(
+      { success: false, error: err.message || 'Failed to update tenant settings' },
+      { status: 500, headers: corsHeaders() }
+    );
+  }
 }

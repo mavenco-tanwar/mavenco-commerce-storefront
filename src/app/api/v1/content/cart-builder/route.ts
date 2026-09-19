@@ -33,15 +33,18 @@ const DEFAULT_SETTINGS = {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const tenant = searchParams.get('tenant') || 'lumina';
-
     const tenantSlug = (
-      searchParams.get('tenant') || searchParams.get('store') ||
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
+
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
-      const doc = await db.collection('cart_builder_settings').findOne({ tenantSlug: tenant });
+      const doc = await db.collection('cart_builder_settings').findOne({});
       if (doc) {
         return NextResponse.json({
           success: true,
@@ -67,17 +70,25 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { tenant = 'lumina', status = 'published', settings } = body;
-
+    const { searchParams } = new URL(req.url);
     const tenantSlug = (
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') ||
-      body?.tenantSlug || body?.storeSlug || body?.tenantId || 'jq-trends'
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      body?.tenantSlug ||
+      body?.tenant ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
+
+    const status = body.status || 'published';
+    const settings = body.settings || body;
+
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const now = new Date().toISOString();
       const updateDoc: any = {
-        tenantSlug: tenant,
+        tenantSlug,
         updatedAt: now,
       };
 
@@ -89,7 +100,7 @@ export async function POST(req: NextRequest) {
       }
 
       await db.collection('cart_builder_settings').updateOne(
-        { tenantSlug: tenant },
+        {},
         { $set: updateDoc },
         { upsert: true }
       );

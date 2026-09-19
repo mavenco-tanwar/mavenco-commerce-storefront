@@ -27,10 +27,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tenantSlug = (
     searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
     request.headers.get('x-tenant-slug') ||
     request.headers.get('x-store-slug') ||
-    'lumina'
+    'demo'
   )
+    .replace(/^store_/, '')
     .toLowerCase()
     .trim();
 
@@ -39,12 +41,10 @@ export async function GET(request: NextRequest) {
   try {
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
-      // Find published or draft depending on query
+      // Strictly query this tenant's isolated homepage settings
       const query: any = {
-        $or: [
-          { tenantSlug: tenantSlug, type: 'homepage' },
-          { tenantSlug: 'all', type: 'homepage' },
-        ],
+        tenantSlug: tenantSlug,
+        type: 'homepage',
       };
 
       if (!isDraft) {
@@ -105,10 +105,12 @@ export async function PUT(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const tenantSlug = (
       searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
       request.headers.get('x-tenant-slug') ||
       request.headers.get('x-store-slug') ||
-      'lumina'
+      'demo'
     )
+      .replace(/^store_/, '')
       .toLowerCase()
       .trim();
 

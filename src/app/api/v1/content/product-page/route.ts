@@ -25,22 +25,22 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const tenant = (
+    const tenantSlug = (
       searchParams.get('tenant') ||
       searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
       req.headers.get('x-tenant-slug') ||
       req.headers.get('x-store-slug') ||
-      'lumina'
+      req.headers.get('x-tenant') ||
+      'demo'
     )
+      .replace(/^store_/, '')
       .toLowerCase()
       .trim();
     const templateId = searchParams.get('template');
     const isPreview = searchParams.get('preview') === 'draft' || searchParams.get('status') === 'draft';
+    const tenant = tenantSlug;
 
-    const tenantSlug = (
-      searchParams.get('tenant') || searchParams.get('store') ||
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
-    ).replace(/^store_/, '').toLowerCase().trim();
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const tenantMatchConditions = [
@@ -159,7 +159,18 @@ export async function POST(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const tenantParam = searchParams.get('tenant') || searchParams.get('tenantSlug');
 
-    const tenant = (body.tenant || body.tenantSlug || tenantParam || 'lumina').toLowerCase().trim();
+    const cleanTenant = (
+      body.tenant ||
+      body.tenantSlug ||
+      tenantParam ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      'demo'
+    )
+      .replace(/^store_/, '')
+      .toLowerCase()
+      .trim();
+
     const templateId = body.templateId || 'default_fashion';
     const status = body.status || 'published';
     const config = body.config || body;
@@ -172,11 +183,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const cleanTenant = String(tenant).toLowerCase().trim();
-    const tenantSlug = (
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
-    ).replace(/^store_/, '').toLowerCase().trim();
-    const db = await getTenantDatabase(tenantSlug);
+    const tenantSlug = cleanTenant;
+    const db = await getTenantDatabase(cleanTenant);
 
     if (!db) {
       return NextResponse.json(

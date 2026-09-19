@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { getTenantConfig, updateTenantConfig, archiveTenantSlug, checkTenantValidity } from '@/lib/tenant-config';
-import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { getDatabase, getPlatformDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 import { StorefrontProvisioningService } from '@/server/governance/storefront-provisioning.service';
 
@@ -23,14 +23,23 @@ export async function GET(request: NextRequest) {
   // If requesting list of all active tenants for Showcase & Navbar
   if (searchParams.get('list') === 'all') {
     try {
+      const db = await getPlatformDatabase();
       if (db) {
-        const docs = await db
-          .collection('tenants')
+        let docs = await db
+          .collection('platform_tenants_registry')
           .find({ status: { $ne: 'deleted' } })
           .sort({ createdAt: -1 })
           .toArray();
 
-        if (docs.length > 0) {
+        if (!docs || docs.length === 0) {
+          docs = await db
+            .collection('tenants')
+            .find({ status: { $ne: 'deleted' } })
+            .sort({ createdAt: -1 })
+            .toArray();
+        }
+
+        if (docs && docs.length > 0) {
           const cleanDocs = docs.map(({ _id, ...rest }) => rest);
           return NextResponse.json(
             {
@@ -61,15 +70,16 @@ export async function GET(request: NextRequest) {
   }
 
   const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'demo';
-      const db = await getTenantDatabase(tenantSlug);
-  const clean = tenantSlug.toLowerCase().trim();
+  const clean = tenantSlug.replace(/^store_/, '').toLowerCase().trim();
 
   try {
-    const db = await getTenantDatabase(tenantSlug);
+    const db = await getTenantDatabase(clean);
     if (db) {
       const doc = await db.collection('tenants').findOne({
         $or: [
           { slug: clean },
+          { id: clean },
+          { id: `store_${clean}` },
           { primaryDomain: clean },
           { 'domains.domain': clean },
         ],
@@ -84,6 +94,28 @@ export async function GET(request: NextRequest) {
             data: tenantData,
             tenant: clean,
             source: 'mongodb',
+            status: 'success',
+            timestamp: new Date().toISOString(),
+          },
+          { headers: corsHeaders() }
+        );
+      }
+    }
+
+    // Platform registry fallback
+    const platformDb = await getPlatformDatabase();
+    if (platformDb) {
+      const regDoc = await platformDb.collection('platform_tenants_registry').findOne({
+        $or: [{ slug: clean }, { tenantId: clean }, { id: clean }],
+        status: { $ne: 'deleted' },
+      });
+      if (regDoc) {
+        const { _id, ...tenantData } = regDoc;
+        return NextResponse.json(
+          {
+            data: tenantData,
+            tenant: clean,
+            source: 'platform_registry',
             status: 'success',
             timestamp: new Date().toISOString(),
           },
@@ -115,18 +147,18 @@ export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'demo';
-    const clean = tenantSlug.toLowerCase().trim();
+    const clean = tenantSlug.replace(/^store_/, '').toLowerCase().trim();
     const body = await request.json();
 
     const updated = updateTenantConfig(clean, body);
+    const now = new Date().toISOString();
+    const ownerEmail = (body.ownerEmail || body.contact?.email || '').toLowerCase().trim();
+    const ownerName = body.ownerName || '';
 
+    // 1. Write to tenant-specific database
     try {
-      const db = await getTenantDatabase(tenantSlug);
+      const db = await getTenantDatabase(clean);
       if (db) {
-        const ownerEmail = (body.ownerEmail || body.contact?.email || '').toLowerCase().trim();
-        const ownerName = body.ownerName || '';
-        const now = new Date().toISOString();
-
         const setPayload: any = {
           ...updated,
           slug: clean,
@@ -146,7 +178,7 @@ export async function POST(request: NextRequest) {
         }
 
         await db.collection('tenants').updateOne(
-          { slug: clean },
+          { $or: [{ slug: clean }, { id: clean }, { id: `store_${clean}` }] },
           {
             $set: setPayload,
             $setOnInsert: {
@@ -155,9 +187,16 @@ export async function POST(request: NextRequest) {
           },
           { upsert: true }
         );
+      }
+    } catch (err) {
+      console.error('Tenant DB write error:', err);
+    }
 
-        // Also update platform_tenants_registry
-        await db.collection('platform_tenants_registry').updateOne(
+    // 2. Also synchronize with platform registry
+    try {
+      const platformDb = await getPlatformDatabase();
+      if (platformDb) {
+        await platformDb.collection('platform_tenants_registry').updateOne(
           { slug: clean },
           {
             $set: {

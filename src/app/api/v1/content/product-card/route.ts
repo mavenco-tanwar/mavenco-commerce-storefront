@@ -35,9 +35,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tenantSlug = (
     searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
     request.headers.get('x-tenant-slug') ||
-    'lumina'
+    'demo'
   )
+    .replace(/^store_/, '')
     .toLowerCase()
     .trim();
   const isPreview = searchParams.get('preview') === 'draft';
@@ -48,7 +50,10 @@ export async function GET(request: NextRequest) {
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const doc = await db.collection('product_card_configs').findOne({
-        tenantId: tenantSlug,
+        $or: [
+          { tenantId: tenantSlug },
+          { tenantSlug: tenantSlug },
+        ],
       });
 
       if (doc) {
@@ -88,16 +93,20 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const tenantSlug = (
-    searchParams.get('tenant') ||
-    request.headers.get('x-tenant-slug') ||
-    'lumina'
-  )
-    .toLowerCase()
-    .trim();
-
   try {
     const body: ProductCardConfig = await request.json();
+    const tenantSlug = (
+      (body as any).tenantId ||
+      (body as any).tenantSlug ||
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      request.headers.get('x-tenant-slug') ||
+      'demo'
+    )
+      .replace(/^store_/, '')
+      .toLowerCase()
+      .trim();
+
     const db = await getTenantDatabase(tenantSlug);
 
     if (!db) {

@@ -71,9 +71,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const tenantSlug = (
     searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
     request.headers.get('x-tenant-slug') ||
-    ''
+    'demo'
   )
+    .replace(/^store_/, '')
     .toLowerCase()
     .trim();
 
@@ -81,29 +83,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const doc = await db.collection('cms_menus').findOne({
-        $and: [
-          {
-            $or: [
-              ...(tenantSlug && tenantSlug !== 'all'
-                ? [
-                    { tenantSlug: tenantSlug },
-                    { storeSlug: tenantSlug },
-                    { tenantId: tenantSlug },
-                    { tenantId: `store_${tenantSlug}` },
-                  ]
-                : []),
-              { tenantSlug: 'all' },
-              { tenantSlug: 'platform' },
-              { tenantSlug: { $exists: false } },
-            ],
-          },
-          { $or: [{ slug: code }, { id: code }] },
-        ],
+        $or: [{ slug: code }, { id: code }],
       });
 
       if (doc) {
         const { _id, ...clean } = doc;
-        return NextResponse.json({ success: true, data: clean }, { headers: corsHeaders() });
+        return NextResponse.json({ success: true, data: { ...clean, tenantSlug } }, { headers: corsHeaders() });
       }
     }
   } catch (err) {
@@ -141,10 +126,13 @@ async function handleUpdate(request: NextRequest, params: Promise<{ code: string
     const body = await request.json();
     const tenantSlug = (
       searchParams.get('tenant') ||
-      request.headers.get('x-tenant-slug') ||
+      searchParams.get('tenantSlug') ||
       body.tenantSlug ||
-      'all'
+      body.tenant ||
+      request.headers.get('x-tenant-slug') ||
+      'demo'
     )
+      .replace(/^store_/, '')
       .toLowerCase()
       .trim();
 
@@ -191,26 +179,14 @@ async function handleUpdate(request: NextRequest, params: Promise<{ code: string
         children: it.children || [],
       }));
 
-      // Update cms_pages for type 'header'
+      // Update cms_pages for type 'header' strictly for this tenant
       await db.collection('cms_pages').updateMany(
-        {
-          $and: [
-            { type: 'header' },
-            {
-              $or: [
-                ...(tenantSlug && tenantSlug !== 'all' ? [{ tenantSlug }] : []),
-                { tenantSlug: 'all' },
-                { tenantSlug: 'demo' },
-                { tenantSlug: 'gever' },
-                { tenantSlug: 'lumina' },
-              ],
-            },
-          ],
-        },
+        { type: 'header' },
         {
           $set: {
             navigationMenu: headerNavItems,
             'config.navigationMenu': headerNavItems,
+            tenantSlug: tenantSlug,
             updatedAt: now,
           },
         }
@@ -278,9 +254,17 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const code = decodeURIComponent(rawCode || '').trim();
 
   try {
+    const { searchParams } = new URL(request.url);
     const tenantSlug = (
-      request.headers.get('x-tenant-slug') || request.headers.get('x-tenant') || 'jq-trends'
-    ).replace(/^store_/, '').toLowerCase().trim();
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      request.headers.get('x-tenant-slug') ||
+      request.headers.get('x-tenant') ||
+      'demo'
+    )
+      .replace(/^store_/, '')
+      .toLowerCase()
+      .trim();
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
       await db.collection('cms_menus').deleteOne({ $or: [{ slug: code }, { id: code }] });
