@@ -3,7 +3,7 @@ import { CmsApiService } from '@/services/api/cms';
 import { DynamicSectionRenderer } from '@/components/home/DynamicSectionRenderer';
 import { checkTenantValidityDb } from '@/lib/server/tenant-db';
 import { StoreUnavailableView } from '@/components/ui/StoreUnavailableView';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -32,16 +32,41 @@ export default async function StorePage({ params, searchParams }: StorePageProps
   // 1. Direct MongoDB Atlas Fetch (Instant SSR)
   let sections = null;
   try {
-    const db = await getDatabase();
-    if (db) {
-      const doc = await db.collection('cms_pages').findOne({
-        $or: [
-          { tenantSlug: tenantSlug, type: 'homepage' },
-          { tenantSlug: 'all', type: 'homepage' },
-        ],
-      });
-      if (doc?.sections && Array.isArray(doc.sections) && doc.sections.length > 0) {
-        sections = doc.sections;
+    // Check isolated tenant database first (e.g. tenant_gever)
+    const tenantDb = await getTenantDatabase(tenantSlug);
+    if (tenantDb) {
+      const doc = await tenantDb.collection('cms_pages').findOne(
+        {
+          $or: [
+            { tenantSlug: tenantSlug, type: 'homepage' },
+            { type: 'homepage' },
+          ],
+        },
+        { sort: { publishedAt: -1, updatedAt: -1 } }
+      );
+      const dbSections = doc?.sections || doc?.config?.sections;
+      if (Array.isArray(dbSections) && dbSections.length > 0) {
+        sections = dbSections;
+      }
+    }
+
+    // Fallback to platform database if not yet in tenant db
+    if (!sections) {
+      const db = await getDatabase();
+      if (db) {
+        const doc = await db.collection('cms_pages').findOne(
+          {
+            $or: [
+              { tenantSlug: tenantSlug, type: 'homepage' },
+              { tenantSlug: 'all', type: 'homepage' },
+            ],
+          },
+          { sort: { publishedAt: -1, updatedAt: -1 } }
+        );
+        const dbSections = doc?.sections || doc?.config?.sections;
+        if (Array.isArray(dbSections) && dbSections.length > 0) {
+          sections = dbSections;
+        }
       }
     }
   } catch (err) {

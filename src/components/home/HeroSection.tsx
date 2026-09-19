@@ -150,6 +150,7 @@ export function HeroSection({
   }, [isSlider, slides.length, s.autoplay, s.autoplayInterval, s.pauseOnHover, isHovered, nextSlide]);
 
   const isFullWidth = s.containerWidth === 'full' || s.containerWidth === 'full_width';
+  const activeSlide = slides[currentSlideIndex] || slides[0] || defaultSlide;
   const buttonPlacement = s.buttonPlacement || activeSlide.contentAlign || s.contentAlign || s.textAlignment || 'center';
   const buttonOrientation = s.buttonOrientation || 'inline';
 

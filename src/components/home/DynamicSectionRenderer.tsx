@@ -35,6 +35,31 @@ interface DynamicSectionRendererProps {
   tenantSlug?: string;
 }
 
+class SectionErrorBoundary extends React.Component<
+  { children: React.ReactNode; sectionId?: string },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error(`DynamicSectionRenderer error in section [${this.props.sectionId}]:`, error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
+}
+
 export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }: DynamicSectionRendererProps) {
   const [liveSections, setLiveSections] = useState<CmsHomepageSection[]>(
     sections || initialSections || []
@@ -776,16 +801,17 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
         };
 
         return (
-          <div
-            key={section.id}
-            id={`section-${section.id}`}
-            data-section-type={section.type}
-            data-section-order={section.order ?? section.displayOrder}
-            className={`w-full relative transition-colors duration-200 ${deviceVisibilityClass} ${section.className || ''}`}
-            style={sectionStyle}
-          >
-            {sectionElement}
-          </div>
+          <SectionErrorBoundary key={section.id} sectionId={section.id}>
+            <div
+              id={`section-${section.id}`}
+              data-section-type={section.type}
+              data-section-order={section.order ?? section.displayOrder}
+              className={`w-full relative transition-colors duration-200 ${deviceVisibilityClass} ${section.className || ''}`}
+              style={sectionStyle}
+            >
+              {sectionElement}
+            </div>
+          </SectionErrorBoundary>
         );
       })}
 
