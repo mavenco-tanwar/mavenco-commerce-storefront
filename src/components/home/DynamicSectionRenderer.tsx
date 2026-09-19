@@ -219,8 +219,12 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
             );
             break;
 
-          // 3. Full-Width Hero Banner [HERO]
+          // 3. Full-Width Hero Banner & Multi-Slide Carousel [HERO & SLIDER]
           case 'hero':
+          case 'slider':
+          case 'hero_slider':
+          case 'hero-slider':
+          case 'hero_carousel':
             sectionElement = (
               <HeroSection
                 key={section.id}
@@ -228,15 +232,42 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customSettings={{
                   tagline: badge,
-                  primaryBtnText: sData.primaryBtnText || sData.primaryCtaText || sData.ctaText || 'Shop The Collection',
-                  primaryBtnLink: formatTenantHref(sData.primaryBtnLink || sData.primaryCtaUrl || sData.ctaUrl || '/collections', resolvedTenant),
-                  secondaryBtnText: sData.secondaryBtnText || sData.secondaryCtaText || 'Explore Lookbook',
-                  secondaryBtnLink: formatTenantHref(sData.secondaryBtnLink || sData.secondaryCtaUrl || '/about', resolvedTenant),
+                  primaryBtnText: sData.primaryBtnText || sData.primaryCtaText || sData.ctaText || 'Shop Collection',
+                  primaryBtnLink: sData.primaryBtnLink || sData.primaryCtaUrl || sData.ctaUrl || '/collections',
+                  secondaryBtnText: sData.secondaryBtnText || sData.secondaryCtaText,
+                  secondaryBtnLink: sData.secondaryBtnLink || sData.secondaryCtaUrl || '/about',
                   desktopImage: image,
                   mobileImage: sData.mobileImage || image,
-                  overlayOpacity: typeof sData.overlayOpacity === 'number' ? (sData.overlayOpacity <= 1 ? sData.overlayOpacity * 100 : sData.overlayOpacity) : 40,
-                  contentAlign: sData.contentAlign || 'center',
-                  minHeight: sData.minHeight || '620px',
+                  overlayOpacity: typeof sData.overlayOpacity === 'number' ? (sData.overlayOpacity <= 1 ? sData.overlayOpacity * 100 : sData.overlayOpacity) : 45,
+                  overlayColor: sData.overlayColor || '#000000',
+                  contentAlign: sData.contentAlign || sData.textAlignment || 'center',
+                  layout: sData.layout || (section.type === 'slider' || section.type === 'hero_slider' ? 'slider' : 'centered'),
+                  minHeight: sData.minHeight || '640px',
+                  bgColor: sData.bgColor || styles?.backgroundColor,
+                  bgGradient: sData.bgGradient || styles?.backgroundImage,
+                  textColor: sData.textColor || styles?.color,
+                  paddingTop: sData.paddingTop || styles?.paddingTop,
+                  paddingBottom: sData.paddingBottom || styles?.paddingBottom,
+                  containerWidth: sData.containerWidth || 'contained',
+
+                  // Button Placements & Styling
+                  buttonPlacement: sData.buttonPlacement || sData.contentAlign || 'center',
+                  buttonOrientation: sData.buttonOrientation || 'inline',
+                  btnBorderRadius: sData.btnBorderRadius,
+                  primaryBtnVariant: sData.primaryBtnVariant,
+                  primaryBtnColor: sData.primaryBtnColor,
+                  primaryBtnTextColor: sData.primaryBtnTextColor,
+                  secondaryBtnVariant: sData.secondaryBtnVariant,
+                  secondaryBtnColor: sData.secondaryBtnColor,
+                  secondaryBtnTextColor: sData.secondaryBtnTextColor,
+
+                  // Multi-Slide Carousel Data
+                  slides: Array.isArray(sData.slides) ? sData.slides : undefined,
+                  autoplay: sData.autoplay !== false,
+                  autoplayInterval: sData.autoplayInterval || 5000,
+                  showArrows: sData.showArrows !== false,
+                  showDots: sData.showDots !== false,
+                  pauseOnHover: sData.pauseOnHover !== false,
                 }}
                 tenantSlug={resolvedTenant}
               />
