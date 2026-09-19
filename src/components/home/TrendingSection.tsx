@@ -17,7 +17,14 @@ interface TrendingSectionProps {
   customCtaText?: string;
   customCtaUrl?: string;
   querySource?: string;
-  columnsDesktop?: 2 | 3 | 4;
+  columnsDesktop?: number;
+  columnsMobile?: number;
+  contentAlign?: 'left' | 'center' | 'right';
+  containerWidth?: 'contained' | 'full' | 'full_width';
+  paddingTop?: string;
+  paddingBottom?: string;
+  bgColor?: string;
+  textColor?: string;
   tenantSlug?: string;
 }
 
@@ -30,6 +37,13 @@ export function TrendingSection({
   customCtaUrl = '/collections',
   querySource,
   columnsDesktop = 4,
+  columnsMobile = 2,
+  contentAlign = 'left',
+  containerWidth = 'contained',
+  paddingTop,
+  paddingBottom,
+  bgColor,
+  textColor,
   tenantSlug,
 }: TrendingSectionProps = {}) {
   const [products, setProducts] = useState<Product[]>([]);
@@ -89,57 +103,163 @@ export function TrendingSection({
     return null;
   }
 
+  const isFullWidth = containerWidth === 'full' || containerWidth === 'full_width';
+  const containerClass = isFullWidth ? 'w-full px-4 sm:px-8 md:px-12' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
+
   return (
-    <section className="py-16 md:py-24 bg-[#FAF6F2] border-y border-[#E8DED8] select-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header & Department Filters */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div>
+    <section
+      className="py-16 md:py-24 bg-[#FAF6F2] border-y border-[#E8DED8] select-none transition-colors duration-200"
+      style={{
+        paddingTop: paddingTop || undefined,
+        paddingBottom: paddingBottom || undefined,
+        backgroundColor: bgColor || undefined,
+        color: textColor || undefined,
+      }}
+    >
+      <div className={containerClass}>
+        {/* Header strictly following contentAlign */}
+        {contentAlign === 'center' ? (
+          <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-12">
             <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
               {badge}
             </span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1" style={{ color: textColor || undefined }}>
               {title}
             </h2>
-            <p className="text-xs sm:text-sm text-[#777777] mt-1 font-sans">
+            <div className="w-12 h-0.5 bg-[#B77A68] mx-auto my-3" />
+            <p className="text-xs sm:text-sm text-[#777777] font-sans" style={{ color: textColor ? `${textColor}cc` : undefined }}>
               {subtitle}
             </p>
-          </div>
 
-          {/* Department Filter Tabs */}
-          <div className="flex items-center gap-2 self-start md:self-auto bg-[#FFFDFC] p-1 border border-[#E8DED8]">
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all ${
-                activeTab === 'all'
-                  ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                  : 'text-[#777777] hover:text-[#111111]'
-              }`}
-            >
-              All Trends
-            </button>
-            <button
-              onClick={() => setActiveTab('women')}
-              className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all ${
-                activeTab === 'women'
-                  ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                  : 'text-[#777777] hover:text-[#111111]'
-              }`}
-            >
-              Women
-            </button>
-            <button
-              onClick={() => setActiveTab('kids')}
-              className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all ${
-                activeTab === 'kids'
-                  ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                  : 'text-[#777777] hover:text-[#111111]'
-              }`}
-            >
-              Kids
-            </button>
+            {/* Department Filter Tabs Centered */}
+            <div className="flex items-center gap-2 mt-6 bg-[#FFFDFC] p-1 border border-[#E8DED8]">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
+                  activeTab === 'all'
+                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
+                    : 'text-[#777777] hover:text-[#111111]'
+                }`}
+              >
+                All Trends
+              </button>
+              <button
+                onClick={() => setActiveTab('women')}
+                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
+                  activeTab === 'women'
+                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
+                    : 'text-[#777777] hover:text-[#111111]'
+                }`}
+              >
+                Women
+              </button>
+              <button
+                onClick={() => setActiveTab('kids')}
+                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
+                  activeTab === 'kids'
+                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
+                    : 'text-[#777777] hover:text-[#111111]'
+                }`}
+              >
+                Kids
+              </button>
+            </div>
           </div>
-        </div>
+        ) : contentAlign === 'right' ? (
+          <div className="flex flex-col items-end text-right max-w-2xl ml-auto mb-12">
+            <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
+              {badge}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1" style={{ color: textColor || undefined }}>
+              {title}
+            </h2>
+            <p className="text-xs sm:text-sm text-[#777777] mt-1 font-sans" style={{ color: textColor ? `${textColor}cc` : undefined }}>
+              {subtitle}
+            </p>
+
+            {/* Department Filter Tabs Right-Aligned */}
+            <div className="flex items-center gap-2 mt-4 bg-[#FFFDFC] p-1 border border-[#E8DED8]">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
+                  activeTab === 'all'
+                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
+                    : 'text-[#777777] hover:text-[#111111]'
+                }`}
+              >
+                All Trends
+              </button>
+              <button
+                onClick={() => setActiveTab('women')}
+                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
+                  activeTab === 'women'
+                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
+                    : 'text-[#777777] hover:text-[#111111]'
+                }`}
+              >
+                Women
+              </button>
+              <button
+                onClick={() => setActiveTab('kids')}
+                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
+                  activeTab === 'kids'
+                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
+                    : 'text-[#777777] hover:text-[#111111]'
+                }`}
+              >
+                Kids
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+            <div>
+              <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
+                {badge}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1" style={{ color: textColor || undefined }}>
+                {title}
+              </h2>
+              <p className="text-xs sm:text-sm text-[#777777] mt-1 font-sans" style={{ color: textColor ? `${textColor}cc` : undefined }}>
+                {subtitle}
+              </p>
+            </div>
+
+            {/* Department Filter Tabs Left/Natural */}
+            <div className="flex items-center gap-2 self-start md:self-auto bg-[#FFFDFC] p-1 border border-[#E8DED8]">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
+                  activeTab === 'all'
+                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
+                    : 'text-[#777777] hover:text-[#111111]'
+                }`}
+              >
+                All Trends
+              </button>
+              <button
+                onClick={() => setActiveTab('women')}
+                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
+                  activeTab === 'women'
+                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
+                    : 'text-[#777777] hover:text-[#111111]'
+                }`}
+              >
+                Women
+              </button>
+              <button
+                onClick={() => setActiveTab('kids')}
+                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
+                  activeTab === 'kids'
+                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
+                    : 'text-[#777777] hover:text-[#111111]'
+                }`}
+              >
+                Kids
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Product Grid */}
         <ProductGrid
@@ -147,6 +267,7 @@ export function TrendingSection({
           isLoading={isLoading}
           skeletonCount={customLimit}
           columns={columnsDesktop}
+          columnsMobile={columnsMobile}
           tenantSlug={currentSlug}
         />
 
@@ -156,7 +277,7 @@ export function TrendingSection({
             <Button
               variant="outline"
               size="lg"
-              className="min-w-[200px] group"
+              className="min-w-[200px] group cursor-pointer"
             >
               <span>{customCtaText}</span>
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -167,3 +288,4 @@ export function TrendingSection({
     </section>
   );
 }
+

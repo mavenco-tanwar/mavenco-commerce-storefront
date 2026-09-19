@@ -49,7 +49,7 @@ export interface HeroSectionProps {
     textColor?: string;
     paddingTop?: string;
     paddingBottom?: string;
-    containerWidth?: 'contained' | 'full_width';
+    containerWidth?: 'contained' | 'full_width' | 'full' | string;
 
     // Buttons & Placement
     buttonPlacement?: 'center' | 'left' | 'right';
@@ -149,10 +149,8 @@ export function HeroSection({
     };
   }, [isSlider, slides.length, s.autoplay, s.autoplayInterval, s.pauseOnHover, isHovered, nextSlide]);
 
-  const activeSlide = slides[currentSlideIndex] || defaultSlide;
-
-  // Formatting CTA placements & styles
-  const buttonPlacement = s.buttonPlacement || activeSlide.contentAlign || 'center';
+  const isFullWidth = s.containerWidth === 'full' || s.containerWidth === 'full_width';
+  const buttonPlacement = s.buttonPlacement || activeSlide.contentAlign || s.contentAlign || s.textAlignment || 'center';
   const buttonOrientation = s.buttonOrientation || 'inline';
 
   const getPlacementClass = (placement: string) => {
@@ -234,7 +232,7 @@ export function HeroSection({
         {/* Content Box */}
         <div
           className={`relative z-10 w-full ${
-            s.containerWidth === 'full_width' ? 'px-4 sm:px-8' : 'max-w-5xl mx-auto px-4 sm:px-6 lg:px-8'
+            isFullWidth ? 'w-full px-4 sm:px-8 md:px-12' : 'max-w-5xl mx-auto px-4 sm:px-6 lg:px-8'
           } py-20 md:py-32`}
         >
           <div
@@ -382,7 +380,7 @@ export function HeroSection({
 
         <div
           className={`relative z-10 w-full ${
-            s.containerWidth === 'full_width' ? 'px-4 sm:px-8' : 'max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'
+            isFullWidth ? 'w-full px-4 sm:px-8 md:px-12' : 'max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'
           } py-20 md:py-28 space-y-6 flex flex-col ${getPlacementClass(buttonPlacement)}`}
         >
           {activeSlide.tagline && (
@@ -540,8 +538,8 @@ export function HeroSection({
 
       <div
         className={
-          s.containerWidth === 'full_width'
-            ? 'w-full px-4 sm:px-8'
+          isFullWidth
+            ? 'w-full px-4 sm:px-8 md:px-12'
             : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'
         }
       >
@@ -595,7 +593,9 @@ export function HeroSection({
                 )}
               </h1>
               {activeSlide.subtitle && (
-                <p className="text-sm sm:text-base text-[#777777] max-w-xl mx-auto lg:mx-0 font-sans leading-relaxed">
+                <p className={`text-sm sm:text-base text-[#777777] max-w-xl ${
+                  buttonPlacement === 'center' ? 'mx-auto' : buttonPlacement === 'right' ? 'ml-auto' : ''
+                } font-sans leading-relaxed`}>
                   {activeSlide.subtitle}
                 </p>
               )}

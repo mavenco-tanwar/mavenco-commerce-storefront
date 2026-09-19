@@ -214,7 +214,17 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
             sectionElement = (
               <ValueProps
                 key={section.id}
+                customTitle={title}
+                customSubtitle={subtitle}
                 customItems={sData.items || sData.promises}
+                columnsDesktop={sData.columns || sData.columnsDesktop || 4}
+                contentAlign={sData.contentAlign || sData.textAlignment || 'center'}
+                containerWidth={sData.containerWidth || 'contained'}
+                cardStyle={sData.cardStyle || 'bordered'}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
               />
             );
             break;
@@ -288,7 +298,14 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customBadge={badge}
                 customLimit={sData.limit || 8}
                 querySource={sData.querySource || 'best_sellers'}
-                columnsDesktop={sData.columnsDesktop === 2 || sData.columnsDesktop === 3 || sData.columnsDesktop === 4 ? sData.columnsDesktop : 4}
+                columnsDesktop={sData.columnsDesktop || 4}
+                columnsMobile={sData.columnsMobile || 2}
+                contentAlign={sData.contentAlign || sData.textAlignment || 'center'}
+                containerWidth={sData.containerWidth || 'contained'}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
                 customCtaText={sData.primaryBtnText || sData.ctaText || sData.primaryCtaText || 'Explore All'}
                 customCtaUrl={sData.primaryBtnLink || sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
                 tenantSlug={resolvedTenant}
@@ -323,6 +340,17 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customCategories={sData.categoriesList || sData.categories || sData.items}
+                columnsDesktop={sData.columnsDesktop || 4}
+                columnsTablet={sData.columnsTablet || 2}
+                columnsMobile={sData.columnsMobile || 1}
+                contentAlign={sData.contentAlign || sData.textAlignment || 'center'}
+                containerWidth={sData.containerWidth || 'contained'}
+                cardBorderRadius={sData.cardBorderRadius}
+                aspectRatio={sData.aspectRatio}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
                 tenantSlug={resolvedTenant}
               />
             );
@@ -375,10 +403,20 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customTitle={title}
                 customSubtitle={sData.description || subtitle}
                 customBadge={badge}
+                customImage={image}
                 customPrimaryCtaText={sData.btnText || sData.ctaText || sData.primaryCtaText || 'Claim Privilege'}
                 customPrimaryCtaUrl={sData.btnLink || sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
-                bgColor={sData.bgColor}
-                textColor={sData.textColor}
+                customSecondaryCtaText={sData.secondaryBtnText}
+                customSecondaryCtaUrl={sData.secondaryBtnLink}
+                contentAlign={sData.contentAlign || sData.textAlignment || 'center'}
+                containerWidth={sData.containerWidth || 'contained'}
+                bannerHeight={sData.bannerHeight || 'medium'}
+                primaryBtnColor={sData.primaryBtnColor}
+                primaryBtnTextColor={sData.primaryBtnTextColor}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
                 tenantSlug={resolvedTenant}
               />
             );
@@ -724,17 +762,17 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
 
         // Wrap each section with dynamic CSS variables and section styles configured in Visual Theme Studio
         const sectionStyle: React.CSSProperties = {
-          backgroundColor: styles.backgroundColor,
-          color: styles.textColor,
-          paddingTop: styles.paddingTop,
-          paddingBottom: styles.paddingBottom,
+          backgroundColor: styles.backgroundColor || sData.bgColor,
+          color: styles.textColor || sData.textColor,
+          paddingTop: styles.paddingTop || sData.paddingTop,
+          paddingBottom: styles.paddingBottom || sData.paddingBottom,
           ...(styles.customStyles || {}),
           // Dynamic CSS Variables per section
-          ['--section-bg' as any]: styles.backgroundColor || 'transparent',
-          ['--section-text' as any]: styles.textColor || 'inherit',
+          ['--section-bg' as any]: styles.backgroundColor || sData.bgColor || 'transparent',
+          ['--section-text' as any]: styles.textColor || sData.textColor || 'inherit',
           ['--section-accent' as any]: styles.accentColor || 'var(--theme-color-accent, #B77A68)',
-          ['--section-pt' as any]: styles.paddingTop || '0px',
-          ['--section-pb' as any]: styles.paddingBottom || '0px',
+          ['--section-pt' as any]: styles.paddingTop || sData.paddingTop || '0px',
+          ['--section-pb' as any]: styles.paddingBottom || sData.paddingBottom || '0px',
         };
 
         return (

@@ -26,6 +26,17 @@ interface CategoryShowcaseProps {
   customSubtitle?: string;
   customBadge?: string;
   customCategories?: CategoryItem[];
+  columnsDesktop?: number;
+  columnsTablet?: number;
+  columnsMobile?: number;
+  contentAlign?: 'left' | 'center' | 'right';
+  containerWidth?: 'contained' | 'full' | 'full_width';
+  cardBorderRadius?: string;
+  aspectRatio?: string;
+  paddingTop?: string;
+  paddingBottom?: string;
+  bgColor?: string;
+  textColor?: string;
   tenantSlug?: string;
 }
 
@@ -73,6 +84,16 @@ export function CategoryShowcase({
   customSubtitle,
   customBadge,
   customCategories,
+  columnsDesktop = 4,
+  columnsMobile = 1,
+  contentAlign = 'center',
+  containerWidth = 'contained',
+  cardBorderRadius,
+  aspectRatio,
+  paddingTop,
+  paddingBottom,
+  bgColor,
+  textColor,
   tenantSlug,
 }: CategoryShowcaseProps = {}) {
   const [categories, setCategories] = useState<CategoryItem[]>(() => {
@@ -98,7 +119,7 @@ export function CategoryShowcase({
     }
 
     // 2. Resolve active tenant slug
-    const effectiveSlug =
+    const currentSlug =
       tenantSlug ||
       (typeof window !== 'undefined'
         ? window.location.pathname.match(/^\/(stores|tenant)\/([a-zA-Z0-9_-]+)/)?.[2] ||
@@ -107,45 +128,23 @@ export function CategoryShowcase({
         : '') ||
       '';
 
-    if (!effectiveSlug) {
-      setIsLoaded(true);
-      return;
-    }
-
-    // 3. Dynamically fetch the store's real categories from MongoDB API (only top-level departments)
-    fetch(`/api/v1/categories?tenant=${encodeURIComponent(effectiveSlug)}&rootOnly=true`)
-      .then((r) => r.json())
-      .then((res) => {
-        if (res && Array.isArray(res.data) && res.data.length > 0) {
-          // Filter to ensure only top-level departments without parentId are displayed
-          const rootDepts = res.data.filter(
-            (cat: any) => !cat.parentId || cat.parentId === '' || cat.parentId === 'none' || cat.parentId === null
+    // 3. Fallback: Fetch categories from API
+    fetch(`/api/v1/categories?tenant=${encodeURIComponent(currentSlug || 'demo')}&limit=12`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json?.data && Array.isArray(json.data) && json.data.length > 0) {
+          const rootCats = json.data.filter(
+            (c: any) => !c.parentId || c.parentId === '' || c.parentId === 'none' || c.parentId === null
           );
-          const toDisplay = rootDepts.length > 0 ? rootDepts : res.data;
-          const mapped: CategoryItem[] = toDisplay.map((cat: any) => ({
-            id: cat.id || cat.slug,
-            title: cat.name || cat.title || 'Category',
-            tagline: cat.description || cat.tagline || 'Explore Collection',
-            imageUrl:
-              cat.imageUrl ||
-              cat.image ||
-              'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop',
-            href: `/${cleanCategorySlug(cat.slug || cat.id)}`,
-            buttonText: `Explore ${cat.name || 'Category'}`,
-            badge: cat.badge || cat.department || 'Curated Department',
-          }));
-          setCategories(mapped);
-        } else if (effectiveSlug === 'demo' || effectiveSlug === 'jq-trends') {
-          // Flagship reference store fallback
+          setCategories(rootCats.length > 0 ? rootCats : json.data);
+        } else if (!currentSlug || currentSlug === 'demo') {
           setCategories(DEFAULT_CATEGORIES);
         } else {
-          // New/custom tenant with 0 categories: hide section completely
           setCategories([]);
         }
       })
-      .catch((err) => {
-        console.warn('[CategoryShowcase] Failed to load tenant categories:', err);
-        if (effectiveSlug === 'demo' || effectiveSlug === 'jq-trends') {
+      .catch(() => {
+        if (!currentSlug || currentSlug === 'demo') {
           setCategories(DEFAULT_CATEGORIES);
         } else {
           setCategories([]);
@@ -165,25 +164,69 @@ export function CategoryShowcase({
     'Explore our meticulously curated departments tailored for everyday luxury.';
   const badge = customBadge || 'Curated Fashion Universes';
 
+  const isFullWidth = containerWidth === 'full' || containerWidth === 'full_width';
+  const containerClass = isFullWidth ? 'w-full px-4 sm:px-8 md:px-12' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
+
+  const headerAlignClass =
+    contentAlign === 'left'
+      ? 'text-left max-w-2xl mb-12'
+      : contentAlign === 'right'
+      ? 'text-right max-w-2xl ml-auto mb-12'
+      : 'text-center max-w-2xl mx-auto mb-12';
+
+  const dCols = Math.min(Math.max(columnsDesktop, 1), 6);
+  const gridColsClass =
+    dCols === 1
+      ? 'grid-cols-1'
+      : dCols === 2
+      ? 'sm:grid-cols-2'
+      : dCols === 3
+      ? 'sm:grid-cols-2 lg:grid-cols-3'
+      : dCols === 5
+      ? 'sm:grid-cols-2 lg:grid-cols-5'
+      : dCols === 6
+      ? 'sm:grid-cols-2 lg:grid-cols-6'
+      : 'sm:grid-cols-2 lg:grid-cols-4';
+  const mobColsClass = columnsMobile === 2 ? 'grid-cols-2' : 'grid-cols-1';
+
+  const aspectClass =
+    aspectRatio === '1/1'
+      ? 'aspect-square'
+      : aspectRatio === '16/9'
+      ? 'aspect-video'
+      : aspectRatio === '4/5'
+      ? 'aspect-[4/5]'
+      : 'aspect-3/4';
+
+  const customBorderRadiusStyle = cardBorderRadius ? { borderRadius: cardBorderRadius } : undefined;
+
   return (
-    <section className="py-16 md:py-24 bg-[#FFFDFC] select-none">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section
+      className="py-16 md:py-24 bg-[#FFFDFC] select-none transition-colors duration-200"
+      style={{
+        paddingTop: paddingTop || undefined,
+        paddingBottom: paddingBottom || undefined,
+        backgroundColor: bgColor || undefined,
+        color: textColor || undefined,
+      }}
+    >
+      <div className={containerClass}>
         {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
+        <div className={headerAlignClass}>
           <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
             {badge}
           </span>
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1 mb-3">
+          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1 mb-3" style={{ color: textColor || undefined }}>
             {title}
           </h2>
-          <div className="w-12 h-0.5 bg-[#B77A68] mx-auto mb-3" />
-          <p className="text-xs sm:text-sm text-[#777777] font-sans">
+          {contentAlign === 'center' && <div className="w-12 h-0.5 bg-[#B77A68] mx-auto mb-3" />}
+          <p className="text-xs sm:text-sm text-[#777777] font-sans" style={{ color: textColor ? `${textColor}cc` : undefined }}>
             {subtitle}
           </p>
         </div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className={`grid ${mobColsClass} ${gridColsClass} gap-6`}>
           {categories.map((cat: any, idx) => {
             const itemTitle = cat.title || cat.name || cat.label || `Category ${idx + 1}`;
             const image =
@@ -204,7 +247,8 @@ export function CategoryShowcase({
               <Link
                 key={cat.id || idx}
                 href={formatTenantHref(href, tenantSlug)}
-                className="group relative aspect-3/4 overflow-hidden bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow flex flex-col justify-end p-6"
+                style={customBorderRadiusStyle}
+                className={`group relative ${aspectClass} overflow-hidden bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow flex flex-col justify-end p-6`}
               >
                 {/* Background Image */}
                 <Image

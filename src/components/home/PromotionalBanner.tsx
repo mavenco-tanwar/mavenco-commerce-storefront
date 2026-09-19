@@ -14,8 +14,15 @@ interface PromotionalBannerProps {
   customPrimaryCtaUrl?: string;
   customSecondaryCtaText?: string;
   customSecondaryCtaUrl?: string;
+  contentAlign?: 'left' | 'center' | 'right';
+  containerWidth?: 'contained' | 'full' | 'full_width';
+  bannerHeight?: 'compact' | 'medium' | 'tall';
+  primaryBtnColor?: string;
+  primaryBtnTextColor?: string;
   bgColor?: string;
   textColor?: string;
+  paddingTop?: string;
+  paddingBottom?: string;
   tenantSlug?: string;
 }
 
@@ -28,8 +35,15 @@ export function PromotionalBanner({
   customPrimaryCtaUrl = '/women',
   customSecondaryCtaText = 'View Offers',
   customSecondaryCtaUrl = '/sale',
+  contentAlign = 'left',
+  containerWidth = 'contained',
+  bannerHeight = 'medium',
+  primaryBtnColor,
+  primaryBtnTextColor,
   bgColor,
   textColor,
+  paddingTop,
+  paddingBottom,
   tenantSlug,
 }: PromotionalBannerProps = {}) {
   const title = customTitle || 'NEW SEASON. NEW YOU.';
@@ -41,10 +55,37 @@ export function PromotionalBanner({
     customImage ||
     'https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?q=80&w=1600&auto=format&fit=crop';
 
+  const isFullWidth = containerWidth === 'full' || containerWidth === 'full_width';
+  const containerClass = isFullWidth ? 'w-full px-4 sm:px-8 md:px-12' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
+
+  const minHeight = bannerHeight === 'compact' ? '300px' : bannerHeight === 'tall' ? '560px' : '420px';
+
+  const alignClass =
+    contentAlign === 'center'
+      ? 'max-w-2xl mx-auto text-center items-center'
+      : contentAlign === 'right'
+      ? 'max-w-2xl ml-auto text-right items-end'
+      : 'max-w-xl text-left items-start';
+
+  const btnAlignClass =
+    contentAlign === 'center'
+      ? 'justify-center'
+      : contentAlign === 'right'
+      ? 'justify-end'
+      : 'justify-start';
+
+  const primaryBtnStyle: React.CSSProperties = {
+    backgroundColor: primaryBtnColor || undefined,
+    color: primaryBtnTextColor || undefined,
+  };
+
   return (
     <section
-      className="relative bg-[#111111] text-white overflow-hidden py-20 md:py-28 select-none transition-colors duration-200"
+      className="relative bg-[#111111] text-white overflow-hidden select-none transition-colors duration-200 flex items-center"
       style={{
+        minHeight,
+        paddingTop: paddingTop || '5rem',
+        paddingBottom: paddingBottom || '5rem',
         backgroundColor: bgColor || undefined,
         color: textColor || undefined,
       }}
@@ -62,8 +103,8 @@ export function PromotionalBanner({
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-transparent" />
       <div className="absolute -top-20 right-10 w-96 h-96 bg-[#B77A68]/20 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
-        <div className="max-w-xl space-y-6">
+      <div className={`relative ${containerClass} z-10 w-full`}>
+        <div className={`flex flex-col space-y-6 ${alignClass}`}>
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FFFDFC]/10 backdrop-blur-md border border-[#E8DED8]/30">
             <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" />
@@ -73,19 +114,24 @@ export function PromotionalBanner({
           </div>
 
           {/* Headline */}
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#FFFDFC] leading-tight">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#FFFDFC] leading-tight" style={{ color: textColor || undefined }}>
             {title}
           </h2>
 
-          <p className="text-sm sm:text-base text-[#E8DED8] font-sans font-normal leading-relaxed">
+          <p className="text-sm sm:text-base text-[#E8DED8] font-sans font-normal leading-relaxed" style={{ color: textColor ? `${textColor}cc` : undefined }}>
             {subtitle}
           </p>
 
-          <div className="pt-2 flex flex-wrap items-center gap-4">
+          <div className={`pt-2 flex flex-wrap items-center gap-4 ${btnAlignClass}`}>
             <Link href={formatTenantHref(customPrimaryCtaUrl, tenantSlug)}>
-              <Button variant="luxury-gold" size="lg" className="min-w-[180px] group">
+              <Button
+                variant="luxury-gold"
+                size="lg"
+                style={primaryBtnStyle}
+                className="min-w-[180px] group cursor-pointer"
+              >
                 <span>{customPrimaryCtaText}</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
 
@@ -94,7 +140,7 @@ export function PromotionalBanner({
                 <Button
                   variant="outline"
                   size="lg"
-                  className="border-white text-white hover:bg-white hover:text-black min-w-[150px]"
+                  className="border-white text-white hover:bg-white hover:text-black min-w-[150px] cursor-pointer"
                 >
                   {customSecondaryCtaText}
                 </Button>
@@ -106,3 +152,4 @@ export function PromotionalBanner({
     </section>
   );
 }
+
