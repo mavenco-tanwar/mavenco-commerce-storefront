@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Lock, CheckCircle2, ChevronRight, ShoppingBag } from 'lucide-react';
+import { Lock, CheckCircle2, ChevronRight, ShoppingBag, ChevronDown } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { ContactStep, ContactData } from '@/components/checkout/ContactStep';
@@ -60,6 +60,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('upi');
   const [upiApp, setUpiApp] = useState<string>('Google Pay');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMobileSummaryOpen, setIsMobileSummaryOpen] = useState(false);
 
   // Automatically advance contact if already prefilled
   useEffect(() => {
@@ -171,6 +172,30 @@ export default function CheckoutPage() {
             <span className="sm:hidden">Secure Checkout</span>
           </div>
         </div>
+      </div>
+
+      {/* Mobile Collapsible Order Summary Bar (< lg) */}
+      <div className="lg:hidden border-b border-[#E8DED8] bg-[#FAF6F2]">
+        <button
+          type="button"
+          onClick={() => setIsMobileSummaryOpen(!isMobileSummaryOpen)}
+          className="w-full px-4 py-3 flex items-center justify-between text-xs font-semibold text-slate-800 cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <ShoppingBag className="w-4 h-4 text-[#B77A68]" />
+            <span>{isMobileSummaryOpen ? 'Hide' : 'Show'} Order Summary ({summary.totalItemCount})</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isMobileSummaryOpen ? 'rotate-180' : ''}`} />
+          </div>
+          <span className="font-bold text-sm font-mono text-slate-900">
+            ₹{(summary.subtotal - summary.discountTotal + (shippingSpeed === 'express' ? 99 : summary.shippingFee)).toLocaleString('en-IN')}
+          </span>
+        </button>
+
+        {isMobileSummaryOpen && (
+          <div className="p-4 border-t border-[#E8DED8] bg-[#FFFDFC] animate-in fade-in duration-200">
+            <OrderSummarySidebar items={items} summary={summary} />
+          </div>
+        )}
       </div>
 
       {/* Main Checkout Area */}
@@ -286,8 +311,8 @@ export default function CheckoutPage() {
             })}
           </div>
 
-          {/* Right Column: Order Summary (5 cols) */}
-          <div className="lg:col-span-5 xl:col-span-4 sticky top-6">
+          {/* Right Column: Order Summary (5 cols on desktop, collapsible dropdown on mobile) */}
+          <div className="hidden lg:block lg:col-span-5 xl:col-span-4 sticky top-6">
             <OrderSummarySidebar items={items} summary={summary} />
           </div>
         </div>

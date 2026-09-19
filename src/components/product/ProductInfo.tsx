@@ -320,6 +320,35 @@ export function ProductInfo({ product, pdpConfig }: ProductInfoProps) {
         onClose={() => setIsSizeGuideOpen(false)}
         department={product.department}
       />
+
+      {/* Mobile Sticky Bottom Action Bar (Docked to bottom on < md) */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-[#E8DED8] p-3 px-4 z-40 shadow-2xl flex items-center justify-between gap-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="flex-1 min-w-0">
+          <div className="text-[11px] text-slate-600 font-medium truncate">
+            {product.name}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-bold text-slate-900 font-mono">
+              ₹{product.price.toLocaleString('en-IN')}
+            </span>
+            {product.compareAtPrice && product.compareAtPrice > product.price && (
+              <span className="text-[11px] text-slate-400 line-through font-mono">
+                ₹{product.compareAtPrice.toLocaleString('en-IN')}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          disabled={isOutOfStock}
+          onClick={handleAddToCart}
+          className="px-5 py-2.5 bg-[var(--theme-btn-primary-bg,var(--theme-color-primary,#111111))] hover:opacity-90 text-white font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-1.5 shadow-lg shrink-0 disabled:opacity-50 cursor-pointer"
+        >
+          <ShoppingBag className="w-3.5 h-3.5" />
+          <span>{isOutOfStock ? 'Sold Out' : 'Add to Bag'}</span>
+        </button>
+      </div>
     </div>
   );
 }

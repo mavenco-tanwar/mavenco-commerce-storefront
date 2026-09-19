@@ -340,25 +340,26 @@ export function ProductListingView({
           {/* Right Product Grid Area (3 cols) */}
           <main className="lg:col-span-3 space-y-4">
             {/* Top Controls Bar (Sort, Item Count, Mobile Filter Button, Layout Grid toggle) */}
-            <div className="flex items-center justify-between gap-4 p-3 bg-[var(--theme-color-surface-secondary,#FAF6F2)] border border-[var(--theme-color-border,#E8DED8)]">
+            <div className="flex items-center justify-between gap-2 sm:gap-4 p-2.5 sm:p-3 bg-[var(--theme-color-surface-secondary,#FAF6F2)] border border-[var(--theme-color-border,#E8DED8)] rounded-xl">
               {/* Left: Product count & Mobile filter trigger */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   onClick={() => setIsMobileFilterOpen(true)}
-                  className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 bg-[var(--theme-color-primary,#111111)] text-white text-xs uppercase font-bold tracking-wider"
+                  className="lg:hidden flex items-center gap-1.5 px-3 py-2 bg-[var(--theme-color-primary,#111111)] text-white text-xs uppercase font-bold tracking-wider rounded-lg shadow-sm"
                 >
                   <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span>Filter &amp; Sort</span>
+                  <span>Filter</span>
                 </button>
 
-                <span className="text-xs text-[var(--theme-color-text-secondary,#57534E)] font-semibold">
-                  Showing <strong className="text-[var(--theme-color-heading,#111111)]">{products.length}</strong> of{' '}
-                  <strong className="text-[var(--theme-color-heading,#111111)]">{totalCount}</strong> styles
+                <span className="text-[11px] sm:text-xs text-[var(--theme-color-text-secondary,#57534E)] font-semibold">
+                  <span className="hidden sm:inline">Showing </span>
+                  <strong className="text-[var(--theme-color-heading,#111111)]">{products.length}</strong>
+                  <span className="hidden sm:inline"> of <strong className="text-[var(--theme-color-heading,#111111)]">{totalCount}</strong></span> styles
                 </span>
               </div>
 
               {/* Right: Sorting dropdown & Desktop Grid layout switch */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <SortDropdown currentSort={sort} onSortChange={setSort} />
 
                 {/* Desktop Grid Switcher */}

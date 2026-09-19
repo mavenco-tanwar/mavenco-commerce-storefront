@@ -116,7 +116,62 @@ export function ProductImageGallery({
   if (layout === 'grid-2') {
     return (
       <div className="space-y-4 select-none">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Mobile Carousel (< sm) */}
+        <div className="sm:hidden space-y-2">
+          <div className="relative aspect-3/4 w-full bg-[#FAF6F2] border border-[#E8DED8] rounded-2xl overflow-hidden">
+            <Image
+              src={currentImage.url}
+              alt={`${productName} view ${selectedIndex + 1}`}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            {showVideoBadge && (
+              <div className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black/60 backdrop-blur-md text-white border border-white/20 flex items-center gap-1 shadow">
+                <Sparkles className="w-3 h-3 text-rose-400" />
+                <span>Curated Atelier</span>
+              </div>
+            )}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handlePrev}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 text-black flex items-center justify-center shadow cursor-pointer"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 text-black flex items-center justify-center shadow cursor-pointer"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </>
+            )}
+          </div>
+          {images.length > 1 && (
+            <div className="flex items-center justify-center gap-1.5 pt-1">
+              {images.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedIndex(idx)}
+                  className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                    selectedIndex === idx ? 'w-5 bg-rose-600' : 'w-1.5 bg-black/20'
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop & Tablet 2-Column Grid (sm:grid) */}
+        <div className="hidden sm:grid grid-cols-2 gap-3">
           {images.map((img, idx) => (
             <div
               key={idx}

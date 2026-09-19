@@ -28,8 +28,8 @@ export function AccountBlock({ block, accentColor = '#E11D48' }: AccountBlockPro
         className="flex items-center gap-1.5 hover:opacity-75 transition-opacity text-xs font-semibold tracking-wider uppercase select-none group"
         style={{ color: block.styles?.textColor || 'inherit' }}
       >
-        <User className="w-4 h-4 transition-transform group-hover:scale-110" />
-        {showLabel && <span>{label}</span>}
+        <User className="w-4 h-4 transition-transform group-hover:scale-110 shrink-0" />
+        {showLabel && <span className="hidden md:inline">{label}</span>}
       </Link>
     );
   }
@@ -44,11 +44,11 @@ export function AccountBlock({ block, accentColor = '#E11D48' }: AccountBlockPro
         className="flex items-center gap-1.5 hover:opacity-75 transition-opacity text-xs font-semibold tracking-wider uppercase cursor-pointer group"
         style={{ color: block.styles?.textColor || 'inherit' }}
       >
-        <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-800">
+        <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-800 shrink-0">
           {(user?.name || 'U').charAt(0).toUpperCase()}
         </div>
-        {showLabel && <span>{user?.name?.split(' ')[0] || loggedInLabel}</span>}
-        <ChevronDown className="w-3 h-3 opacity-60" />
+        {showLabel && <span className="hidden md:inline">{user?.name?.split(' ')[0] || loggedInLabel}</span>}
+        <ChevronDown className="w-3 h-3 opacity-60 hidden md:inline" />
       </button>
 
       {isOpen && (

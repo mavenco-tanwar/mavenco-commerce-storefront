@@ -45,7 +45,7 @@ export function CartBlock({ block, accentColor = '#E11D48', onOpenCart }: CartBl
           </span>
         )}
       </div>
-      {showLabel && <span>{label}</span>}
+      {showLabel && <span className="hidden sm:inline">{label}</span>}
     </button>
   );
 }

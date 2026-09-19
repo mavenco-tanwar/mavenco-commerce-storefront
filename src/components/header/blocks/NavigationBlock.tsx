@@ -49,7 +49,7 @@ export function NavigationBlock({
   return (
     <nav
       aria-label="Primary Navigation"
-      className="flex items-center justify-center gap-4 lg:gap-6 select-none relative"
+      className="hidden lg:flex items-center justify-center gap-4 lg:gap-6 select-none relative"
       onMouseLeave={() => setActiveMenuId(null)}
     >
       {displayedItems.map((item) => {

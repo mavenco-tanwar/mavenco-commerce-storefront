@@ -70,8 +70,8 @@ export function MiniCartDrawer() {
         className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-300"
       />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-[#FFFDFC] text-slate-900 shadow-2xl flex flex-col justify-between border-l border-[#EFE8E2] animate-in slide-in-from-right duration-300">
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
+        <div className="w-screen max-w-full sm:max-w-md bg-[#FFFDFC] text-slate-900 shadow-2xl flex flex-col justify-between border-l border-[#EFE8E2] animate-in slide-in-from-right duration-300">
           {/* Header */}
           <div className="p-5 border-b border-[#EFE8E2] flex items-center justify-between bg-[#FAF7F5]">
             <div className="flex items-center gap-2.5">
@@ -205,7 +205,7 @@ export function MiniCartDrawer() {
 
           {/* Footer & Checkout CTAs */}
           {items.length > 0 && (
-            <div className="p-5 border-t border-[#EFE8E2] bg-[#FAF7F5] space-y-4">
+            <div className="p-4 sm:p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] border-t border-[#EFE8E2] bg-[#FAF7F5] space-y-4">
               {/* Coupon Form */}
               <form onSubmit={handleApplyCoupon} className="space-y-1.5">
                 <div className="flex items-center gap-2">

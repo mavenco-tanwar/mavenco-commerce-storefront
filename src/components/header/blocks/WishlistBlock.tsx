@@ -36,7 +36,7 @@ export function WishlistBlock({ block, accentColor = '#E11D48' }: WishlistBlockP
           </span>
         )}
       </div>
-      {showLabel && <span>{label}</span>}
+      {showLabel && <span className="hidden sm:inline">{label}</span>}
     </Link>
   );
 }

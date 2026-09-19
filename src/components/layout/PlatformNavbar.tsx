@@ -223,7 +223,7 @@ export function PlatformNavbar() {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-[#0F111A] border-b border-slate-800 p-4 space-y-3">
             <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Live Client Stores</div>
-            <div className="space-y-1">
+            <div className="space-y-1 max-h-56 overflow-y-auto pr-1">
               {demoStores.map((store) => (
                 <Link
                   key={store.slug}

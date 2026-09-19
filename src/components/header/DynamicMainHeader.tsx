@@ -144,8 +144,8 @@ export function DynamicMainHeader({
           className="flex items-center justify-between gap-4 transition-all duration-300"
           style={{ height: `${currentHeight}px` }}
         >
-          {/* Mobile Hamburger Button */}
-          <div className="flex md:hidden items-center shrink-0">
+          {/* Mobile & Tablet Hamburger Button */}
+          <div className="flex lg:hidden items-center shrink-0">
             <button
               type="button"
               onClick={onOpenMobileDrawer}
