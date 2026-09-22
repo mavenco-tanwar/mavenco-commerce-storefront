@@ -197,7 +197,7 @@ export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: Dyn
                           <div key={block.id} className={spanClass}>
                             <FooterBlockRenderer
                               block={block}
-                              tenantSlug={tenantSlug}
+                              tenantSlug={activeTenantSlug}
                               themeAccent={theme?.accentColor || 'var(--footer-accent, #B77A68)'}
                             />
                           </div>
