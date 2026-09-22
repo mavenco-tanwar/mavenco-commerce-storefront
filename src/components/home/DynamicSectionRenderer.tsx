@@ -203,8 +203,45 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
     })
     .sort((a: any, b: any) => (a.order ?? a.displayOrder ?? 0) - (b.order ?? b.displayOrder ?? 0));
 
+  // Dynamically load Google Fonts used by any active section
+  const usedFonts = new Set<string>();
+  activeSections.forEach((sec: any) => {
+    const d = sec?.data || sec?.settings || {};
+    if (d.headingFontFamily) usedFonts.add(d.headingFontFamily);
+    if (d.subtitleFontFamily) usedFonts.add(d.subtitleFontFamily);
+    if (d.badgeFontFamily) usedFonts.add(d.badgeFontFamily);
+    if (d.btnFontFamily) usedFonts.add(d.btnFontFamily);
+  });
+
+  const GOOGLE_FONTS_MAP: Record<string, string> = {
+    'Playfair Display': 'family=Playfair+Display:ital,wght@0,400..900;1,400..900',
+    'Cormorant Garamond': 'family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700',
+    'Cinzel': 'family=Cinzel:wght@400..900',
+    'Bodoni Moda': 'family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900',
+    'Plus Jakarta Sans': 'family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800',
+    'Inter': 'family=Inter:wght@100..900',
+    'Outfit': 'family=Outfit:wght@100..900',
+    'Montserrat': 'family=Montserrat:ital,wght@0,100..900;1,100..900',
+    'Syne': 'family=Syne:wght@400..800',
+    'Space Grotesk': 'family=Space+Grotesk:wght@300..700',
+    'Pinyon Script': 'family=Pinyon+Script',
+    'Great Vibes': 'family=Great+Vibes',
+  };
+
+  const fontQueries = Array.from(usedFonts)
+    .map((f) => GOOGLE_FONTS_MAP[f] || `family=${encodeURIComponent(f)}:wght@400;600;700`)
+    .filter(Boolean);
+
+  const googleFontsUrl =
+    fontQueries.length > 0
+      ? `https://fonts.googleapis.com/css2?${fontQueries.join('&')}&display=swap`
+      : null;
+
   return (
     <>
+      {googleFontsUrl && (
+        <link rel="stylesheet" href={googleFontsUrl} />
+      )}
       {activeSections.map((section: any) => {
         const sData = section.data || section.settings || {};
         const title = sData.heading || sData.title || section.name || section.title;
@@ -308,6 +345,36 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                   secondaryBtnColor: sData.secondaryBtnColor,
                   secondaryBtnTextColor: sData.secondaryBtnTextColor,
 
+                  // Typography Customization
+                  headingFontFamily: sData.headingFontFamily,
+                  headingColor: sData.headingColor,
+                  headingFontSize: sData.headingFontSize,
+                  headingFontWeight: sData.headingFontWeight,
+                  headingLetterSpacing: sData.headingLetterSpacing,
+                  headingLineHeight: sData.headingLineHeight,
+                  headingTextTransform: sData.headingTextTransform,
+
+                  subtitleFontFamily: sData.subtitleFontFamily,
+                  subtitleColor: sData.subtitleColor,
+                  subtitleFontSize: sData.subtitleFontSize,
+                  subtitleFontWeight: sData.subtitleFontWeight,
+                  subtitleLetterSpacing: sData.subtitleLetterSpacing,
+                  subtitleLineHeight: sData.subtitleLineHeight,
+
+                  badgeFontFamily: sData.badgeFontFamily,
+                  badgeColor: sData.badgeColor,
+                  badgeBgColor: sData.badgeBgColor,
+                  badgeFontSize: sData.badgeFontSize,
+                  badgeFontWeight: sData.badgeFontWeight,
+                  badgeLetterSpacing: sData.badgeLetterSpacing,
+                  badgeTextTransform: sData.badgeTextTransform,
+
+                  btnFontFamily: sData.btnFontFamily,
+                  btnFontSize: sData.btnFontSize,
+                  btnFontWeight: sData.btnFontWeight,
+                  btnLetterSpacing: sData.btnLetterSpacing,
+                  btnTextTransform: sData.btnTextTransform,
+
                   // Multi-Slide Carousel Data
                   slides: Array.isArray(sData.slides) ? sData.slides : undefined,
                   autoplay: sData.autoplay !== false,
@@ -343,6 +410,31 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 paddingBottom={sData.paddingBottom || styles?.paddingBottom}
                 bgColor={sData.bgColor || styles?.backgroundColor}
                 textColor={sData.textColor || styles?.color}
+                headingFontFamily={sData.headingFontFamily}
+                headingColor={sData.headingColor}
+                headingFontSize={sData.headingFontSize}
+                headingFontWeight={sData.headingFontWeight}
+                headingLetterSpacing={sData.headingLetterSpacing}
+                headingLineHeight={sData.headingLineHeight}
+                headingTextTransform={sData.headingTextTransform}
+                subtitleFontFamily={sData.subtitleFontFamily}
+                subtitleColor={sData.subtitleColor}
+                subtitleFontSize={sData.subtitleFontSize}
+                subtitleFontWeight={sData.subtitleFontWeight}
+                subtitleLetterSpacing={sData.subtitleLetterSpacing}
+                subtitleLineHeight={sData.subtitleLineHeight}
+                badgeFontFamily={sData.badgeFontFamily}
+                badgeColor={sData.badgeColor}
+                badgeBgColor={sData.badgeBgColor}
+                badgeFontSize={sData.badgeFontSize}
+                badgeFontWeight={sData.badgeFontWeight}
+                badgeLetterSpacing={sData.badgeLetterSpacing}
+                badgeTextTransform={sData.badgeTextTransform}
+                btnFontFamily={sData.btnFontFamily}
+                btnFontSize={sData.btnFontSize}
+                btnFontWeight={sData.btnFontWeight}
+                btnLetterSpacing={sData.btnLetterSpacing}
+                btnTextTransform={sData.btnTextTransform}
                 customCtaText={sData.primaryBtnText || sData.ctaText || sData.primaryCtaText || 'Explore All'}
                 customCtaUrl={sData.primaryBtnLink || sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
                 tenantSlug={resolvedTenant}
@@ -797,6 +889,55 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
           if (mobile === false) deviceVisibilityClass += ' max-md:hidden';
         }
 
+        // Universal Typography scoped CSS generator
+        const secSelector = `[id="section-${section.id}"]`;
+        let scopedCss = '';
+
+        const headingRules: string[] = [];
+        if (sData.headingFontFamily) headingRules.push(`font-family: "${sData.headingFontFamily}", serif !important;`);
+        if (sData.headingColor) headingRules.push(`color: ${sData.headingColor} !important;`);
+        if (sData.headingFontSize) headingRules.push(`font-size: ${sData.headingFontSize} !important;`);
+        if (sData.headingFontWeight) headingRules.push(`font-weight: ${sData.headingFontWeight} !important;`);
+        if (sData.headingLetterSpacing) headingRules.push(`letter-spacing: ${sData.headingLetterSpacing} !important;`);
+        if (sData.headingLineHeight) headingRules.push(`line-height: ${sData.headingLineHeight} !important;`);
+        if (sData.headingTextTransform) headingRules.push(`text-transform: ${sData.headingTextTransform} !important;`);
+        if (headingRules.length > 0) {
+          scopedCss += `${secSelector} h1, ${secSelector} h2, ${secSelector} h3, ${secSelector} [data-typography="heading"] { ${headingRules.join(' ')} }\n`;
+        }
+
+        const subtitleRules: string[] = [];
+        if (sData.subtitleFontFamily) subtitleRules.push(`font-family: "${sData.subtitleFontFamily}", sans-serif !important;`);
+        if (sData.subtitleColor) subtitleRules.push(`color: ${sData.subtitleColor} !important;`);
+        if (sData.subtitleFontSize) subtitleRules.push(`font-size: ${sData.subtitleFontSize} !important;`);
+        if (sData.subtitleFontWeight) subtitleRules.push(`font-weight: ${sData.subtitleFontWeight} !important;`);
+        if (sData.subtitleLetterSpacing) subtitleRules.push(`letter-spacing: ${sData.subtitleLetterSpacing} !important;`);
+        if (sData.subtitleLineHeight) subtitleRules.push(`line-height: ${sData.subtitleLineHeight} !important;`);
+        if (subtitleRules.length > 0) {
+          scopedCss += `${secSelector} p:not(button p), ${secSelector} [data-typography="subtitle"] { ${subtitleRules.join(' ')} }\n`;
+        }
+
+        const badgeRules: string[] = [];
+        if (sData.badgeFontFamily) badgeRules.push(`font-family: "${sData.badgeFontFamily}", sans-serif !important;`);
+        if (sData.badgeColor) badgeRules.push(`color: ${sData.badgeColor} !important;`);
+        if (sData.badgeBgColor) badgeRules.push(`background-color: ${sData.badgeBgColor} !important;`);
+        if (sData.badgeFontSize) badgeRules.push(`font-size: ${sData.badgeFontSize} !important;`);
+        if (sData.badgeFontWeight) badgeRules.push(`font-weight: ${sData.badgeFontWeight} !important;`);
+        if (sData.badgeLetterSpacing) badgeRules.push(`letter-spacing: ${sData.badgeLetterSpacing} !important;`);
+        if (sData.badgeTextTransform) badgeRules.push(`text-transform: ${sData.badgeTextTransform} !important;`);
+        if (badgeRules.length > 0) {
+          scopedCss += `${secSelector} span.uppercase, ${secSelector} [data-typography="badge"] { ${badgeRules.join(' ')} }\n`;
+        }
+
+        const btnRules: string[] = [];
+        if (sData.btnFontFamily) btnRules.push(`font-family: "${sData.btnFontFamily}", sans-serif !important;`);
+        if (sData.btnFontSize) btnRules.push(`font-size: ${sData.btnFontSize} !important;`);
+        if (sData.btnFontWeight) btnRules.push(`font-weight: ${sData.btnFontWeight} !important;`);
+        if (sData.btnLetterSpacing) btnRules.push(`letter-spacing: ${sData.btnLetterSpacing} !important;`);
+        if (sData.btnTextTransform) btnRules.push(`text-transform: ${sData.btnTextTransform} !important;`);
+        if (btnRules.length > 0) {
+          scopedCss += `${secSelector} button, ${secSelector} .btn, ${secSelector} [data-typography="button"] { ${btnRules.join(' ')} }\n`;
+        }
+
         // Wrap each section with dynamic CSS variables and section styles configured in Visual Theme Studio
         const sectionStyle: React.CSSProperties = {
           backgroundColor: styles.backgroundColor || sData.bgColor,
@@ -810,6 +951,13 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
           ['--section-accent' as any]: styles.accentColor || 'var(--theme-color-accent, #B77A68)',
           ['--section-pt' as any]: styles.paddingTop || sData.paddingTop || '0px',
           ['--section-pb' as any]: styles.paddingBottom || sData.paddingBottom || '0px',
+          ['--sec-heading-font' as any]: sData.headingFontFamily ? `"${sData.headingFontFamily}", serif` : undefined,
+          ['--sec-heading-color' as any]: sData.headingColor || undefined,
+          ['--sec-subtitle-font' as any]: sData.subtitleFontFamily ? `"${sData.subtitleFontFamily}", sans-serif` : undefined,
+          ['--sec-subtitle-color' as any]: sData.subtitleColor || undefined,
+          ['--sec-badge-font' as any]: sData.badgeFontFamily ? `"${sData.badgeFontFamily}", sans-serif` : undefined,
+          ['--sec-badge-color' as any]: sData.badgeColor || undefined,
+          ['--sec-btn-font' as any]: sData.btnFontFamily ? `"${sData.btnFontFamily}", sans-serif` : undefined,
         };
 
         return (
@@ -821,6 +969,9 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
               className={`w-full relative transition-colors duration-200 ${deviceVisibilityClass} ${section.className || ''}`}
               style={sectionStyle}
             >
+              {scopedCss && (
+                <style dangerouslySetInnerHTML={{ __html: scopedCss }} />
+              )}
               {sectionElement}
             </div>
           </SectionErrorBoundary>

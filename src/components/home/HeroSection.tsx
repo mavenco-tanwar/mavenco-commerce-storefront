@@ -69,6 +69,36 @@ export interface HeroSectionProps {
     showArrows?: boolean;
     showDots?: boolean;
     pauseOnHover?: boolean;
+
+    // Typography Customization
+    headingFontFamily?: string;
+    headingColor?: string;
+    headingFontSize?: string;
+    headingFontWeight?: string;
+    headingLetterSpacing?: string;
+    headingLineHeight?: string;
+    headingTextTransform?: string;
+
+    subtitleFontFamily?: string;
+    subtitleColor?: string;
+    subtitleFontSize?: string;
+    subtitleFontWeight?: string;
+    subtitleLetterSpacing?: string;
+    subtitleLineHeight?: string;
+
+    badgeFontFamily?: string;
+    badgeColor?: string;
+    badgeBgColor?: string;
+    badgeFontSize?: string;
+    badgeFontWeight?: string;
+    badgeLetterSpacing?: string;
+    badgeTextTransform?: string;
+
+    btnFontFamily?: string;
+    btnFontSize?: string;
+    btnFontWeight?: string;
+    btnLetterSpacing?: string;
+    btnTextTransform?: string;
   };
   tenantSlug?: string;
 }
@@ -171,16 +201,59 @@ export function HeroSection({
     return `flex ${direction} items-center ${align} gap-3 pt-4`;
   };
 
+  const headingCustomStyle: React.CSSProperties = {
+    fontFamily: s.headingFontFamily ? `"${s.headingFontFamily}", serif` : undefined,
+    color: s.headingColor || undefined,
+    fontSize: s.headingFontSize || undefined,
+    fontWeight: s.headingFontWeight || undefined,
+    letterSpacing: s.headingLetterSpacing || undefined,
+    lineHeight: s.headingLineHeight || undefined,
+    textTransform: (s.headingTextTransform as any) || undefined,
+  };
+
+  const subtitleCustomStyle: React.CSSProperties = {
+    fontFamily: s.subtitleFontFamily ? `"${s.subtitleFontFamily}", sans-serif` : undefined,
+    color: s.subtitleColor || undefined,
+    fontSize: s.subtitleFontSize || undefined,
+    fontWeight: s.subtitleFontWeight || undefined,
+    letterSpacing: s.subtitleLetterSpacing || undefined,
+    lineHeight: s.subtitleLineHeight || undefined,
+  };
+
+  const badgeWrapperCustomStyle: React.CSSProperties = {
+    backgroundColor: s.badgeBgColor || undefined,
+    borderColor: s.badgeColor ? `${s.badgeColor}50` : undefined,
+  };
+
+  const badgeCustomStyle: React.CSSProperties = {
+    fontFamily: s.badgeFontFamily ? `"${s.badgeFontFamily}", sans-serif` : undefined,
+    color: s.badgeColor || undefined,
+    fontSize: s.badgeFontSize || undefined,
+    fontWeight: s.badgeFontWeight || undefined,
+    letterSpacing: s.badgeLetterSpacing || undefined,
+    textTransform: (s.badgeTextTransform as any) || undefined,
+  };
+
   const primaryBtnCustomStyle: React.CSSProperties = {
     borderRadius: s.btnBorderRadius || undefined,
     backgroundColor: s.primaryBtnColor || undefined,
     color: s.primaryBtnTextColor || undefined,
+    fontFamily: s.btnFontFamily ? `"${s.btnFontFamily}", sans-serif` : undefined,
+    fontSize: s.btnFontSize || undefined,
+    fontWeight: s.btnFontWeight || undefined,
+    letterSpacing: s.btnLetterSpacing || undefined,
+    textTransform: (s.btnTextTransform as any) || undefined,
   };
 
   const secondaryBtnCustomStyle: React.CSSProperties = {
     borderRadius: s.btnBorderRadius || undefined,
     backgroundColor: s.secondaryBtnColor || undefined,
     color: s.secondaryBtnTextColor || undefined,
+    fontFamily: s.btnFontFamily ? `"${s.btnFontFamily}", sans-serif` : undefined,
+    fontSize: s.btnFontSize || undefined,
+    fontWeight: s.btnFontWeight || undefined,
+    letterSpacing: s.btnLetterSpacing || undefined,
+    textTransform: (s.btnTextTransform as any) || undefined,
   };
 
   // 1. MULTI-SLIDE CAROUSEL / SLIDER HERO
@@ -241,20 +314,32 @@ export function HeroSection({
             key={`content-${currentSlideIndex}`}
           >
             {activeSlide.tagline && (
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 shadow-xs rounded-full">
-                <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" />
-                <span className="text-[11px] uppercase font-bold tracking-widest text-[#E8B8B5]">
+              <div
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 shadow-xs rounded-full"
+                style={badgeWrapperCustomStyle}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" style={s.badgeColor ? { color: s.badgeColor } : undefined} />
+                <span
+                  className="text-[11px] uppercase font-bold tracking-widest text-[#E8B8B5]"
+                  style={badgeCustomStyle}
+                >
                   {activeSlide.tagline}
                 </span>
               </div>
             )}
 
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-serif font-bold text-white leading-[1.1] tracking-tight max-w-3xl drop-shadow-md">
+            <h1
+              className="text-4xl sm:text-5xl lg:text-7xl font-serif font-bold text-white leading-[1.1] tracking-tight max-w-3xl drop-shadow-md"
+              style={headingCustomStyle}
+            >
               {activeSlide.title}
             </h1>
 
             {activeSlide.subtitle && (
-              <p className="text-sm sm:text-base md:text-lg text-slate-200 max-w-2xl font-sans leading-relaxed drop-shadow-sm">
+              <p
+                className="text-sm sm:text-base md:text-lg text-slate-200 max-w-2xl font-sans leading-relaxed drop-shadow-sm"
+                style={subtitleCustomStyle}
+              >
                 {activeSlide.subtitle}
               </p>
             )}
@@ -385,20 +470,32 @@ export function HeroSection({
           } py-20 md:py-28 space-y-6 flex flex-col ${getPlacementClass(buttonPlacement)}`}
         >
           {activeSlide.tagline && (
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 shadow-xs rounded-full">
-              <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" />
-              <span className="text-[11px] uppercase font-bold tracking-widest text-[#E8B8B5]">
+            <div
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/10 backdrop-blur-md border border-white/20 shadow-xs rounded-full"
+              style={badgeWrapperCustomStyle}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" style={s.badgeColor ? { color: s.badgeColor } : undefined} />
+              <span
+                className="text-[11px] uppercase font-bold tracking-widest text-[#E8B8B5]"
+                style={badgeCustomStyle}
+              >
                 {activeSlide.tagline}
               </span>
             </div>
           )}
 
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-serif font-bold text-white leading-[1.1] tracking-tight">
+          <h1
+            className="text-4xl sm:text-5xl lg:text-7xl font-serif font-bold text-white leading-[1.1] tracking-tight"
+            style={headingCustomStyle}
+          >
             {activeSlide.title}
           </h1>
 
           {activeSlide.subtitle && (
-            <p className="text-sm sm:text-base md:text-lg text-slate-200 max-w-2xl font-sans leading-relaxed">
+            <p
+              className="text-sm sm:text-base md:text-lg text-slate-200 max-w-2xl font-sans leading-relaxed"
+              style={subtitleCustomStyle}
+            >
               {activeSlide.subtitle}
             </p>
           )}
@@ -458,15 +555,24 @@ export function HeroSection({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-6 space-y-6">
               {activeSlide.tagline && (
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#111111]/5 border border-[#111111]/10 rounded-full text-xs font-bold uppercase tracking-widest text-[#B77A68]">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{activeSlide.tagline}</span>
+                <div
+                  className="inline-flex items-center gap-2 px-3 py-1 bg-[#111111]/5 border border-[#111111]/10 rounded-full text-xs font-bold uppercase tracking-widest text-[#B77A68]"
+                  style={badgeWrapperCustomStyle}
+                >
+                  <Sparkles className="w-3.5 h-3.5" style={s.badgeColor ? { color: s.badgeColor } : undefined} />
+                  <span style={badgeCustomStyle}>{activeSlide.tagline}</span>
                 </div>
               )}
-              <h1 className="text-4xl sm:text-6xl font-serif font-black tracking-tight text-[#111111] leading-[1.08]">
+              <h1
+                className="text-4xl sm:text-6xl font-serif font-black tracking-tight text-[#111111] leading-[1.08]"
+                style={headingCustomStyle}
+              >
                 {activeSlide.title}
               </h1>
-              <p className="text-sm sm:text-base text-[#57534E] leading-relaxed max-w-lg">
+              <p
+                className="text-sm sm:text-base text-[#57534E] leading-relaxed max-w-lg"
+                style={subtitleCustomStyle}
+              >
                 {activeSlide.subtitle}
               </p>
               <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
@@ -574,16 +680,25 @@ export function HeroSection({
             } ${isSplitLeft ? 'order-1 lg:order-2' : ''}`}
           >
             {activeSlide.tagline && (
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FFFDFC] border border-[#E8DED8] shadow-xs rounded-full">
-                <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" />
-                <span className="text-[11px] uppercase font-bold tracking-widest text-[#111111]">
+              <div
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FFFDFC] border border-[#E8DED8] shadow-xs rounded-full"
+                style={badgeWrapperCustomStyle}
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" style={s.badgeColor ? { color: s.badgeColor } : undefined} />
+                <span
+                  className="text-[11px] uppercase font-bold tracking-widest text-[#111111]"
+                  style={badgeCustomStyle}
+                >
                   {activeSlide.tagline}
                 </span>
               </div>
             )}
 
             <div className="space-y-2">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#111111] leading-[1.12] tracking-tight">
+              <h1
+                className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#111111] leading-[1.12] tracking-tight"
+                style={headingCustomStyle}
+              >
                 {activeSlide.title?.includes('You') ? (
                   <>
                     {activeSlide.title.replace(/You/g, '')}
@@ -594,9 +709,12 @@ export function HeroSection({
                 )}
               </h1>
               {activeSlide.subtitle && (
-                <p className={`text-sm sm:text-base text-[#777777] max-w-xl ${
-                  buttonPlacement === 'center' ? 'mx-auto' : buttonPlacement === 'right' ? 'ml-auto' : ''
-                } font-sans leading-relaxed`}>
+                <p
+                  className={`text-sm sm:text-base text-[#777777] max-w-xl ${
+                    buttonPlacement === 'center' ? 'mx-auto' : buttonPlacement === 'right' ? 'ml-auto' : ''
+                  } font-sans leading-relaxed`}
+                  style={subtitleCustomStyle}
+                >
                   {activeSlide.subtitle}
                 </p>
               )}

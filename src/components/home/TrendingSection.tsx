@@ -25,6 +25,35 @@ interface TrendingSectionProps {
   paddingBottom?: string;
   bgColor?: string;
   textColor?: string;
+  // Typography
+  headingFontFamily?: string;
+  headingColor?: string;
+  headingFontSize?: string;
+  headingFontWeight?: string;
+  headingLetterSpacing?: string;
+  headingLineHeight?: string;
+  headingTextTransform?: string;
+
+  subtitleFontFamily?: string;
+  subtitleColor?: string;
+  subtitleFontSize?: string;
+  subtitleFontWeight?: string;
+  subtitleLetterSpacing?: string;
+  subtitleLineHeight?: string;
+
+  badgeFontFamily?: string;
+  badgeColor?: string;
+  badgeBgColor?: string;
+  badgeFontSize?: string;
+  badgeFontWeight?: string;
+  badgeLetterSpacing?: string;
+  badgeTextTransform?: string;
+
+  btnFontFamily?: string;
+  btnFontSize?: string;
+  btnFontWeight?: string;
+  btnLetterSpacing?: string;
+  btnTextTransform?: string;
   tenantSlug?: string;
 }
 
@@ -44,6 +73,31 @@ export function TrendingSection({
   paddingBottom,
   bgColor,
   textColor,
+  headingFontFamily,
+  headingColor,
+  headingFontSize,
+  headingFontWeight,
+  headingLetterSpacing,
+  headingLineHeight,
+  headingTextTransform,
+  subtitleFontFamily,
+  subtitleColor,
+  subtitleFontSize,
+  subtitleFontWeight,
+  subtitleLetterSpacing,
+  subtitleLineHeight,
+  badgeFontFamily,
+  badgeColor,
+  badgeBgColor,
+  badgeFontSize,
+  badgeFontWeight,
+  badgeLetterSpacing,
+  badgeTextTransform,
+  btnFontFamily,
+  btnFontSize,
+  btnFontWeight,
+  btnLetterSpacing,
+  btnTextTransform,
   tenantSlug,
 }: TrendingSectionProps = {}) {
   const [products, setProducts] = useState<Product[]>([]);
@@ -62,6 +116,43 @@ export function TrendingSection({
   const title = customTitle || 'Trending Now';
   const subtitle = customSubtitle || 'Styles everyone is talking about this season.';
   const badge = customBadge || 'Featured Catalog';
+
+  const headingStyle: React.CSSProperties = {
+    fontFamily: headingFontFamily ? `"${headingFontFamily}", serif` : undefined,
+    color: headingColor || textColor || undefined,
+    fontSize: headingFontSize || undefined,
+    fontWeight: headingFontWeight || undefined,
+    letterSpacing: headingLetterSpacing || undefined,
+    lineHeight: headingLineHeight || undefined,
+    textTransform: (headingTextTransform as any) || undefined,
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    fontFamily: subtitleFontFamily ? `"${subtitleFontFamily}", sans-serif` : undefined,
+    color: subtitleColor || (textColor ? `${textColor}cc` : undefined),
+    fontSize: subtitleFontSize || undefined,
+    fontWeight: subtitleFontWeight || undefined,
+    letterSpacing: subtitleLetterSpacing || undefined,
+    lineHeight: subtitleLineHeight || undefined,
+  };
+
+  const badgeStyle: React.CSSProperties = {
+    fontFamily: badgeFontFamily ? `"${badgeFontFamily}", sans-serif` : undefined,
+    color: badgeColor || undefined,
+    backgroundColor: badgeBgColor || undefined,
+    fontSize: badgeFontSize || undefined,
+    fontWeight: badgeFontWeight || undefined,
+    letterSpacing: badgeLetterSpacing || undefined,
+    textTransform: (badgeTextTransform as any) || undefined,
+  };
+
+  const btnStyle: React.CSSProperties = {
+    fontFamily: btnFontFamily ? `"${btnFontFamily}", sans-serif` : undefined,
+    fontSize: btnFontSize || undefined,
+    fontWeight: btnFontWeight || undefined,
+    letterSpacing: btnLetterSpacing || undefined,
+    textTransform: (btnTextTransform as any) || undefined,
+  };
 
   useEffect(() => {
     async function loadProducts() {
@@ -120,14 +211,14 @@ export function TrendingSection({
         {/* Header strictly following contentAlign */}
         {contentAlign === 'center' ? (
           <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-12">
-            <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
+            <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]" style={badgeStyle}>
               {badge}
             </span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1" style={{ color: textColor || undefined }}>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1" style={headingStyle}>
               {title}
             </h2>
             <div className="w-12 h-0.5 bg-[#B77A68] mx-auto my-3" />
-            <p className="text-xs sm:text-sm text-[#777777] font-sans" style={{ color: textColor ? `${textColor}cc` : undefined }}>
+            <p className="text-xs sm:text-sm text-[#777777] font-sans" style={subtitleStyle}>
               {subtitle}
             </p>
 
@@ -167,13 +258,13 @@ export function TrendingSection({
           </div>
         ) : contentAlign === 'right' ? (
           <div className="flex flex-col items-end text-right max-w-2xl ml-auto mb-12">
-            <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
+            <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]" style={badgeStyle}>
               {badge}
             </span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1" style={{ color: textColor || undefined }}>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1" style={headingStyle}>
               {title}
             </h2>
-            <p className="text-xs sm:text-sm text-[#777777] mt-1 font-sans" style={{ color: textColor ? `${textColor}cc` : undefined }}>
+            <p className="text-xs sm:text-sm text-[#777777] mt-1 font-sans" style={subtitleStyle}>
               {subtitle}
             </p>
 
@@ -214,13 +305,13 @@ export function TrendingSection({
         ) : (
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-              <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
+              <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]" style={badgeStyle}>
                 {badge}
               </span>
-              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1" style={{ color: textColor || undefined }}>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1" style={headingStyle}>
                 {title}
               </h2>
-              <p className="text-xs sm:text-sm text-[#777777] mt-1 font-sans" style={{ color: textColor ? `${textColor}cc` : undefined }}>
+              <p className="text-xs sm:text-sm text-[#777777] mt-1 font-sans" style={subtitleStyle}>
                 {subtitle}
               </p>
             </div>
@@ -277,6 +368,7 @@ export function TrendingSection({
             <Button
               variant="outline"
               size="lg"
+              style={btnStyle}
               className="min-w-[200px] group cursor-pointer"
             >
               <span>{customCtaText}</span>
