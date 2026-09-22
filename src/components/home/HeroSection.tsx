@@ -16,6 +16,8 @@ export interface HeroSlide {
   primaryBtnLink?: string;
   secondaryBtnText?: string;
   secondaryBtnLink?: string;
+  tertiaryBtnText?: string;
+  tertiaryBtnLink?: string;
   desktopImage?: string;
   mobileImage?: string;
   overlayOpacity?: number;
@@ -61,6 +63,11 @@ export interface HeroSectionProps {
     secondaryBtnVariant?: string;
     secondaryBtnColor?: string;
     secondaryBtnTextColor?: string;
+    tertiaryBtnText?: string;
+    tertiaryBtnLink?: string;
+    tertiaryBtnVariant?: string;
+    tertiaryBtnColor?: string;
+    tertiaryBtnTextColor?: string;
 
     // Multi-Slide Carousel Controls
     slides?: HeroSlide[];
@@ -123,6 +130,8 @@ export function HeroSection({
     primaryBtnLink: s.primaryBtnLink || '/collections',
     secondaryBtnText: s.secondaryBtnText || 'Explore Lookbook',
     secondaryBtnLink: s.secondaryBtnLink || '/about',
+    tertiaryBtnText: s.tertiaryBtnText,
+    tertiaryBtnLink: s.tertiaryBtnLink,
     desktopImage:
       s.desktopImage ||
       'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop',
@@ -143,6 +152,8 @@ export function HeroSection({
           primaryBtnLink: sl.primaryBtnLink || s.primaryBtnLink || defaultSlide.primaryBtnLink,
           secondaryBtnText: sl.secondaryBtnText || s.secondaryBtnText,
           secondaryBtnLink: sl.secondaryBtnLink || s.secondaryBtnLink,
+          tertiaryBtnText: sl.tertiaryBtnText || s.tertiaryBtnText,
+          tertiaryBtnLink: sl.tertiaryBtnLink || s.tertiaryBtnLink,
           desktopImage: sl.desktopImage || s.desktopImage || defaultSlide.desktopImage,
           mobileImage: sl.mobileImage || s.mobileImage,
           overlayOpacity: sl.overlayOpacity !== undefined ? sl.overlayOpacity : (s.overlayOpacity !== undefined ? s.overlayOpacity : 45),
@@ -249,6 +260,17 @@ export function HeroSection({
     borderRadius: s.btnBorderRadius || undefined,
     backgroundColor: s.secondaryBtnColor || undefined,
     color: s.secondaryBtnTextColor || undefined,
+    fontFamily: s.btnFontFamily ? `"${s.btnFontFamily}", sans-serif` : undefined,
+    fontSize: s.btnFontSize || undefined,
+    fontWeight: s.btnFontWeight || undefined,
+    letterSpacing: s.btnLetterSpacing || undefined,
+    textTransform: (s.btnTextTransform as any) || undefined,
+  };
+
+  const tertiaryBtnCustomStyle: React.CSSProperties = {
+    borderRadius: s.btnBorderRadius || undefined,
+    backgroundColor: s.tertiaryBtnColor || undefined,
+    color: s.tertiaryBtnTextColor || undefined,
     fontFamily: s.btnFontFamily ? `"${s.btnFontFamily}", sans-serif` : undefined,
     fontSize: s.btnFontSize || undefined,
     fontWeight: s.btnFontWeight || undefined,
@@ -375,6 +397,22 @@ export function HeroSection({
                     className="w-full sm:w-auto min-w-[170px] border-white text-white hover:bg-white hover:text-black cursor-pointer"
                   >
                     {activeSlide.secondaryBtnText}
+                  </Button>
+                </Link>
+              )}
+
+              {activeSlide.tertiaryBtnText && (
+                <Link
+                  href={formatTenantHref(activeSlide.tertiaryBtnLink || '/contact', tenantSlug)}
+                  className="w-full sm:w-auto"
+                >
+                  <Button
+                    variant={(s.tertiaryBtnVariant as any) || 'outline'}
+                    size="lg"
+                    style={tertiaryBtnCustomStyle}
+                    className="w-full sm:w-auto min-w-[170px] border-white/60 text-white hover:bg-white/20 cursor-pointer"
+                  >
+                    {activeSlide.tertiaryBtnText}
                   </Button>
                 </Link>
               )}
@@ -533,6 +571,22 @@ export function HeroSection({
                 </Button>
               </Link>
             )}
+
+            {activeSlide.tertiaryBtnText && (
+              <Link
+                href={formatTenantHref(activeSlide.tertiaryBtnLink || '/contact', tenantSlug)}
+                className="w-full sm:w-auto"
+              >
+                <Button
+                  variant={(s.tertiaryBtnVariant as any) || 'outline'}
+                  size="lg"
+                  style={tertiaryBtnCustomStyle}
+                  className="w-full sm:w-auto min-w-[170px] border-white/60 text-white hover:bg-white/20 cursor-pointer"
+                >
+                  {activeSlide.tertiaryBtnText}
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -602,6 +656,21 @@ export function HeroSection({
                       className="w-full sm:w-auto min-w-[160px] cursor-pointer"
                     >
                       {activeSlide.secondaryBtnText}
+                    </Button>
+                  </Link>
+                )}
+                {activeSlide.tertiaryBtnText && (
+                  <Link
+                    href={formatTenantHref(activeSlide.tertiaryBtnLink || '/contact', tenantSlug)}
+                    className="w-full sm:w-auto"
+                  >
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      style={tertiaryBtnCustomStyle}
+                      className="w-full sm:w-auto min-w-[160px] cursor-pointer"
+                    >
+                      {activeSlide.tertiaryBtnText}
                     </Button>
                   </Link>
                 )}
@@ -751,6 +820,22 @@ export function HeroSection({
                     className="w-full sm:w-auto min-w-[170px] cursor-pointer"
                   >
                     {activeSlide.secondaryBtnText}
+                  </Button>
+                </Link>
+              )}
+
+              {activeSlide.tertiaryBtnText && (
+                <Link
+                  href={formatTenantHref(activeSlide.tertiaryBtnLink || '/contact', tenantSlug)}
+                  className="w-full sm:w-auto"
+                >
+                  <Button
+                    variant={(s.tertiaryBtnVariant as any) || 'outline'}
+                    size="lg"
+                    style={tertiaryBtnCustomStyle}
+                    className="w-full sm:w-auto min-w-[170px] border-[#111111]/40 text-[#111111] hover:bg-[#111111]/10 cursor-pointer"
+                  >
+                    {activeSlide.tertiaryBtnText}
                   </Button>
                 </Link>
               )}

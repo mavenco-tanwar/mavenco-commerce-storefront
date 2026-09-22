@@ -318,8 +318,10 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                   tagline: badge,
                   primaryBtnText: sData.primaryBtnText || sData.primaryCtaText || sData.ctaText || 'Shop Collection',
                   primaryBtnLink: sData.primaryBtnLink || sData.primaryCtaUrl || sData.ctaUrl || '/collections',
-                  secondaryBtnText: sData.secondaryBtnText || sData.secondaryCtaText,
-                  secondaryBtnLink: sData.secondaryBtnLink || sData.secondaryCtaUrl || '/about',
+                  secondaryBtnText: sData.secondaryBtnText || sData.secondaryCtaText || sData.btn2Text,
+                  secondaryBtnLink: sData.secondaryBtnLink || sData.secondaryCtaUrl || sData.btn2Link || '/about',
+                  tertiaryBtnText: sData.tertiaryBtnText || sData.tertiaryCtaText || sData.btn3Text,
+                  tertiaryBtnLink: sData.tertiaryBtnLink || sData.tertiaryCtaUrl || sData.btn3Link || '/contact',
                   desktopImage: image,
                   mobileImage: sData.mobileImage || image,
                   overlayOpacity: typeof sData.overlayOpacity === 'number' ? (sData.overlayOpacity <= 1 ? sData.overlayOpacity * 100 : sData.overlayOpacity) : 45,
@@ -344,6 +346,9 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                   secondaryBtnVariant: sData.secondaryBtnVariant,
                   secondaryBtnColor: sData.secondaryBtnColor,
                   secondaryBtnTextColor: sData.secondaryBtnTextColor,
+                  tertiaryBtnVariant: sData.tertiaryBtnVariant,
+                  tertiaryBtnColor: sData.tertiaryBtnColor,
+                  tertiaryBtnTextColor: sData.tertiaryBtnTextColor,
 
                   // Typography Customization
                   headingFontFamily: sData.headingFontFamily,
@@ -535,13 +540,19 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customImage={image}
                 customPrimaryCtaText={sData.btnText || sData.ctaText || sData.primaryCtaText || 'Claim Privilege'}
                 customPrimaryCtaUrl={sData.btnLink || sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
-                customSecondaryCtaText={sData.secondaryBtnText}
-                customSecondaryCtaUrl={sData.secondaryBtnLink}
+                customSecondaryCtaText={sData.secondaryBtnText || sData.secondaryCtaText || sData.btn2Text}
+                customSecondaryCtaUrl={sData.secondaryBtnLink || sData.secondaryCtaUrl || sData.btn2Link}
+                customTertiaryCtaText={sData.tertiaryBtnText || sData.tertiaryCtaText || sData.btn3Text}
+                customTertiaryCtaUrl={sData.tertiaryBtnLink || sData.tertiaryCtaUrl || sData.btn3Link}
                 contentAlign={sData.contentAlign || sData.textAlignment || 'center'}
                 containerWidth={sData.containerWidth || 'contained'}
                 bannerHeight={sData.bannerHeight || 'medium'}
                 primaryBtnColor={sData.primaryBtnColor}
                 primaryBtnTextColor={sData.primaryBtnTextColor}
+                secondaryBtnColor={sData.secondaryBtnColor}
+                secondaryBtnTextColor={sData.secondaryBtnTextColor}
+                tertiaryBtnColor={sData.tertiaryBtnColor}
+                tertiaryBtnTextColor={sData.tertiaryBtnTextColor}
                 bgColor={sData.bgColor || styles?.backgroundColor}
                 textColor={sData.textColor || styles?.color}
                 paddingTop={sData.paddingTop || styles?.paddingTop}

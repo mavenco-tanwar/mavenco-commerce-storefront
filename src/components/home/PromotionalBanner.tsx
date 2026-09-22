@@ -14,11 +14,17 @@ interface PromotionalBannerProps {
   customPrimaryCtaUrl?: string;
   customSecondaryCtaText?: string;
   customSecondaryCtaUrl?: string;
+  customTertiaryCtaText?: string;
+  customTertiaryCtaUrl?: string;
   contentAlign?: 'left' | 'center' | 'right';
   containerWidth?: 'contained' | 'full' | 'full_width';
   bannerHeight?: 'compact' | 'medium' | 'tall';
   primaryBtnColor?: string;
   primaryBtnTextColor?: string;
+  secondaryBtnColor?: string;
+  secondaryBtnTextColor?: string;
+  tertiaryBtnColor?: string;
+  tertiaryBtnTextColor?: string;
   bgColor?: string;
   textColor?: string;
   paddingTop?: string;
@@ -35,11 +41,17 @@ export function PromotionalBanner({
   customPrimaryCtaUrl = '/women',
   customSecondaryCtaText = 'View Offers',
   customSecondaryCtaUrl = '/sale',
+  customTertiaryCtaText,
+  customTertiaryCtaUrl = '/contact',
   contentAlign = 'left',
   containerWidth = 'contained',
   bannerHeight = 'medium',
   primaryBtnColor,
   primaryBtnTextColor,
+  secondaryBtnColor,
+  secondaryBtnTextColor,
+  tertiaryBtnColor,
+  tertiaryBtnTextColor,
   bgColor,
   textColor,
   paddingTop,
@@ -77,6 +89,16 @@ export function PromotionalBanner({
   const primaryBtnStyle: React.CSSProperties = {
     backgroundColor: primaryBtnColor || undefined,
     color: primaryBtnTextColor || undefined,
+  };
+
+  const secondaryBtnStyle: React.CSSProperties = {
+    backgroundColor: secondaryBtnColor || undefined,
+    color: secondaryBtnTextColor || undefined,
+  };
+
+  const tertiaryBtnStyle: React.CSSProperties = {
+    backgroundColor: tertiaryBtnColor || undefined,
+    color: tertiaryBtnTextColor || undefined,
   };
 
   return (
@@ -140,9 +162,23 @@ export function PromotionalBanner({
                 <Button
                   variant="outline"
                   size="lg"
+                  style={secondaryBtnStyle}
                   className="border-white text-white hover:bg-white hover:text-black min-w-[150px] cursor-pointer"
                 >
                   {customSecondaryCtaText}
+                </Button>
+              </Link>
+            )}
+
+            {customTertiaryCtaText && (
+              <Link href={formatTenantHref(customTertiaryCtaUrl, tenantSlug)}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  style={tertiaryBtnStyle}
+                  className="border-white/60 text-white hover:bg-white/20 min-w-[150px] cursor-pointer"
+                >
+                  {customTertiaryCtaText}
                 </Button>
               </Link>
             )}
