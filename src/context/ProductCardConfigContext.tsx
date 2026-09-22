@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, Suspense } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, useRef, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { ProductCardConfig } from '@/types/product-card.types';
 import { getDefaultProductCardConfig } from '@/lib/product-card-presets';
