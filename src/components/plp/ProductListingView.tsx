@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -57,11 +57,20 @@ export function ProductListingView({
   const [gridColumns, setGridColumns] = useState<2 | 3 | 4>(4);
   const [plpConfig, setPlpConfig] = useState<any>(null);
 
-  const fetchConfig = useCallback(async () => {
+  const fetchingRef = useRef(false);
+  const fetchedSlugRef = useRef<string | null>(null);
+
+  const fetchConfig = useCallback(async (force = false) => {
+    if (!activeTenantSlug) return;
+    if (!force && fetchingRef.current) return;
+    if (!force && fetchedSlugRef.current === activeTenantSlug && !isPreview) return;
+
+    fetchingRef.current = true;
     try {
       const previewParam = isPreview ? '&preview=draft' : '';
+      const cacheBust = isPreview || force ? `&_t=${Date.now()}` : '';
       const res = await fetch(
-        `/api/v1/content/collection-page?tenant=${encodeURIComponent(activeTenantSlug)}${previewParam}&_t=${Date.now()}`,
+        `/api/v1/content/collection-page?tenant=${encodeURIComponent(activeTenantSlug)}${previewParam}${cacheBust}`,
         { cache: 'no-store' }
       );
       if (res.ok) {
@@ -72,10 +81,13 @@ export function ProductListingView({
           if (cfg.grid?.desktopColumns) {
             setGridColumns(cfg.grid.desktopColumns as 2 | 3 | 4);
           }
+          fetchedSlugRef.current = activeTenantSlug;
         }
       }
     } catch {
       // Retain existing state
+    } finally {
+      fetchingRef.current = false;
     }
   }, [activeTenantSlug, isPreview]);
 
@@ -113,8 +125,7 @@ export function ProductListingView({
     const handleStorage = (event: StorageEvent) => {
       if (
         event.key === 'jq_collection_page_updated' ||
-        event.key === `jq_collection_page_${activeTenantSlug}` ||
-        event.key === 'jq_active_tenant'
+        event.key === `jq_collection_page_${activeTenantSlug}`
       ) {
         if (event.newValue) {
           try {
@@ -128,6 +139,8 @@ export function ProductListingView({
             }
           } catch {}
         }
+        fetchConfig();
+      } else if (event.key === 'jq_active_tenant' && event.newValue && event.newValue !== activeTenantSlug) {
         fetchConfig();
       }
     };

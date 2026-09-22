@@ -17,20 +17,18 @@ const configCache = new Map<string, ProductCardConfig>();
 
 const ProductCardContext = createContext<ProductCardContextValue>({
   config: getDefaultProductCardConfig('lumina'),
-  isLoading: false,
+  isLoading: true,
   activeTenantSlug: 'lumina',
   refreshConfig: async () => {},
 });
 
 export function useProductCardConfig(explicitTenantSlug?: string) {
   const context = useContext(ProductCardContext);
-  
-  // If an explicit tenant is passed and it matches context, or context is already for that tenant:
+
   if (!explicitTenantSlug || explicitTenantSlug.toLowerCase().trim() === context.activeTenantSlug) {
     return context;
   }
 
-  // Fallback if rendered outside provider or for another tenant
   const slug = explicitTenantSlug.toLowerCase().trim();
   const cached = configCache.get(slug);
   return {
@@ -67,25 +65,35 @@ function ProductCardConfigInner({
   });
   const [isLoading, setIsLoading] = useState(!initialConfig);
 
-  const fetchConfig = useCallback(async () => {
+  const fetchingRef = useRef(false);
+  const fetchedSlugRef = useRef<string | null>(null);
+
+  const fetchConfig = useCallback(async (force = false) => {
     if (!activeTenantSlug) return;
+    if (!force && fetchingRef.current) return;
+    if (!force && fetchedSlugRef.current === activeTenantSlug && !isPreview) return;
+
+    fetchingRef.current = true;
     try {
       setIsLoading(true);
       const previewQuery = isPreview ? '&preview=draft' : '';
+      const cacheBust = isPreview || force ? `&_t=${Date.now()}` : '';
       const res = await fetch(
-        `/api/v1/content/product-card?tenant=${encodeURIComponent(activeTenantSlug)}${previewQuery}&_t=${Date.now()}`
+        `/api/v1/content/product-card?tenant=${encodeURIComponent(activeTenantSlug)}${previewQuery}${cacheBust}`
       );
       if (res.ok) {
         const json = await res.json();
         if (json?.data) {
           configCache.set(activeTenantSlug, json.data);
           setConfig(json.data);
+          fetchedSlugRef.current = activeTenantSlug;
         }
       }
     } catch (err) {
       console.warn('[ProductCardConfig] Using default seed config for:', activeTenantSlug, err);
     } finally {
       setIsLoading(false);
+      fetchingRef.current = false;
     }
   }, [activeTenantSlug, isPreview]);
 
@@ -103,14 +111,16 @@ function ProductCardConfigInner({
           configCache.set(activeTenantSlug, event.data.productCardConfig);
           setConfig(event.data.productCardConfig);
         } else {
-          fetchConfig();
+          fetchConfig(true);
         }
       }
     };
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === 'jq_product_card_updated' || event.key === 'jq_active_tenant') {
-        fetchConfig();
+      if (event.key === 'jq_product_card_updated') {
+        fetchConfig(true);
+      } else if (event.key === 'jq_active_tenant' && event.newValue && event.newValue !== activeTenantSlug) {
+        fetchConfig(true);
       }
     };
 

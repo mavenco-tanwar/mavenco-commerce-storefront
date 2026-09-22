@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Search, X, TrendingUp, ArrowRight, Loader2 } from 'lucide-react';
 import { ProductService } from '@/services/products';
 import { Product } from '@/types/product';
 import { PriceDisplay } from '@/components/ui/PriceDisplay';
-import { formatTenantHref, formatProductHref, resolveTenant, resolveActiveTenantSlug } from '@/lib/tenant-config';
+import { formatTenantHref, formatProductHref, getTenantConfig, resolveActiveTenantSlug } from '@/lib/tenant-config';
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -28,7 +29,7 @@ export function SearchOverlay({ isOpen, onClose, tenantSlug: propTenantSlug }: S
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
   const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
-  const activeTenant = resolveTenant(activeTenantSlug);
+  const activeTenant = getTenantConfig(activeTenantSlug);
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Product[]>([]);

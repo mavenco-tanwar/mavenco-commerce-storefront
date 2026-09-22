@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { resolveTenant, resolveActiveTenantSlug, TenantBrandConfig } from '@/lib/tenant-config';
+import { getTenantConfig, resolveActiveTenantSlug, TenantBrandConfig } from '@/lib/tenant-config';
 
 interface BrandLogoProps {
   variant?: 'dark' | 'light' | 'monochrome';
@@ -24,10 +24,10 @@ export function BrandLogo({
   const searchParams = useSearchParams();
 
   const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
-  const [tenant, setTenant] = useState<TenantBrandConfig>(() => resolveTenant(activeTenantSlug));
+  const [tenant, setTenant] = useState<TenantBrandConfig>(() => getTenantConfig(activeTenantSlug));
 
   useEffect(() => {
-    const t = resolveTenant(activeTenantSlug);
+    const t = getTenantConfig(activeTenantSlug);
     setTenant(t);
 
     const targetSlug = t?.slug || activeTenantSlug;
@@ -41,7 +41,7 @@ export function BrandLogo({
         })
         .catch(() => {});
     }
-  }, [activeTenantSlug, pathname, searchParams]);
+  }, [activeTenantSlug]);
 
   const isLight = variant === 'light';
   const textColor = isLight ? '#FFFFFF' : '#111111';

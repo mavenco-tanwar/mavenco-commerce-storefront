@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { resolveTenant, resolveActiveTenantSlug } from '@/lib/tenant-config';
 import { HeaderConfig, getDefaultHeaderConfig } from '@/lib/header-config';
@@ -31,10 +31,19 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { isDrawerOpen: isCartOpen, closeDrawer: closeCartDrawer } = useCart();
 
+  const fetchingRef = useRef(false);
+  const fetchedSlugRef = useRef<string | null>(null);
+
   // Fetch live Header configuration from MongoDB Atlas API
-  const fetchHeader = useCallback(async () => {
+  const fetchHeader = useCallback(async (force = false) => {
+    if (!activeTenantSlug) return;
+    if (!force && fetchingRef.current) return;
+    if (!force && fetchedSlugRef.current === activeTenantSlug) return;
+
+    fetchingRef.current = true;
     try {
-      const res = await fetch(`/api/v1/content/header?tenant=${encodeURIComponent(activeTenantSlug)}&_t=${Date.now()}`);
+      const cacheBust = force ? `&_t=${Date.now()}` : '';
+      const res = await fetch(`/api/v1/content/header?tenant=${encodeURIComponent(activeTenantSlug)}${cacheBust}`);
       if (res.ok) {
         const json = await res.json();
         if (json?.data) {
@@ -69,16 +78,19 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
               ? raw.navigationMenu
               : base.navigationMenu,
           });
+          fetchedSlugRef.current = activeTenantSlug;
         }
       }
     } catch (err) {
       console.warn('Failed to fetch header:', err);
+    } finally {
+      fetchingRef.current = false;
     }
   }, [activeTenantSlug]);
 
   useEffect(() => {
     fetchHeader();
-  }, [fetchHeader, pathname, searchParams]);
+  }, [fetchHeader]);
 
   // Live broadcast listener from Admin Visual Theme Studio preview / publish
   useEffect(() => {
@@ -97,7 +109,7 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
         if (event.data?.headerConfig) {
           setConfig(event.data.headerConfig);
         } else {
-          fetchHeader();
+          fetchHeader(true);
         }
       }
     };
@@ -106,10 +118,11 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
       if (
         event.key === 'jq_header_updated' ||
         event.key === 'jq_navigation_updated' ||
-        event.key === 'jq_menu_updated' ||
-        event.key === 'jq_active_tenant'
+        event.key === 'jq_menu_updated'
       ) {
-        fetchHeader();
+        fetchHeader(true);
+      } else if (event.key === 'jq_active_tenant' && event.newValue && event.newValue !== activeTenantSlug) {
+        fetchHeader(true);
       }
     };
 
@@ -119,7 +132,7 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('storage', handleStorage);
     };
-  }, [fetchHeader]);
+  }, [fetchHeader, activeTenantSlug]);
 
   // Sticky Scroll listener
   useEffect(() => {

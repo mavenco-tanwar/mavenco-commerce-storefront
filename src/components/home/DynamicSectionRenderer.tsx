@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { CmsHomepageSection } from '@/services/api/cms';
 import { formatTenantHref } from '@/lib/tenant-config';
 import { HeroSection } from './HeroSection';
@@ -80,14 +80,22 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
     }
   }, [sections]);
 
-  const fetchLatestSections = useCallback(async () => {
+  const fetchingRef = useRef(false);
+  const fetchedTenantRef = useRef<string | null>(null);
+
+  const fetchLatestSections = useCallback(async (force = false) => {
+    if (!force && fetchingRef.current) return;
+    if (!force && fetchedTenantRef.current === resolvedTenant) return;
+
+    fetchingRef.current = true;
     try {
       const isDraft =
         typeof window !== 'undefined' &&
         new URLSearchParams(window.location.search).get('preview') === 'draft';
       const draftQuery = isDraft ? '&status=draft' : '';
+      const cacheBust = isDraft || force ? `&_t=${Date.now()}` : '';
       const res = await fetch(
-        `/api/v1/content/homepage?tenant=${encodeURIComponent(resolvedTenant)}${draftQuery}&_t=${Date.now()}`,
+        `/api/v1/content/homepage?tenant=${encodeURIComponent(resolvedTenant)}${draftQuery}${cacheBust}`,
         { cache: 'no-store' }
       );
       if (res.ok) {
@@ -95,10 +103,13 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
         const apiSections = json?.data?.sections;
         if (Array.isArray(apiSections) && apiSections.length > 0) {
           setLiveSections(apiSections);
+          fetchedTenantRef.current = resolvedTenant;
         }
       }
     } catch {
       // Retain current state on fetch failure
+    } finally {
+      fetchingRef.current = false;
     }
   }, [resolvedTenant]);
 
@@ -139,7 +150,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
         if (Array.isArray(data.sections) && data.sections.length > 0) {
           setLiveSections(data.sections);
         } else {
-          fetchLatestSections();
+          fetchLatestSections(true);
         }
       }
     };
@@ -147,8 +158,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
     const handleStorage = (event: StorageEvent) => {
       if (
         event.key === 'jq_homepage_updated' ||
-        event.key === `jq_homepage_sections_${resolvedTenant}` ||
-        event.key === 'jq_active_tenant'
+        event.key === `jq_homepage_sections_${resolvedTenant}`
       ) {
         if (event.newValue) {
           try {
@@ -159,7 +169,9 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
             }
           } catch {}
         }
-        fetchLatestSections();
+        fetchLatestSections(true);
+      } else if (event.key === 'jq_active_tenant' && event.newValue && event.newValue !== resolvedTenant) {
+        fetchLatestSections(true);
       }
     };
 

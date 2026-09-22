@@ -109,8 +109,7 @@ export function ProductPageRenderer({
       if (
         event.key === 'jq_pdp_updated' ||
         event.key === `jq_pdp_template_${activeTenant.slug}` ||
-        event.key === `jq_pdp_draft_${activeTenant.slug}` ||
-        event.key === 'jq_active_tenant'
+        event.key === `jq_pdp_draft_${activeTenant.slug}`
       ) {
         if (event.newValue) {
           try {
@@ -121,6 +120,8 @@ export function ProductPageRenderer({
             }
           } catch {}
         }
+        loadTemplate();
+      } else if (event.key === 'jq_active_tenant' && event.newValue && event.newValue !== activeTenant.slug) {
         loadTemplate();
       }
     };

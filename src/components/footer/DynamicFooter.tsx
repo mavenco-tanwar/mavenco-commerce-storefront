@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { resolveTenant, resolveActiveTenantSlug, formatStoreName } from '@/lib/tenant-config';
+import { getTenantConfig, resolveActiveTenantSlug, formatStoreName } from '@/lib/tenant-config';
 import { FooterConfig, getDefaultFooterConfig } from '@/lib/footer-config';
 import { FooterBlockRenderer } from './FooterBlockRenderer';
 
@@ -18,35 +18,44 @@ export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: Dyn
   const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
 
   const [mounted, setMounted] = useState(false);
-  const [tenantSlug, setTenantSlug] = useState<string>(activeTenantSlug);
   const [config, setConfig] = useState<FooterConfig>(() => {
     return initialConfig || getDefaultFooterConfig(activeTenantSlug, formatStoreName(activeTenantSlug));
   });
 
-  const fetchFooter = useCallback(async () => {
-    const t = resolveTenant(activeTenantSlug);
-    const slug = (t.slug || activeTenantSlug || 'demo').toLowerCase().trim();
-    setTenantSlug(slug);
+  const fetchingRef = useRef(false);
+  const fetchedSlugRef = useRef<string | null>(null);
 
+  const fetchFooter = useCallback(async (force = false) => {
+    const cleanSlug = (activeTenantSlug || 'demo').toLowerCase().trim();
+    if (!force && fetchingRef.current) return;
+    if (!force && fetchedSlugRef.current === cleanSlug) return;
+
+    fetchingRef.current = true;
     try {
-      const res = await fetch(`/api/v1/content/footer?tenant=${encodeURIComponent(slug)}&_t=${Date.now()}`);
+      const cacheBust = force ? `&_t=${Date.now()}` : '';
+      const res = await fetch(`/api/v1/content/footer?tenant=${encodeURIComponent(cleanSlug)}${cacheBust}`);
       if (res.ok) {
         const json = await res.json();
         if (json?.data?.sections && json.data.sections.length > 0) {
           setConfig(json.data);
+          fetchedSlugRef.current = cleanSlug;
           return;
         }
       }
-      setConfig(getDefaultFooterConfig(slug, t.name || formatStoreName(slug)));
+      const t = getTenantConfig(cleanSlug);
+      setConfig(getDefaultFooterConfig(cleanSlug, t?.name || formatStoreName(cleanSlug)));
+      fetchedSlugRef.current = cleanSlug;
     } catch (err) {
       console.warn('[DynamicFooter] Falling back to default seed:', err);
+    } finally {
+      fetchingRef.current = false;
     }
   }, [activeTenantSlug]);
 
   useEffect(() => {
     setMounted(true);
     fetchFooter();
-  }, [fetchFooter, pathname, searchParams]);
+  }, [fetchFooter]);
 
   // Live broadcast listener from Admin Visual Theme Studio preview / publish
   useEffect(() => {
@@ -64,7 +73,7 @@ export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: Dyn
         if (event.data?.footerConfig) {
           setConfig(event.data.footerConfig);
         } else {
-          fetchFooter();
+          fetchFooter(true);
         }
       }
     };
@@ -73,10 +82,11 @@ export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: Dyn
       if (
         event.key === 'jq_footer_updated' ||
         event.key === 'jq_navigation_updated' ||
-        event.key === 'jq_menu_updated' ||
-        event.key === 'jq_active_tenant'
+        event.key === 'jq_menu_updated'
       ) {
-        fetchFooter();
+        fetchFooter(true);
+      } else if (event.key === 'jq_active_tenant' && event.newValue && event.newValue !== activeTenantSlug) {
+        fetchFooter(true);
       }
     };
 
@@ -86,7 +96,7 @@ export function DynamicFooter({ initialConfig, tenantSlug: propTenantSlug }: Dyn
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('storage', handleStorage);
     };
-  }, [fetchFooter]);
+  }, [fetchFooter, activeTenantSlug]);
 
   // Dynamic CSS variables scoped to Footer & Navigation
   const footerCssVariables = useMemo(() => {

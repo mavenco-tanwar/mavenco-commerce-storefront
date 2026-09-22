@@ -358,8 +358,11 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
     const clean = tenantParam.toLowerCase().trim();
     if (typeof window !== 'undefined') {
       try {
-        document.cookie = `jq_active_tenant=${clean}; path=/; max-age=604800; SameSite=Lax`;
-        localStorage.setItem('jq_active_tenant', clean);
+        const cur = localStorage.getItem('jq_active_tenant');
+        if (cur !== clean) {
+          localStorage.setItem('jq_active_tenant', clean);
+          document.cookie = `jq_active_tenant=${clean}; path=/; max-age=604800; SameSite=Lax`;
+        }
       } catch {}
     }
     return getTenantConfig(clean);
@@ -372,8 +375,11 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
     if (pathMatch) {
       const slug = pathMatch[2].toLowerCase();
       try {
-        document.cookie = `jq_active_tenant=${slug}; path=/; max-age=604800; SameSite=Lax`;
-        localStorage.setItem('jq_active_tenant', slug);
+        const cur = localStorage.getItem('jq_active_tenant');
+        if (cur !== slug) {
+          localStorage.setItem('jq_active_tenant', slug);
+          document.cookie = `jq_active_tenant=${slug}; path=/; max-age=604800; SameSite=Lax`;
+        }
       } catch {}
       return getTenantConfig(slug);
     }
@@ -384,8 +390,11 @@ export function resolveTenant(tenantParam?: string | null): TenantBrandConfig {
     if (qTenant) {
       const slug = qTenant.toLowerCase().trim();
       try {
-        document.cookie = `jq_active_tenant=${slug}; path=/; max-age=604800; SameSite=Lax`;
-        localStorage.setItem('jq_active_tenant', slug);
+        const cur = localStorage.getItem('jq_active_tenant');
+        if (cur !== slug) {
+          localStorage.setItem('jq_active_tenant', slug);
+          document.cookie = `jq_active_tenant=${slug}; path=/; max-age=604800; SameSite=Lax`;
+        }
       } catch {}
       return getTenantConfig(slug);
     }

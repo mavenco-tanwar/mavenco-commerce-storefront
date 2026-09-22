@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { MessageSquare, X, Send, Sparkles, ShieldCheck, Clock, ShoppingBag, Package, HelpCircle } from 'lucide-react';
-import { resolveTenant, TenantBrandConfig } from '@/lib/tenant-config';
+import { getTenantConfig, resolveActiveTenantSlug, TenantBrandConfig } from '@/lib/tenant-config';
 
 function FloatingWhatsAppWidgetContent() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +13,7 @@ function FloatingWhatsAppWidgetContent() {
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
   const tenantQuery = searchParams.get('tenant');
+  const fetchedSlugRef = useRef<string | null>(null);
 
   // Check if current page is an isolated tenant store (e.g. /stores/muskan-clothing or ?tenant=muskan-clothing)
   const isStoreRoute =
@@ -30,11 +31,13 @@ function FloatingWhatsAppWidgetContent() {
 
   useEffect(() => {
     if (isStoreRoute) {
-      const t = resolveTenant(tenantQuery);
+      const activeSlug = resolveActiveTenantSlug(pathname, searchParams);
+      const t = getTenantConfig(activeSlug);
       setTenant(t);
 
-      if (t?.slug) {
-        fetch(`/api/v1/tenant-config?tenant=${t.slug}`)
+      if (activeSlug && fetchedSlugRef.current !== activeSlug && activeSlug !== 'demo') {
+        fetchedSlugRef.current = activeSlug;
+        fetch(`/api/v1/tenant-config?tenant=${encodeURIComponent(activeSlug)}`)
           .then((res) => (res.ok ? res.json() : null))
           .then((json) => {
             if (json?.data?.name) {
@@ -46,7 +49,7 @@ function FloatingWhatsAppWidgetContent() {
     } else {
       setTenant(null);
     }
-  }, [pathname, tenantQuery, isStoreRoute]);
+  }, [pathname, searchParams, isStoreRoute]);
 
   // Determine WhatsApp target number & prompts based on context
   const isTenantMode = isStoreRoute && tenant;

@@ -22,7 +22,7 @@ import { CategoryService } from '@/services/categories';
 import { Category, Collection } from '@/types/category';
 import { useAuth } from '@/context/AuthContext';
 import { useWishlist } from '@/context/WishlistContext';
-import { formatTenantHref, resolveTenant } from '@/lib/tenant-config';
+import { formatTenantHref, resolveActiveTenantSlug, getTenantConfig } from '@/lib/tenant-config';
 
 interface MobileNavigationProps {
   isOpen: boolean;
@@ -42,7 +42,9 @@ export function MobileNavigation({ isOpen, onClose, onOpenSearch }: MobileNaviga
   const { wishlistCount } = useWishlist();
 
   useEffect(() => {
-    const t = resolveTenant();
+    if (!isOpen) return;
+    const activeSlug = resolveActiveTenantSlug();
+    const t = getTenantConfig(activeSlug);
     CategoryService.getCategories(undefined, t.slug).then((res) => {
       if (res.data) setCategories(res.data);
     });

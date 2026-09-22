@@ -9,13 +9,13 @@ import { CategoryService } from '@/services/categories';
 import { CmsApiService, CmsMenuItem } from '@/services/api/cms';
 import { Category, Collection } from '@/types/category';
 
-import { resolveTenant, resolveActiveTenantSlug, TenantBrandConfig, formatTenantHref } from '@/lib/tenant-config';
+import { getTenantConfig, resolveActiveTenantSlug, TenantBrandConfig, formatTenantHref } from '@/lib/tenant-config';
 
 export function Navigation({ tenantSlug: propTenantSlug }: { tenantSlug?: string }) {
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
   const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
-  const [tenant, setTenant] = useState<TenantBrandConfig>(() => resolveTenant(activeTenantSlug));
+  const [tenant, setTenant] = useState<TenantBrandConfig>(() => getTenantConfig(activeTenantSlug));
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -28,7 +28,7 @@ export function Navigation({ tenantSlug: propTenantSlug }: { tenantSlug?: string
   ]);
 
   useEffect(() => {
-    const t = resolveTenant(activeTenantSlug);
+    const t = getTenantConfig(activeTenantSlug);
     setTenant(t);
     const targetSlug = t?.slug || activeTenantSlug;
     CmsApiService.getMenu('header-menu', targetSlug).then((items) => {

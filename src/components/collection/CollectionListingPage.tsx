@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Product } from '@/types/product';
@@ -12,13 +12,14 @@ import { CollectionToolbar } from './CollectionToolbar';
 import { CollectionFilterSidebar, FilterState } from './CollectionFilterSidebar';
 import { CollectionFilterDrawer } from './CollectionFilterDrawer';
 import { ProductGrid } from '@/components/product/ProductGrid';
-import { resolveTenant, resolveActiveTenantSlug, formatTenantHref } from '@/lib/tenant-config';
+import { getTenantConfig, resolveActiveTenantSlug, formatTenantHref } from '@/lib/tenant-config';
 
 export interface CollectionListingPageProps {
   initialProducts: Product[];
   collectionTitle?: string;
   collectionDescription?: string;
   collectionBannerImage?: string;
+  totalProductsCount?: number;
   templateOverride?: Partial<CollectionPageConfig>;
   breadcrumbs?: Array<{ label: string; href?: string }>;
   availableCategories?: Array<{ slug: string; name: string }>;
@@ -30,6 +31,7 @@ function CollectionListingPageContent({
   collectionTitle = 'All Collections',
   collectionDescription,
   collectionBannerImage,
+  totalProductsCount,
   templateOverride,
   breadcrumbs = [{ label: 'Collections', href: '/collections' }],
   availableCategories,
@@ -39,7 +41,7 @@ function CollectionListingPageContent({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, propTenantSlug);
-  const activeTenant = resolveTenant(activeTenantSlug);
+  const activeTenant = getTenantConfig(activeTenantSlug);
 
   const isPreview = searchParams.get('preview') === 'draft';
 
@@ -49,13 +51,21 @@ function CollectionListingPageContent({
     ...(templateOverride || {}),
   }));
 
+  const fetchingRef = useRef(false);
+  const fetchedSlugRef = useRef<string | null>(null);
+
   // Fetch Live Published / Draft Configuration from API
-  const loadTemplate = useCallback(async () => {
+  const loadTemplate = useCallback(async (force = false) => {
+    const slug = activeTenant.slug || 'demo';
+    if (!force && fetchingRef.current) return;
+    if (!force && fetchedSlugRef.current === slug && !isPreview) return;
+
+    fetchingRef.current = true;
     try {
-      const slug = activeTenant.slug || 'demo';
       const previewParam = isPreview ? '&preview=draft' : '';
+      const cacheBust = isPreview || force ? `&_t=${Date.now()}` : '';
       const res = await fetch(
-        `/api/v1/content/collection-page?tenant=${slug}${previewParam}&_t=${Date.now()}`,
+        `/api/v1/content/collection-page?tenant=${encodeURIComponent(slug)}${previewParam}${cacheBust}`,
         { cache: 'no-store' }
       );
       const json = await res.json();
@@ -65,9 +75,12 @@ function CollectionListingPageContent({
           ...json.data,
           ...(templateOverride || {}),
         }));
+        fetchedSlugRef.current = slug;
       }
     } catch (err) {
       console.warn('Failed to load published PLP template, using fallback config:', err);
+    } finally {
+      fetchingRef.current = false;
     }
   }, [activeTenant.slug, isPreview, templateOverride]);
 
@@ -115,8 +128,7 @@ function CollectionListingPageContent({
     const handleStorage = (event: StorageEvent) => {
       if (
         event.key === 'jq_collection_page_updated' ||
-        event.key === `jq_collection_page_${activeTenant.slug}` ||
-        event.key === 'jq_active_tenant'
+        event.key === `jq_collection_page_${activeTenant.slug}`
       ) {
         if (event.newValue) {
           try {
@@ -127,6 +139,8 @@ function CollectionListingPageContent({
             }
           } catch {}
         }
+        loadTemplate();
+      } else if (event.key === 'jq_active_tenant' && event.newValue && event.newValue !== activeTenant.slug) {
         loadTemplate();
       }
     };

@@ -14,13 +14,13 @@ import { FreeShippingBar } from '@/components/cart/FreeShippingBar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { formatCurrency } from '@/lib/utils';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { formatTenantHref, formatProductHref, resolveTenant, resolveActiveTenantSlug } from '@/lib/tenant-config';
+import { formatTenantHref, formatProductHref, getTenantConfig, resolveActiveTenantSlug } from '@/lib/tenant-config';
 
 export function CartDrawer() {
   const pathname = usePathname() || '/';
   const searchParams = useSearchParams();
   const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams);
-  const activeTenant = resolveTenant(activeTenantSlug);
+  const activeTenant = getTenantConfig(activeTenantSlug);
 
   const {
     items,

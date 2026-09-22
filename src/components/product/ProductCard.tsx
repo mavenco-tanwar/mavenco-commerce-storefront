@@ -9,7 +9,7 @@ import { PriceDisplay } from '@/components/ui/PriceDisplay';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { resolveTenant, resolveActiveTenantSlug, formatProductHref } from '@/lib/tenant-config';
+import { getTenantConfig, resolveActiveTenantSlug, formatProductHref } from '@/lib/tenant-config';
 import { ProductCardConfig } from '@/types/product-card.types';
 import { useProductCardConfig } from '@/context/ProductCardConfigContext';
 
@@ -29,7 +29,7 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
 
   const productTenant = (product as any).tenantSlug || (product as any).storeSlug;
   const activeTenantSlug = resolveActiveTenantSlug(pathname, searchParams, productTenant);
-  const activeTenant = resolveTenant(activeTenantSlug);
+  const activeTenant = getTenantConfig(activeTenantSlug);
   const rawCategory = product.category || (product as any).categorySlug || (product as any).department;
   const productUrl = formatProductHref(product.slug, rawCategory, activeTenant.slug);
 

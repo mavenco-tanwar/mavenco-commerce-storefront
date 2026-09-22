@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, Suspense } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, useRef, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { ThemeDocument } from '@/types/theme.types';
 import { getDefaultTheme } from '@/lib/theme-presets';
@@ -54,21 +54,31 @@ function ThemeInner({
   });
   const [isLoading, setIsLoading] = useState(!initialTheme);
 
-  const fetchTheme = useCallback(async () => {
+  const fetchingRef = useRef(false);
+  const fetchedSlugRef = useRef<string | null>(null);
+
+  const fetchTheme = useCallback(async (force = false) => {
     if (!activeTenantSlug) return;
+    if (!force && fetchingRef.current) return;
+    if (!force && fetchedSlugRef.current === activeTenantSlug && !isPreview) return;
+
+    fetchingRef.current = true;
     try {
       setIsLoading(true);
       const previewQuery = isPreview ? '&preview=draft' : '';
+      const cacheBust = isPreview || force ? `&_t=${Date.now()}` : '';
       const res = await apiClient.get<ThemeDocument>(
-        `/api/v1/theme?tenant=${encodeURIComponent(activeTenantSlug)}${previewQuery}&_t=${Date.now()}`
+        `/api/v1/theme?tenant=${encodeURIComponent(activeTenantSlug)}${previewQuery}${cacheBust}`
       );
       if (res.data) {
         setTheme(res.data);
+        fetchedSlugRef.current = activeTenantSlug;
       }
     } catch (err) {
       console.warn('[ThemeProvider] Falling back to default theme for:', activeTenantSlug, err);
     } finally {
       setIsLoading(false);
+      fetchingRef.current = false;
     }
   }, [activeTenantSlug, isPreview]);
 
@@ -85,14 +95,16 @@ function ThemeInner({
         if (event.data?.theme) {
           setTheme(event.data.theme);
         } else {
-          fetchTheme();
+          fetchTheme(true);
         }
       }
     };
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === 'jq_theme_updated' || event.key === 'jq_active_tenant') {
-        fetchTheme();
+      if (event.key === 'jq_theme_updated') {
+        fetchTheme(true);
+      } else if (event.key === 'jq_active_tenant' && event.newValue && event.newValue !== activeTenantSlug) {
+        fetchTheme(true);
       }
     };
 
@@ -103,7 +115,7 @@ function ThemeInner({
       window.removeEventListener('message', handleMessage);
       window.removeEventListener('storage', handleStorage);
     };
-  }, [fetchTheme]);
+  }, [fetchTheme, activeTenantSlug]);
 
   const cssVariables = useMemo(() => {
     return generateThemeCssVariables(theme);
