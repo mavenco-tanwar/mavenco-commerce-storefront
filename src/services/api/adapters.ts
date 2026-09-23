@@ -23,24 +23,43 @@ export function mapCmsProductToStorefrontProduct(cms: any): Product {
     ? JSON.parse(cms.customFields)
     : cms.customFields || {};
 
-  // Extract department from customFields or category slug
-  let department: Department = custom.department || 'women';
+  // Extract department from cms.department, customFields, or category slug
+  let department: Department = cms.department || custom.department || (cms.category?.slug as any) || 'all';
   if (cms.category?.slug === 'kids' || cms.category?.slug?.startsWith('kids-') || cms.category?.slug?.startsWith('girls-') || cms.category?.slug?.startsWith('boys-')) {
     department = 'kids';
+  } else if (cms.category?.slug === 'women' || cms.category?.slug?.startsWith('women-')) {
+    department = 'women';
+  } else if (cms.category?.slug === 'men' || cms.category?.slug?.startsWith('men-')) {
+    department = 'men';
   }
 
-  // Extract Images
-  const rawImages = typeof cms.images === 'string' ? JSON.parse(cms.images) : cms.images || [];
-  const images: ProductImage[] = rawImages.map((img: any, idx: number) => ({
-    url: img.url || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop',
-    alt: img.altText || img.alt || cms.title,
-    isPrimary: img.isPrimary !== undefined ? img.isPrimary : idx === 0,
-  }));
+  // Extract Images (supports array of strings, array of objects, media, imageUrl, etc.)
+  const rawImages = typeof cms.images === 'string'
+    ? JSON.parse(cms.images)
+    : Array.isArray(cms.images) && cms.images.length > 0
+    ? cms.images
+    : Array.isArray(cms.media) && cms.media.length > 0
+    ? cms.media
+    : cms.imageUrl
+    ? [cms.imageUrl]
+    : cms.image
+    ? [cms.image]
+    : [];
+
+  const images: ProductImage[] = rawImages.map((img: any, idx: number) => {
+    const rawUrl = typeof img === 'string' ? img : img?.url || img?.src || img?.image || '';
+    return {
+      url: rawUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop',
+      alt: (typeof img === 'object' ? img?.altText || img?.alt : undefined) || cms.title || cms.name || 'Product Image',
+      isPrimary: typeof img === 'object' && img?.isPrimary !== undefined ? img.isPrimary : idx === 0,
+    };
+  });
 
   if (images.length === 0) {
+    const fallbackSingle = cms.imageUrl || cms.image || cms.thumbnail;
     images.push({
-      url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop',
-      alt: cms.title,
+      url: fallbackSingle || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop',
+      alt: cms.title || cms.name || 'Product Image',
       isPrimary: true,
     });
   }

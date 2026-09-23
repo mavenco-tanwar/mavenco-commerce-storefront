@@ -183,6 +183,57 @@ export function TrendingSection({
     loadProducts();
   }, [customLimit, currentSlug, querySource]);
 
+  const availableTabs = React.useMemo(() => {
+    const hasWomen = (products || []).some((p) => p.department === 'women' || (p.category as string) === 'women');
+    const hasKids = (products || []).some((p) => p.department === 'kids' || (p.category as string) === 'kids');
+    const hasMen = (products || []).some((p) => p.department === 'men' || (p.category as string) === 'men');
+    if (hasWomen || hasKids || hasMen) {
+      const list = [{ id: 'all', label: 'All Trends' }];
+      if (hasWomen) list.push({ id: 'women', label: 'Women' });
+      if (hasMen) list.push({ id: 'men', label: 'Men' });
+      if (hasKids) list.push({ id: 'kids', label: 'Kids' });
+      return list;
+    }
+
+    const catMap = new Map<string, string>();
+    for (const p of products || []) {
+      const cat = p.category || (p as any).categorySlug;
+      const label = p.categoryName || (p as any).categoryLabel || (cat ? cat.replace(/[-_]/g, ' ') : '');
+      if (cat && label && cat !== 'all' && !catMap.has(cat)) {
+        catMap.set(cat, label.replace(/\b\w/g, (c: string) => c.toUpperCase()));
+      }
+    }
+    if (catMap.size >= 2) {
+      return [
+        { id: 'all', label: 'All Items' },
+        ...Array.from(catMap.entries()).slice(0, 4).map(([id, label]) => ({ id, label })),
+      ];
+    }
+
+    return [];
+  }, [products]);
+
+  const renderTabs = (extraClasses: string = '') => {
+    if (availableTabs.length <= 1) return null;
+    return (
+      <div className={`flex items-center gap-2 bg-[#FFFDFC] p-1 border border-[#E8DED8] ${extraClasses}`}>
+        {availableTabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
+              activeTab === tab.id
+                ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
+                : 'text-[#777777] hover:text-[#111111]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   const filtered = (products || []).filter((p) => {
     if (!p) return false;
     if (activeTab === 'all') return true;
@@ -223,38 +274,7 @@ export function TrendingSection({
             </p>
 
             {/* Department Filter Tabs Centered */}
-            <div className="flex items-center gap-2 mt-6 bg-[#FFFDFC] p-1 border border-[#E8DED8]">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
-                  activeTab === 'all'
-                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                    : 'text-[#777777] hover:text-[#111111]'
-                }`}
-              >
-                All Trends
-              </button>
-              <button
-                onClick={() => setActiveTab('women')}
-                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
-                  activeTab === 'women'
-                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                    : 'text-[#777777] hover:text-[#111111]'
-                }`}
-              >
-                Women
-              </button>
-              <button
-                onClick={() => setActiveTab('kids')}
-                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
-                  activeTab === 'kids'
-                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                    : 'text-[#777777] hover:text-[#111111]'
-                }`}
-              >
-                Kids
-              </button>
-            </div>
+            {renderTabs('mt-6')}
           </div>
         ) : contentAlign === 'right' ? (
           <div className="flex flex-col items-end text-right max-w-2xl ml-auto mb-12">
@@ -269,38 +289,7 @@ export function TrendingSection({
             </p>
 
             {/* Department Filter Tabs Right-Aligned */}
-            <div className="flex items-center gap-2 mt-4 bg-[#FFFDFC] p-1 border border-[#E8DED8]">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
-                  activeTab === 'all'
-                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                    : 'text-[#777777] hover:text-[#111111]'
-                }`}
-              >
-                All Trends
-              </button>
-              <button
-                onClick={() => setActiveTab('women')}
-                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
-                  activeTab === 'women'
-                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                    : 'text-[#777777] hover:text-[#111111]'
-                }`}
-              >
-                Women
-              </button>
-              <button
-                onClick={() => setActiveTab('kids')}
-                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
-                  activeTab === 'kids'
-                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                    : 'text-[#777777] hover:text-[#111111]'
-                }`}
-              >
-                Kids
-              </button>
-            </div>
+            {renderTabs('mt-4')}
           </div>
         ) : (
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
@@ -317,38 +306,7 @@ export function TrendingSection({
             </div>
 
             {/* Department Filter Tabs Left/Natural */}
-            <div className="flex items-center gap-2 self-start md:self-auto bg-[#FFFDFC] p-1 border border-[#E8DED8]">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
-                  activeTab === 'all'
-                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                    : 'text-[#777777] hover:text-[#111111]'
-                }`}
-              >
-                All Trends
-              </button>
-              <button
-                onClick={() => setActiveTab('women')}
-                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
-                  activeTab === 'women'
-                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                    : 'text-[#777777] hover:text-[#111111]'
-                }`}
-              >
-                Women
-              </button>
-              <button
-                onClick={() => setActiveTab('kids')}
-                className={`text-xs uppercase font-bold tracking-wider px-4 py-2 transition-all cursor-pointer ${
-                  activeTab === 'kids'
-                    ? 'bg-[#111111] text-[#FFFDFC] shadow-xs'
-                    : 'text-[#777777] hover:text-[#111111]'
-                }`}
-              >
-                Kids
-              </button>
-            </div>
+            {renderTabs('self-start md:self-auto')}
           </div>
         )}
 

@@ -97,19 +97,23 @@ export function ProductCard({ product, config: customConfig, className = '' }: P
   const getImageUrl = (item: any): string => {
     if (!item) return '';
     if (typeof item === 'string') return item;
-    return item.url || item.src || '';
+    return item.url || item.src || item.imageUrl || item.image || '';
   };
 
   const imagesList = Array.isArray(product.images) && product.images.length > 0
     ? product.images
     : Array.isArray((product as any).media) && (product as any).media.length > 0
     ? (product as any).media
+    : (product as any).imageUrl
+    ? [(product as any).imageUrl]
+    : (product as any).image
+    ? [(product as any).image]
     : [];
 
   const primaryImage =
     activeImageOverride ||
     getImageUrl(imagesList[0]) ||
-    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&auto=format&fit=crop';
+    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop';
   const secondaryImage = getImageUrl(imagesList[1]) || primaryImage;
   const isSecondImageHover =
     cfg.image?.hoverEffect === 'second_image' &&
