@@ -154,7 +154,7 @@ export default function SuperadminPageEditorPage() {
         </div>
 
         {/* Device Switcher */}
-        <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-700/60 rounded-lg p-0.5">
+        {/* <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-700/60 rounded-lg p-0.5">
           <button
             onClick={() => setPreviewDevice('desktop')}
             className={`p-1.5 rounded transition ${
@@ -182,7 +182,7 @@ export default function SuperadminPageEditorPage() {
           >
             <Smartphone className="w-3.5 h-3.5" />
           </button>
-        </div>
+        </div> */}
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
@@ -227,11 +227,10 @@ export default function SuperadminPageEditorPage() {
                 <div
                   key={sec.id}
                   onClick={() => setSelectedSectionId(sec.id)}
-                  className={`p-2.5 rounded-lg border text-xs transition cursor-pointer flex items-center justify-between ${
-                    selectedSectionId === sec.id
+                  className={`p-2.5 rounded-lg border text-xs transition cursor-pointer flex items-center justify-between ${selectedSectionId === sec.id
                       ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 font-semibold'
                       : 'bg-zinc-900/50 border-zinc-800 text-zinc-300 hover:border-zinc-700'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-2 truncate">
                     <span className="font-mono text-zinc-500 text-[10px]">{idx + 1}</span>
@@ -287,13 +286,12 @@ export default function SuperadminPageEditorPage() {
         {/* Center: Live Interactive Preview Canvas */}
         <main className="flex-1 bg-[#07090C] overflow-y-auto p-6 flex justify-center">
           <div
-            className={`transition-all duration-300 bg-[#FFFDFC] text-[#111111] shadow-2xl rounded-lg overflow-hidden border border-zinc-800 flex flex-col ${
-              previewDevice === 'mobile'
+            className={`transition-all duration-300 bg-[#FFFDFC] text-[#111111] shadow-2xl rounded-lg overflow-hidden border border-zinc-800 flex flex-col ${previewDevice === 'mobile'
                 ? 'w-[375px] min-h-[667px]'
                 : previewDevice === 'tablet'
-                ? 'w-[768px] min-h-[1024px]'
-                : 'w-full max-w-5xl min-h-screen'
-            }`}
+                  ? 'w-[768px] min-h-[1024px]'
+                  : 'w-full max-w-5xl min-h-screen'
+              }`}
           >
             {sections.length === 0 ? (
               <div className="p-20 text-center text-zinc-400">
@@ -308,9 +306,8 @@ export default function SuperadminPageEditorPage() {
                 <div
                   key={sec.id}
                   onClick={() => setSelectedSectionId(sec.id)}
-                  className={`relative cursor-pointer transition border-2 ${
-                    selectedSectionId === sec.id ? 'border-amber-500' : 'border-transparent'
-                  }`}
+                  className={`relative cursor-pointer transition border-2 ${selectedSectionId === sec.id ? 'border-amber-500' : 'border-transparent'
+                    }`}
                 >
                   {sec.type === 'hero' && (
                     <div className="relative py-24 px-8 bg-zinc-900 text-white text-center flex flex-col items-center justify-center overflow-hidden">
