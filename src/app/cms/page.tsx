@@ -426,14 +426,15 @@ export default function CmsOverviewPage() {
                 </div>
 
                 {/* Interactive Device Viewport Switcher */}
-                <div className="flex items-center gap-1 bg-[#0A0C10] p-1 rounded-xl border border-slate-800 text-slate-400">
+                {/* <div className="flex items-center gap-1 bg-[#0A0C10] p-1 rounded-xl border border-slate-800 text-slate-400">
                   <button
                     type="button"
                     onClick={() => setPreviewDevice('desktop')}
-                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${previewDevice === 'desktop'
+                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                      previewDevice === 'desktop'
                         ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
                         : 'hover:text-white hover:bg-slate-800'
-                      }`}
+                    }`}
                     title="Desktop View (Full Screen)"
                   >
                     <Monitor className="w-3.5 h-3.5" />
@@ -442,10 +443,11 @@ export default function CmsOverviewPage() {
                   <button
                     type="button"
                     onClick={() => setPreviewDevice('tablet')}
-                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${previewDevice === 'tablet'
+                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                      previewDevice === 'tablet'
                         ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
                         : 'hover:text-white hover:bg-slate-800'
-                      }`}
+                    }`}
                     title="Tablet View (iPad 768px)"
                   >
                     <Tablet className="w-3.5 h-3.5" />
@@ -454,16 +456,17 @@ export default function CmsOverviewPage() {
                   <button
                     type="button"
                     onClick={() => setPreviewDevice('mobile')}
-                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${previewDevice === 'mobile'
+                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
+                      previewDevice === 'mobile'
                         ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
                         : 'hover:text-white hover:bg-slate-800'
-                      }`}
+                    }`}
                     title="Mobile View (iPhone 375px)"
                   >
                     <Smartphone className="w-3.5 h-3.5" />
                     <span className="text-[10px] hidden sm:inline">Mobile</span>
                   </button>
-                </div>
+                </div> */}
               </div>
 
               {/* Rendered Live Component Card Preview (with Smooth Device Resize) */}
