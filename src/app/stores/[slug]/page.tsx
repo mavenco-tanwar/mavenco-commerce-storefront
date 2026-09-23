@@ -3,7 +3,7 @@ import { CmsApiService } from '@/services/api/cms';
 import { DynamicSectionRenderer } from '@/components/home/DynamicSectionRenderer';
 import { checkTenantValidityDb } from '@/lib/server/tenant-db';
 import { StoreUnavailableView } from '@/components/ui/StoreUnavailableView';
-import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { getOrSeedTenantHomepageSections } from '@/lib/server/tenant-blueprint';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -29,52 +29,11 @@ export default async function StorePage({ params, searchParams }: StorePageProps
     console.warn('Tenant check warning:', err);
   }
 
-  // 1. Direct MongoDB Atlas Fetch (Instant SSR)
-  let sections = null;
-  try {
-    // Check isolated tenant database first (e.g. tenant_gever)
-    const tenantDb = await getTenantDatabase(tenantSlug);
-    if (tenantDb) {
-      const doc = await tenantDb.collection('cms_pages').findOne(
-        {
-          $or: [
-            { tenantSlug: tenantSlug, type: 'homepage' },
-            { type: 'homepage' },
-          ],
-        },
-        { sort: { publishedAt: -1, updatedAt: -1 } }
-      );
-      const dbSections = doc?.sections || doc?.config?.sections;
-      if (Array.isArray(dbSections) && dbSections.length > 0) {
-        sections = dbSections;
-      }
-    }
+  // 1. Fetch Tenant Homepage Sections or Auto-Seed from Category Blueprint
+  let sections = await getOrSeedTenantHomepageSections(tenantSlug);
 
-    // Fallback to platform database if not yet in tenant db
-    if (!sections) {
-      const db = await getDatabase();
-      if (db) {
-        const doc = await db.collection('cms_pages').findOne(
-          {
-            $or: [
-              { tenantSlug: tenantSlug, type: 'homepage' },
-              { tenantSlug: 'all', type: 'homepage' },
-            ],
-          },
-          { sort: { publishedAt: -1, updatedAt: -1 } }
-        );
-        const dbSections = doc?.sections || doc?.config?.sections;
-        if (Array.isArray(dbSections) && dbSections.length > 0) {
-          sections = dbSections;
-        }
-      }
-    }
-  } catch (err) {
-    console.warn('Direct MongoDB store homepage warning:', err);
-  }
-
-  // 2. Fallback
-  if (!sections) {
+  // 2. Fallback to API service if unconfigured
+  if (!sections || sections.length === 0) {
     try {
       sections = await CmsApiService.getHomepageSections(isPreview, tenantSlug);
     } catch (err) {

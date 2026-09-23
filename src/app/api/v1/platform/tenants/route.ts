@@ -186,6 +186,9 @@ export async function POST(req: NextRequest) {
         footerLayout: 'editorial_4_column',
         productCardStyle: 'minimal_hover_zoom',
       },
+      category: body.category || body.preset || undefined,
+      preset: body.preset || body.category || undefined,
+      categoryLabel: body.categoryLabel || undefined,
       features: body.features || {},
       ownerName: body.ownerName || body.adminName || 'Store Owner',
       ownerEmail: body.ownerEmail ? body.ownerEmail.toLowerCase().trim() : (body.email ? body.email.toLowerCase().trim() : ''),
@@ -248,6 +251,14 @@ export async function POST(req: NextRequest) {
           },
           { upsert: true }
         );
+      }
+
+      // Automatically seed the tenant's chosen category blueprint
+      try {
+        const { getOrSeedTenantHomepageSections } = await import('@/lib/server/tenant-blueprint');
+        getOrSeedTenantHomepageSections(cleanSlug).catch(() => {});
+      } catch (seedErr) {
+        console.warn('Auto seed tenant trigger notice:', seedErr);
       }
     }
 

@@ -4,8 +4,7 @@ import { DynamicSectionRenderer } from '@/components/home/DynamicSectionRenderer
 import { PlatformShowcaseLanding } from '@/components/home/PlatformShowcaseLanding';
 import { checkTenantValidityDb } from '@/lib/server/tenant-db';
 import { StoreUnavailableView } from '@/components/ui/StoreUnavailableView';
-
-import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
+import { getOrSeedTenantHomepageSections } from '@/lib/server/tenant-blueprint';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -34,50 +33,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     console.warn('Tenant validity check warning:', err);
   }
 
-  // 1. Direct MongoDB Atlas Fetch (Instant SSR from tenant database)
-  let sections = null;
-  try {
-    const tenantDb = await getTenantDatabase(tenantSlug);
-    if (tenantDb) {
-      const doc = await tenantDb.collection('cms_pages').findOne(
-        {
-          $or: [
-            { tenantSlug: tenantSlug, type: 'homepage' },
-            { type: 'homepage' },
-          ],
-        },
-        { sort: { publishedAt: -1, updatedAt: -1 } }
-      );
-      const dbSections = doc?.sections || doc?.config?.sections;
-      if (Array.isArray(dbSections) && dbSections.length > 0) {
-        sections = dbSections;
-      }
-    }
-
-    if (!sections) {
-      const platformDb = await getDatabase();
-      if (platformDb) {
-        const doc = await platformDb.collection('cms_pages').findOne(
-          {
-            $or: [
-              { tenantSlug: tenantSlug, type: 'homepage' },
-              { tenantSlug: 'all', type: 'homepage' },
-            ],
-          },
-          { sort: { publishedAt: -1, updatedAt: -1 } }
-        );
-        const dbSections = doc?.sections || doc?.config?.sections;
-        if (Array.isArray(dbSections) && dbSections.length > 0) {
-          sections = dbSections;
-        }
-      }
-    }
-  } catch (err) {
-    console.warn('Direct MongoDB store homepage warning:', err);
-  }
+  // 1. Fetch Tenant Homepage Sections or Auto-Seed from Category Blueprint
+  let sections = await getOrSeedTenantHomepageSections(tenantSlug);
 
   // 2. Fallback to API service
-  if (!sections) {
+  if (!sections || sections.length === 0) {
     try {
       sections = await CmsApiService.getHomepageSections(isPreview, tenantSlug);
     } catch (err) {
