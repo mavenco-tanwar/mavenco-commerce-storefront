@@ -34,6 +34,7 @@ export interface CollectionPageConfig {
     height: 'small' | 'medium' | 'large' | 'auto';
     ctaText: string;
     ctaLink: string;
+    badgeText?: string;
   };
 
   breadcrumbs: {

@@ -38,7 +38,19 @@ export async function GET(request: NextRequest) {
   const templateId = searchParams.get('template');
   const isPreview = searchParams.get('preview') === 'draft' || searchParams.get('status') === 'draft';
 
-  const defaultCfg = getDefaultCollectionPageConfig(tenantSlug);
+  let defaultCfg = getDefaultCollectionPageConfig(tenantSlug);
+
+  try {
+    const platformDb = await getDatabase();
+    if (platformDb) {
+      const tenantDoc = await platformDb.collection('tenants').findOne({
+        $or: [{ slug: tenantSlug }, { id: tenantSlug }, { id: `store_${tenantSlug}` }],
+      });
+      if (tenantDoc?.category || tenantDoc?.preset) {
+        defaultCfg = getDefaultCollectionPageConfig(tenantSlug, tenantDoc.category || tenantDoc.preset);
+      }
+    }
+  } catch {}
 
   try {
     const db = await getTenantDatabase(tenantSlug);

@@ -15,6 +15,7 @@ import { SortDropdown } from './SortDropdown';
 import { Breadcrumbs, BreadcrumbItem } from '@/components/ui/Breadcrumbs';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { resolveActiveTenantSlug, formatTenantHref } from '@/lib/tenant-config';
+import { getDefaultCollectionPageConfig } from '@/lib/collection-page-presets';
 
 export interface ProductListingViewProps {
   department?: Department;
@@ -218,10 +219,11 @@ export function ProductListingView({
     });
   };
 
+  const fallbackBlueprint = getDefaultCollectionPageConfig(activeTenantSlug);
   const effectiveBannerImage =
     bannerImage ||
     plpConfig?.hero?.bgImage ||
-    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop';
+    fallbackBlueprint.hero?.bgImage;
   const showHero = plpConfig?.hero?.enabled !== false;
 
   return (
@@ -278,9 +280,9 @@ export function ProductListingView({
 
           {/* Hero Content */}
           <div data-hero-content="true" className="relative z-10 max-w-4xl px-4 py-12 space-y-3.5 mx-auto">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-rose-300 text-[11px] font-bold uppercase tracking-widest mx-auto shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse shadow-sm" />
-              <span style={{ color: '#FDA4AF' }}>Signature Lookbook</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-amber-300 text-[11px] font-bold uppercase tracking-widest mx-auto shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shadow-sm" />
+              <span>{plpConfig?.hero?.badgeText || fallbackBlueprint.hero?.badgeText || 'Curated Category Edit'}</span>
             </div>
 
             <h1

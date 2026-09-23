@@ -20,6 +20,7 @@ import { ProductListingView } from '@/components/plp/ProductListingView';
 import { Button } from '@/components/ui/Button';
 import { getDatabase } from '@/lib/mongodb';
 import { headers, cookies } from 'next/headers';
+import { getDefaultCollectionPageConfig } from '@/lib/collection-page-presets';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -205,8 +206,12 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
           department={category.department ? (category.department as any) : undefined}
           initialCategory={category.slug}
           pageTitle={category.name}
-          pageSubtitle={category.description || 'Artisanal tailoring and modern silhouettes handcrafted for effortless luxury.'}
-          bannerImage={category.imageUrl || 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop'}
+          pageSubtitle={
+            category.description ||
+            getDefaultCollectionPageConfig(tenant).hero.description ||
+            `Explore our curated ${category.name} collection.`
+          }
+          bannerImage={category.imageUrl || getDefaultCollectionPageConfig(tenant).hero.bgImage}
           breadcrumbs={[{ label: category.name }]}
           availableCategories={subcategories}
         />

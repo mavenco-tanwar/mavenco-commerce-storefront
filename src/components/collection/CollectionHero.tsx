@@ -85,7 +85,13 @@ export function CollectionHero({
       )}
 
       {/* Hero Content */}
-      <div data-hero-content="true" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-3 text-white w-full">
+      <div data-hero-content="true" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-3.5 text-white w-full">
+        {Boolean(config.badgeText || (config as any).badge) && (
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-amber-300 text-[11px] font-bold uppercase tracking-widest shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shadow-sm" />
+            <span>{config.badgeText || (config as any).badge}</span>
+          </div>
+        )}
         <h1
           data-hero-title="true"
           className="text-3xl sm:text-4xl md:text-5xl font-serif font-black tracking-tight drop-shadow-md"

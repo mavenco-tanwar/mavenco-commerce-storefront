@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { formatTenantHref } from '@/lib/tenant-config';
 import { checkTenantValidityDb } from '@/lib/server/tenant-db';
 import { StoreUnavailableView } from '@/components/ui/StoreUnavailableView';
+import { getDefaultCollectionPageConfig } from '@/lib/collection-page-presets';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -264,9 +265,10 @@ export default async function StoreCategoryOrWebsitePage({
           pageTitle={category.name}
           pageSubtitle={
             category.description ||
-            'Artisanal tailoring and modern silhouettes handcrafted for effortless luxury.'
+            getDefaultCollectionPageConfig(tenantSlug).hero.description ||
+            `Explore our curated ${category.name} collection.`
           }
-          bannerImage={category.imageUrl || undefined}
+          bannerImage={category.imageUrl || getDefaultCollectionPageConfig(tenantSlug).hero.bgImage}
           breadcrumbs={[
             { label: 'Store', href: formatTenantHref('/', tenantSlug) },
             { label: category.name },

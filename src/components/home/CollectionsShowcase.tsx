@@ -165,7 +165,7 @@ export function CollectionsShowcase({
   }, [tenantSlug, customCollections, customBannerImage, customTitle, customSubtitle]);
 
   // If no collections exist for this store and not demo, don't show empty block
-  if (isLoaded && collections.length === 0) {
+  if (collections.length === 0 && !customBannerImage) {
     return null;
   }
 
