@@ -99,8 +99,8 @@ body {
 [data-merchant-store="true"] h5,
 [data-merchant-store="true"] h6,
 [data-merchant-store="true"] .font-serif {
-  font-family: var(--theme-font-heading, var(--font-playfair), Georgia, serif) !important;
-  color: var(--theme-color-heading, inherit) !important;
+  font-family: var(--theme-font-heading, var(--font-playfair), Georgia, serif);
+  color: var(--theme-color-heading, inherit);
 }
 
 /* Dynamic button, accent, and card overrides */
@@ -235,9 +235,9 @@ html {
 [data-merchant-store="true"] [data-hero-title="true"],
 [data-merchant-store="true"] [data-hero-content="true"] h1,
 [data-merchant-store="true"] [data-hero-content="true"] h2 {
-  color: var(--theme-hero-title, var(--theme-color-heading, #FFFFFF)) !important;
+  color: var(--theme-hero-title, var(--theme-color-heading, #FFFFFF));
 }
 
 [data-merchant-store="true"] [data-hero-content="true"] p {
-  color: var(--theme-hero-subtitle, var(--theme-color-text-secondary, #CBD5E1)) !important;
+  color: var(--theme-hero-subtitle, var(--theme-color-text-secondary, #CBD5E1));
 }

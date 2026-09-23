@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { ArrowRight, Sparkles, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { formatTenantHref } from '@/lib/tenant-config';
+import { cn } from '@/lib/utils';
 
 export interface HeroSlide {
   id?: string;
@@ -57,6 +58,7 @@ export interface HeroSectionProps {
     buttonPlacement?: 'center' | 'left' | 'right';
     buttonOrientation?: 'inline' | 'stacked';
     btnBorderRadius?: string;
+    buttonCount?: number;
     primaryBtnVariant?: string;
     primaryBtnColor?: string;
     primaryBtnTextColor?: string;
@@ -118,20 +120,30 @@ export function HeroSection({
 }: HeroSectionProps = {}) {
   const s = customSettings || {};
 
+  const hasButtonCount = typeof s.buttonCount === 'number';
+  const showBtn2 = hasButtonCount
+    ? (s.buttonCount ?? 0) >= 2
+    : Boolean(s.secondaryBtnText);
+  const showBtn3 = hasButtonCount
+    ? (s.buttonCount ?? 0) >= 3
+    : Boolean(s.tertiaryBtnText);
+
   // Normalize Slides
   const defaultSlide: HeroSlide = {
     id: 'slide-default',
-    tagline: s.tagline || 'Spring / Summer 2026 Studio Collection',
+    tagline: s.tagline || (customTitle ? undefined : 'Spring / Summer 2026 Studio Collection'),
     title: customTitle || 'Style That Speaks You',
     subtitle:
       customSubtitle ||
-      'Discover effortlessly stylish, runway-inspired fashion crafted for modern luxury living. Breathable fabrics, pure bespoke silhouettes, accessible prices.',
+      (customTitle
+        ? undefined
+        : 'Discover effortlessly stylish, runway-inspired fashion crafted for modern luxury living. Breathable fabrics, pure bespoke silhouettes, accessible prices.'),
     primaryBtnText: s.primaryBtnText || 'Shop Collection',
     primaryBtnLink: s.primaryBtnLink || '/collections',
-    secondaryBtnText: s.secondaryBtnText || 'Explore Lookbook',
-    secondaryBtnLink: s.secondaryBtnLink || '/about',
-    tertiaryBtnText: s.tertiaryBtnText,
-    tertiaryBtnLink: s.tertiaryBtnLink,
+    secondaryBtnText: showBtn2 ? (s.secondaryBtnText || 'Explore Lookbook') : undefined,
+    secondaryBtnLink: showBtn2 ? (s.secondaryBtnLink || '/about') : undefined,
+    tertiaryBtnText: showBtn3 ? (s.tertiaryBtnText || 'Book Consultation') : undefined,
+    tertiaryBtnLink: showBtn3 ? (s.tertiaryBtnLink || '/contact') : undefined,
     desktopImage:
       s.desktopImage ||
       'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop',
@@ -150,10 +162,10 @@ export function HeroSection({
           subtitle: sl.subtitle || customSubtitle || defaultSlide.subtitle,
           primaryBtnText: sl.primaryBtnText || s.primaryBtnText || defaultSlide.primaryBtnText,
           primaryBtnLink: sl.primaryBtnLink || s.primaryBtnLink || defaultSlide.primaryBtnLink,
-          secondaryBtnText: sl.secondaryBtnText || s.secondaryBtnText,
-          secondaryBtnLink: sl.secondaryBtnLink || s.secondaryBtnLink,
-          tertiaryBtnText: sl.tertiaryBtnText || s.tertiaryBtnText,
-          tertiaryBtnLink: sl.tertiaryBtnLink || s.tertiaryBtnLink,
+          secondaryBtnText: showBtn2 ? (sl.secondaryBtnText || s.secondaryBtnText || defaultSlide.secondaryBtnText) : undefined,
+          secondaryBtnLink: showBtn2 ? (sl.secondaryBtnLink || s.secondaryBtnLink || defaultSlide.secondaryBtnLink) : undefined,
+          tertiaryBtnText: showBtn3 ? (sl.tertiaryBtnText || s.tertiaryBtnText || defaultSlide.tertiaryBtnText) : undefined,
+          tertiaryBtnLink: showBtn3 ? (sl.tertiaryBtnLink || s.tertiaryBtnLink || defaultSlide.tertiaryBtnLink) : undefined,
           desktopImage: sl.desktopImage || s.desktopImage || defaultSlide.desktopImage,
           mobileImage: sl.mobileImage || s.mobileImage,
           overlayOpacity: sl.overlayOpacity !== undefined ? sl.overlayOpacity : (s.overlayOpacity !== undefined ? s.overlayOpacity : 45),
@@ -249,6 +261,9 @@ export function HeroSection({
     borderRadius: s.btnBorderRadius || undefined,
     backgroundColor: s.primaryBtnColor || undefined,
     color: s.primaryBtnTextColor || undefined,
+    borderColor: s.primaryBtnColor || undefined,
+    borderWidth: s.primaryBtnColor ? '1px' : undefined,
+    borderStyle: s.primaryBtnColor ? 'solid' : undefined,
     fontFamily: s.btnFontFamily ? `"${s.btnFontFamily}", sans-serif` : undefined,
     fontSize: s.btnFontSize || undefined,
     fontWeight: s.btnFontWeight || undefined,
@@ -260,6 +275,9 @@ export function HeroSection({
     borderRadius: s.btnBorderRadius || undefined,
     backgroundColor: s.secondaryBtnColor || undefined,
     color: s.secondaryBtnTextColor || undefined,
+    borderColor: s.secondaryBtnColor || (s.secondaryBtnTextColor ? `${s.secondaryBtnTextColor}80` : undefined),
+    borderWidth: s.secondaryBtnColor || s.secondaryBtnTextColor ? '1px' : undefined,
+    borderStyle: s.secondaryBtnColor || s.secondaryBtnTextColor ? 'solid' : undefined,
     fontFamily: s.btnFontFamily ? `"${s.btnFontFamily}", sans-serif` : undefined,
     fontSize: s.btnFontSize || undefined,
     fontWeight: s.btnFontWeight || undefined,
@@ -271,6 +289,9 @@ export function HeroSection({
     borderRadius: s.btnBorderRadius || undefined,
     backgroundColor: s.tertiaryBtnColor || undefined,
     color: s.tertiaryBtnTextColor || undefined,
+    borderColor: s.tertiaryBtnColor || (s.tertiaryBtnTextColor ? `${s.tertiaryBtnTextColor}80` : undefined),
+    borderWidth: s.tertiaryBtnColor || s.tertiaryBtnTextColor ? '1px' : undefined,
+    borderStyle: s.tertiaryBtnColor || s.tertiaryBtnTextColor ? 'solid' : undefined,
     fontFamily: s.btnFontFamily ? `"${s.btnFontFamily}", sans-serif` : undefined,
     fontSize: s.btnFontSize || undefined,
     fontWeight: s.btnFontWeight || undefined,
@@ -394,7 +415,10 @@ export function HeroSection({
                     variant={(s.secondaryBtnVariant as any) || 'outline'}
                     size="lg"
                     style={secondaryBtnCustomStyle}
-                    className="w-full sm:w-auto min-w-[170px] border-white text-white hover:bg-white hover:text-black cursor-pointer"
+                    className={cn(
+                      "w-full sm:w-auto min-w-[170px] cursor-pointer",
+                      !s.secondaryBtnColor && !s.secondaryBtnTextColor && "border-white text-white hover:bg-white hover:text-black"
+                    )}
                   >
                     {activeSlide.secondaryBtnText}
                   </Button>
@@ -410,7 +434,10 @@ export function HeroSection({
                     variant={(s.tertiaryBtnVariant as any) || 'outline'}
                     size="lg"
                     style={tertiaryBtnCustomStyle}
-                    className="w-full sm:w-auto min-w-[170px] border-white/60 text-white hover:bg-white/20 cursor-pointer"
+                    className={cn(
+                      "w-full sm:w-auto min-w-[170px] cursor-pointer",
+                      !s.tertiaryBtnColor && !s.tertiaryBtnTextColor && "border-white/60 text-white hover:bg-white/20"
+                    )}
                   >
                     {activeSlide.tertiaryBtnText}
                   </Button>
@@ -565,7 +592,10 @@ export function HeroSection({
                   variant={(s.secondaryBtnVariant as any) || 'outline'}
                   size="lg"
                   style={secondaryBtnCustomStyle}
-                  className="w-full sm:w-auto min-w-[170px] border-white text-white hover:bg-white hover:text-black cursor-pointer"
+                  className={cn(
+                    "w-full sm:w-auto min-w-[170px] cursor-pointer",
+                    !s.secondaryBtnColor && !s.secondaryBtnTextColor && "border-white text-white hover:bg-white hover:text-black"
+                  )}
                 >
                   {activeSlide.secondaryBtnText}
                 </Button>
@@ -581,7 +611,10 @@ export function HeroSection({
                   variant={(s.tertiaryBtnVariant as any) || 'outline'}
                   size="lg"
                   style={tertiaryBtnCustomStyle}
-                  className="w-full sm:w-auto min-w-[170px] border-white/60 text-white hover:bg-white/20 cursor-pointer"
+                  className={cn(
+                    "w-full sm:w-auto min-w-[170px] cursor-pointer",
+                    !s.tertiaryBtnColor && !s.tertiaryBtnTextColor && "border-white/60 text-white hover:bg-white/20"
+                  )}
                 >
                   {activeSlide.tertiaryBtnText}
                 </Button>
@@ -833,7 +866,10 @@ export function HeroSection({
                     variant={(s.tertiaryBtnVariant as any) || 'outline'}
                     size="lg"
                     style={tertiaryBtnCustomStyle}
-                    className="w-full sm:w-auto min-w-[170px] border-[#111111]/40 text-[#111111] hover:bg-[#111111]/10 cursor-pointer"
+                    className={cn(
+                      "w-full sm:w-auto min-w-[170px] cursor-pointer",
+                      !s.tertiaryBtnColor && !s.tertiaryBtnTextColor && "border-[#111111]/40 text-[#111111] hover:bg-[#111111]/10"
+                    )}
                   >
                     {activeSlide.tertiaryBtnText}
                   </Button>

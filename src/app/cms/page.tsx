@@ -365,11 +365,10 @@ export default function CmsOverviewPage() {
                     key={block.id}
                     onClick={() => setSelectedCmsBlock(idx)}
                     type="button"
-                    className={`w-full p-3.5 rounded-xl border text-left transition-all flex items-center justify-between group ${
-                      isSelected
+                    className={`w-full p-3.5 rounded-xl border text-left transition-all flex items-center justify-between group ${isSelected
                         ? 'bg-amber-500/10 border-amber-500/50 shadow-md'
                         : 'bg-[#131622] border-slate-800 hover:border-slate-700 text-slate-300'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <GripVertical className={`w-4 h-4 transition-colors ${isSelected ? 'text-amber-400' : 'text-slate-600 group-hover:text-slate-400'}`} />
@@ -427,7 +426,7 @@ export default function CmsOverviewPage() {
                 </div>
 
                 {/* Interactive Device Viewport Switcher */}
-                <div className="flex items-center gap-1 bg-[#0A0C10] p-1 rounded-xl border border-slate-800 text-slate-400">
+                {/* <div className="flex items-center gap-1 bg-[#0A0C10] p-1 rounded-xl border border-slate-800 text-slate-400">
                   <button
                     type="button"
                     onClick={() => setPreviewDevice('desktop')}
@@ -467,18 +466,17 @@ export default function CmsOverviewPage() {
                     <Smartphone className="w-3.5 h-3.5" />
                     <span className="text-[10px] hidden sm:inline">Mobile</span>
                   </button>
-                </div>
+                </div> */}
               </div>
 
               {/* Rendered Live Component Card Preview (with Smooth Device Resize) */}
               <div
-                className={`relative overflow-hidden transition-all duration-500 ease-in-out bg-slate-950 shadow-2xl flex flex-col justify-end group ${
-                  previewDevice === 'desktop'
+                className={`relative overflow-hidden transition-all duration-500 ease-in-out bg-slate-950 shadow-2xl flex flex-col justify-end group ${previewDevice === 'desktop'
                     ? 'w-full min-h-[320px] p-6 rounded-2xl border border-slate-700'
                     : previewDevice === 'tablet'
-                    ? 'max-w-[480px] mx-auto min-h-[380px] p-5 rounded-3xl border-2 border-slate-600 shadow-amber-950/20 ring-1 ring-slate-700'
-                    : 'max-w-[320px] mx-auto min-h-[440px] p-4 rounded-[32px] border-4 border-slate-700 shadow-2xl ring-2 ring-slate-800'
-                }`}
+                      ? 'max-w-[480px] mx-auto min-h-[380px] p-5 rounded-3xl border-2 border-slate-600 shadow-amber-950/20 ring-1 ring-slate-700'
+                      : 'max-w-[320px] mx-auto min-h-[440px] p-4 rounded-[32px] border-4 border-slate-700 shadow-2xl ring-2 ring-slate-800'
+                  }`}
               >
                 {/* Mobile Dynamic Island / Notch */}
                 {previewDevice === 'mobile' && (
@@ -502,29 +500,26 @@ export default function CmsOverviewPage() {
                   </div>
 
                   <h3
-                    className={`font-extrabold text-white leading-tight transition-all ${
-                      previewDevice === 'mobile'
+                    className={`font-extrabold text-white leading-tight transition-all ${previewDevice === 'mobile'
                         ? 'text-lg'
                         : previewDevice === 'tablet'
-                        ? 'text-xl'
-                        : 'text-2xl'
-                    }`}
+                          ? 'text-xl'
+                          : 'text-2xl'
+                      }`}
                   >
                     {cmsBlocksData[selectedCmsBlock].previewHeading}
                   </h3>
 
                   <p
-                    className={`text-slate-300 font-sans transition-all ${
-                      previewDevice === 'mobile' ? 'text-[11px] line-clamp-2' : 'text-xs max-w-md'
-                    }`}
+                    className={`text-slate-300 font-sans transition-all ${previewDevice === 'mobile' ? 'text-[11px] line-clamp-2' : 'text-xs max-w-md'
+                      }`}
                   >
                     {cmsBlocksData[selectedCmsBlock].previewSub}
                   </p>
 
                   <div
-                    className={`pt-2 flex ${
-                      previewDevice === 'mobile' ? 'flex-col' : 'items-center'
-                    } gap-2.5`}
+                    className={`pt-2 flex ${previewDevice === 'mobile' ? 'flex-col' : 'items-center'
+                      } gap-2.5`}
                   >
                     <button className="w-full sm:w-auto px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg shadow-lg flex items-center justify-center gap-1.5 transition-all">
                       <span>Interactive CTA</span>
@@ -634,11 +629,10 @@ export default function CmsOverviewPage() {
                     key={f.val}
                     type="button"
                     onClick={() => setActiveFont(f.val as any)}
-                    className={`p-3 rounded-xl border text-left text-xs transition-all ${
-                      activeFont === f.val
+                    className={`p-3 rounded-xl border text-left text-xs transition-all ${activeFont === f.val
                         ? 'bg-rose-500/15 border-rose-500 text-white shadow-md font-bold'
                         : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <div className="text-white text-xs">{f.label}</div>
                     <div className={`text-[10px] text-slate-400 mt-1 ${f.style}`}>Sample Headline Aa</div>
@@ -666,11 +660,10 @@ export default function CmsOverviewPage() {
                       key={key}
                       type="button"
                       onClick={() => setActiveThemeName(key)}
-                      className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
-                        isSelected
+                      className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${isSelected
                           ? 'bg-amber-500/10 border-amber-500 text-white shadow-md'
                           : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
-                      }`}
+                        }`}
                     >
                       <div>
                         <div className="text-xs font-bold text-white">{pal.name.split('(')[0]}</div>
@@ -703,11 +696,10 @@ export default function CmsOverviewPage() {
                     key={r.val}
                     type="button"
                     onClick={() => setActiveRadius(r.val as any)}
-                    className={`py-2 px-3 rounded-xl border text-center font-bold text-xs transition-all ${
-                      activeRadius === r.val
+                    className={`py-2 px-3 rounded-xl border text-center font-bold text-xs transition-all ${activeRadius === r.val
                         ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
                         : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:text-white'
-                    }`}
+                      }`}
                   >
                     {r.label}
                   </button>

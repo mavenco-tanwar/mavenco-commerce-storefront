@@ -337,6 +337,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                   containerWidth: sData.containerWidth || 'contained',
 
                   // Button Placements & Styling
+                  buttonCount: sData.buttonCount,
                   buttonPlacement: sData.buttonPlacement || sData.contentAlign || 'center',
                   buttonOrientation: sData.buttonOrientation || 'inline',
                   btnBorderRadius: sData.btnBorderRadius,
