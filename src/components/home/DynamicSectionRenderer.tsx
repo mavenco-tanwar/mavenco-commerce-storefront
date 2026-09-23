@@ -456,12 +456,16 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
           case 'products':
           case 'products_grid':
           case 'featured_products':
+            const productsBadge = sData.tagline !== undefined
+              ? sData.tagline
+              : (sData.badgeText || (section.badge && isNaN(Number(section.badge)) ? section.badge : undefined));
+
             sectionElement = (
               <TrendingSection
                 key={section.id}
                 customTitle={title}
                 customSubtitle={subtitle}
-                customBadge={badge}
+                customBadge={productsBadge}
                 customLimit={sData.limit || 8}
                 querySource={sData.querySource || 'best_sellers'}
                 columnsDesktop={sData.columnsDesktop || 4}
@@ -497,8 +501,8 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 btnFontWeight={sData.btnFontWeight}
                 btnLetterSpacing={sData.btnLetterSpacing}
                 btnTextTransform={sData.btnTextTransform}
-                customCtaText={sData.primaryBtnText || sData.ctaText || sData.primaryCtaText || 'Explore All'}
-                customCtaUrl={sData.primaryBtnLink || sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
+                customCtaText={sData.primaryBtnText || sData.btnText || sData.ctaText || sData.primaryCtaText || sData.viewAllText || 'Explore All'}
+                customCtaUrl={sData.primaryBtnLink || sData.btnLink || sData.ctaUrl || sData.primaryCtaUrl || '/collections'}
                 tenantSlug={resolvedTenant}
               />
             );
@@ -524,12 +528,16 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
           // 6. Shop by Category Tiles [CATEGORIES]
           case 'category-grid':
           case 'categories':
+            const categoriesBadge = sData.tagline !== undefined
+              ? sData.tagline
+              : (sData.badgeText || (section.badge && isNaN(Number(section.badge)) ? section.badge : undefined));
+
             sectionElement = (
               <CategoryShowcase
                 key={section.id}
                 customTitle={title}
                 customSubtitle={subtitle}
-                customBadge={badge}
+                customBadge={categoriesBadge}
                 customCategories={sData.categoriesList || sData.categories || sData.items}
                 columnsDesktop={sData.columnsDesktop || 4}
                 columnsTablet={sData.columnsTablet || 2}
@@ -542,6 +550,12 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 paddingBottom={sData.paddingBottom || styles?.paddingBottom}
                 bgColor={sData.bgColor || styles?.backgroundColor}
                 textColor={sData.textColor || styles?.color}
+                primaryBtnText={sData.primaryBtnText || sData.btnText || sData.primaryCtaText}
+                primaryBtnLink={sData.primaryBtnLink || sData.btnLink || sData.primaryCtaUrl}
+                secondaryBtnText={sData.secondaryBtnText || sData.secondaryCtaText || sData.btn2Text}
+                secondaryBtnLink={sData.secondaryBtnLink || sData.secondaryCtaUrl || sData.btn2Link}
+                tertiaryBtnText={sData.tertiaryBtnText || sData.tertiaryCtaText || sData.btn3Text}
+                tertiaryBtnLink={sData.tertiaryBtnLink || sData.tertiaryCtaUrl || sData.btn3Link}
                 tenantSlug={resolvedTenant}
                 {...typographyProps}
               />

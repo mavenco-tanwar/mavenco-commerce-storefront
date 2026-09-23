@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { formatTenantHref, cleanCategorySlug } from '@/lib/tenant-config';
+import { Button } from '@/components/ui/Button';
 
 interface CategoryItem {
   id?: string;
@@ -19,6 +20,7 @@ interface CategoryItem {
   link?: string;
   buttonText?: string;
   badge?: string;
+  cardBgColor?: string;
 }
 
 import { SectionTypographyProps, getSectionTypographyStyles } from '@/lib/section-typography';
@@ -39,6 +41,12 @@ interface CategoryShowcaseProps extends SectionTypographyProps {
   paddingBottom?: string;
   bgColor?: string;
   textColor?: string;
+  primaryBtnText?: string;
+  primaryBtnLink?: string;
+  secondaryBtnText?: string;
+  secondaryBtnLink?: string;
+  tertiaryBtnText?: string;
+  tertiaryBtnLink?: string;
   tenantSlug?: string;
 }
 
@@ -96,13 +104,20 @@ export function CategoryShowcase({
   paddingBottom,
   bgColor,
   textColor,
+  primaryBtnText,
+  primaryBtnLink,
+  secondaryBtnText,
+  secondaryBtnLink,
+  tertiaryBtnText,
+  tertiaryBtnLink,
   tenantSlug,
   ...typographyProps
 }: CategoryShowcaseProps = {}) {
-  const { headingStyle, subtitleStyle, badgeStyle, btnStyle } = getSectionTypographyStyles({
-    ...typographyProps,
-    textColor,
-  });
+  const { headingStyle, subtitleStyle, badgeStyle, btnStyle, primaryBtnStyle, secondaryBtnStyle, tertiaryBtnStyle } =
+    getSectionTypographyStyles({
+      ...typographyProps,
+      textColor,
+    });
 
   const [categories, setCategories] = useState<CategoryItem[]>(() => {
     if (customCategories && Array.isArray(customCategories) && customCategories.length > 0) {
@@ -277,7 +292,10 @@ export function CategoryShowcase({
               <Link
                 key={cat.id || idx}
                 href={formatTenantHref(href, tenantSlug)}
-                style={customBorderRadiusStyle}
+                style={{
+                  ...customBorderRadiusStyle,
+                  backgroundColor: cat.cardBgColor || undefined,
+                }}
                 className={`group relative ${aspectClass} overflow-hidden bg-[#FAF6F2] border border-[#E8DED8] luxury-card-shadow flex flex-col justify-end p-6`}
               >
                 {/* Background Image */}
@@ -325,6 +343,53 @@ export function CategoryShowcase({
             );
           })}
         </div>
+
+        {/* Action Buttons (1, 2, or 3 buttons) */}
+        {(primaryBtnText || secondaryBtnText || tertiaryBtnText) && (
+          <div className={`mt-10 pt-2 flex flex-wrap items-center gap-4 ${
+            contentAlign === 'left' ? 'justify-start' : contentAlign === 'right' ? 'justify-end' : 'justify-center'
+          }`}>
+            {primaryBtnText && (
+              <Link href={formatTenantHref(primaryBtnLink || '/collections', tenantSlug)}>
+                <Button
+                  variant="luxury-gold"
+                  size="lg"
+                  style={primaryBtnStyle}
+                  className="min-w-[180px] group shadow-md cursor-pointer"
+                >
+                  <span>{primaryBtnText}</span>
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            )}
+
+            {secondaryBtnText && (
+              <Link href={formatTenantHref(secondaryBtnLink || '/about', tenantSlug)}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  style={secondaryBtnStyle}
+                  className="min-w-[150px] cursor-pointer shadow-sm"
+                >
+                  <span>{secondaryBtnText}</span>
+                </Button>
+              </Link>
+            )}
+
+            {tertiaryBtnText && (
+              <Link href={formatTenantHref(tertiaryBtnLink || '/contact', tenantSlug)}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  style={tertiaryBtnStyle}
+                  className="min-w-[150px] cursor-pointer shadow-sm"
+                >
+                  <span>{tertiaryBtnText}</span>
+                </Button>
+              </Link>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
