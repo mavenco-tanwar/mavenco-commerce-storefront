@@ -5,14 +5,19 @@ import Link from 'next/link';
 import { Clock, ArrowRight, Sparkles, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { formatTenantHref } from '@/lib/tenant-config';
+import { SectionTypographyProps, getSectionTypographyStyles } from '@/lib/section-typography';
 
-interface FlashSaleCountdownProps {
+interface FlashSaleCountdownProps extends SectionTypographyProps {
   customTitle?: string;
   customSubtitle?: string;
   customBadge?: string;
   targetDate?: string;
   customBtnText?: string;
   customBtnLink?: string;
+  paddingTop?: string;
+  paddingBottom?: string;
+  bgColor?: string;
+  textColor?: string;
   tenantSlug?: string;
 }
 
@@ -51,9 +56,19 @@ export function FlashSaleCountdown({
   targetDate,
   customBtnText = 'SHOP SALE NOW',
   customBtnLink = '/sale',
+  paddingTop,
+  paddingBottom,
+  bgColor,
+  textColor,
   tenantSlug,
+  ...typographyProps
 }: FlashSaleCountdownProps) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(() => calculateTimeLeft(targetDate));
+
+  const { headingStyle, subtitleStyle, badgeStyle, primaryBtnStyle } = getSectionTypographyStyles({
+    ...typographyProps,
+    textColor,
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -73,27 +88,57 @@ export function FlashSaleCountdown({
   ];
 
   return (
-    <section className="relative py-16 md:py-24 bg-[#111319] text-white overflow-hidden select-none">
+    <section
+      className="relative py-16 md:py-24 bg-[#111319] text-white overflow-hidden select-none transition-colors duration-200"
+      style={{
+        paddingTop: paddingTop || undefined,
+        paddingBottom: paddingBottom || undefined,
+        backgroundColor: bgColor || undefined,
+        color: textColor || undefined,
+      }}
+    >
       {/* Background Ambience / Glow */}
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[var(--theme-color-accent,#B77A68)]/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-80 h-80 bg-rose-500/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
         {/* Urgency Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold uppercase tracking-widest mb-4">
-          <Flame className="w-3.5 h-3.5 animate-pulse text-rose-500" />
-          <span>{customBadge}</span>
-        </div>
+        {customBadge && (
+          <div
+            data-typography="badge"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold uppercase tracking-widest mb-4"
+            style={badgeStyle}
+          >
+            <Flame className="w-3.5 h-3.5 animate-pulse text-rose-500" />
+            <span style={{ color: badgeStyle.color || undefined }}>{customBadge}</span>
+          </div>
+        )}
 
         {/* Heading */}
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white mb-3">
+        <h2
+          data-typography="heading"
+          className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-white mb-3"
+          style={{
+            color: textColor || undefined,
+            ...headingStyle,
+          }}
+        >
           {customTitle}
         </h2>
 
         {/* Subtitle */}
-        <p className="text-xs sm:text-sm md:text-base text-slate-300 font-sans max-w-xl mx-auto leading-relaxed mb-10">
-          {customSubtitle}
-        </p>
+        {customSubtitle && (
+          <p
+            data-typography="subtitle"
+            className="text-xs sm:text-sm md:text-base text-slate-300 font-sans max-w-xl mx-auto leading-relaxed mb-10"
+            style={{
+              color: textColor ? `${textColor}cc` : undefined,
+              ...subtitleStyle,
+            }}
+          >
+            {customSubtitle}
+          </p>
+        )}
 
         {/* Countdown Digits Grid */}
         <div className="flex items-center justify-center gap-3 sm:gap-6 mb-10">
@@ -123,7 +168,8 @@ export function FlashSaleCountdown({
             <Button
               variant="luxury-gold"
               size="lg"
-              className="min-w-[200px] group shadow-xl shadow-rose-950/30"
+              style={primaryBtnStyle}
+              className="min-w-[200px] group shadow-xl shadow-rose-950/30 cursor-pointer"
             >
               <span>{customBtnText}</span>
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -134,3 +180,4 @@ export function FlashSaleCountdown({
     </section>
   );
 }
+

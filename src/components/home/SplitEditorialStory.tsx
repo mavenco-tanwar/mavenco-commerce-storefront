@@ -6,8 +6,9 @@ import Image from 'next/image';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { formatTenantHref } from '@/lib/tenant-config';
+import { SectionTypographyProps, getSectionTypographyStyles } from '@/lib/section-typography';
 
-interface SplitEditorialStoryProps {
+interface SplitEditorialStoryProps extends SectionTypographyProps {
   customTitle?: string;
   customSubtitle?: string;
   customDescription?: string;
@@ -16,6 +17,14 @@ interface SplitEditorialStoryProps {
   imagePosition?: 'left' | 'right';
   customBtnText?: string;
   customBtnLink?: string;
+  customSecondaryBtnText?: string;
+  customSecondaryBtnLink?: string;
+  customTertiaryBtnText?: string;
+  customTertiaryBtnLink?: string;
+  paddingTop?: string;
+  paddingBottom?: string;
+  bgColor?: string;
+  textColor?: string;
   tenantSlug?: string;
 }
 
@@ -28,12 +37,35 @@ export function SplitEditorialStory({
   imagePosition = 'left',
   customBtnText = 'READ OUR STORY',
   customBtnLink = '/about',
+  customSecondaryBtnText,
+  customSecondaryBtnLink,
+  customTertiaryBtnText,
+  customTertiaryBtnLink,
+  paddingTop,
+  paddingBottom,
+  bgColor,
+  textColor,
   tenantSlug,
+  ...typographyProps
 }: SplitEditorialStoryProps) {
   const isImageRight = imagePosition === 'right';
 
+  const { headingStyle, subtitleStyle, badgeStyle, primaryBtnStyle, secondaryBtnStyle, tertiaryBtnStyle } =
+    getSectionTypographyStyles({
+      ...typographyProps,
+      textColor,
+    });
+
   return (
-    <section className="py-16 md:py-24 bg-[var(--theme-color-surface,#FFFDFC)] select-none transition-colors duration-200">
+    <section
+      className="py-16 md:py-24 bg-[var(--theme-color-surface,#FFFDFC)] select-none transition-colors duration-200"
+      style={{
+        paddingTop: paddingTop || undefined,
+        paddingBottom: paddingBottom || undefined,
+        backgroundColor: bgColor || undefined,
+        color: textColor || undefined,
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Image Column */}
@@ -64,39 +96,91 @@ export function SplitEditorialStory({
             }`}
           >
             {customBadge && (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--theme-color-surface-secondary,#F8F1EA)] border border-[var(--theme-color-border,#E8DED8)] text-[11px] uppercase font-bold tracking-widest text-[var(--theme-color-accent,#B77A68)]">
+              <div
+                data-typography="badge"
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--theme-color-surface-secondary,#F8F1EA)] border border-[var(--theme-color-border,#E8DED8)] rounded-full text-[11px] uppercase font-bold tracking-widest text-[var(--theme-color-accent,#B77A68)]"
+                style={badgeStyle}
+              >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{customBadge}</span>
+                <span style={{ color: badgeStyle.color || undefined }}>{customBadge}</span>
               </div>
             )}
 
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[var(--theme-color-heading,#111111)] leading-[1.15]">
+            <h2
+              data-typography="heading"
+              className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[var(--theme-color-heading,#111111)] leading-[1.15]"
+              style={{
+                color: textColor || undefined,
+                ...headingStyle,
+              }}
+            >
               {customTitle}
             </h2>
 
             {customSubtitle && (
-              <p className="text-sm sm:text-base font-serif italic text-[var(--theme-color-text-secondary,#57534E)]">
+              <p
+                data-typography="subtitle"
+                className="text-sm sm:text-base font-serif italic text-[var(--theme-color-text-secondary,#57534E)]"
+                style={{
+                  color: textColor ? `${textColor}cc` : undefined,
+                  ...subtitleStyle,
+                }}
+              >
                 {customSubtitle}
               </p>
             )}
 
             <div className="w-16 h-0.5 bg-[var(--theme-color-accent,#B77A68)]" />
 
-            <div className="text-xs sm:text-sm md:text-base text-[var(--theme-color-text-secondary,#57534E)] font-sans leading-relaxed space-y-4">
+            <div
+              data-typography="subtitle"
+              className="text-xs sm:text-sm md:text-base text-[var(--theme-color-text-secondary,#57534E)] font-sans leading-relaxed space-y-4"
+              style={{
+                color: textColor ? `${textColor}cc` : undefined,
+                ...subtitleStyle,
+              }}
+            >
               <p>{customDescription}</p>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-4 flex flex-wrap items-center gap-4">
               <Link href={formatTenantHref(customBtnLink, tenantSlug)}>
                 <Button
                   variant="primary"
                   size="lg"
-                  className="min-w-[180px] group shadow-sm"
+                  style={primaryBtnStyle}
+                  className="min-w-[180px] group shadow-sm cursor-pointer"
                 >
                   <span>{customBtnText}</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
+
+              {customSecondaryBtnText && (
+                <Link href={formatTenantHref(customSecondaryBtnLink, tenantSlug)}>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    style={secondaryBtnStyle}
+                    className="min-w-[150px] cursor-pointer"
+                  >
+                    <span>{customSecondaryBtnText}</span>
+                  </Button>
+                </Link>
+              )}
+
+              {customTertiaryBtnText && (
+                <Link href={formatTenantHref(customTertiaryBtnLink, tenantSlug)}>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    style={tertiaryBtnStyle}
+                    className="min-w-[150px] cursor-pointer"
+                  >
+                    <span>{customTertiaryBtnText}</span>
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -104,3 +188,4 @@ export function SplitEditorialStory({
     </section>
   );
 }
+

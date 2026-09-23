@@ -250,6 +250,44 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
         const image = sData.bgImage || sData.desktopImage || sData.image || sData.bannerImage;
         const styles = section.styles || {};
 
+        const typographyProps = {
+          headingFontFamily: sData.headingFontFamily,
+          headingColor: sData.headingColor,
+          headingFontSize: sData.headingFontSize,
+          headingFontWeight: sData.headingFontWeight,
+          headingLetterSpacing: sData.headingLetterSpacing,
+          headingLineHeight: sData.headingLineHeight,
+          headingTextTransform: sData.headingTextTransform,
+
+          subtitleFontFamily: sData.subtitleFontFamily,
+          subtitleColor: sData.subtitleColor,
+          subtitleFontSize: sData.subtitleFontSize,
+          subtitleFontWeight: sData.subtitleFontWeight,
+          subtitleLetterSpacing: sData.subtitleLetterSpacing,
+          subtitleLineHeight: sData.subtitleLineHeight,
+
+          badgeFontFamily: sData.badgeFontFamily,
+          badgeColor: sData.badgeColor,
+          badgeBgColor: sData.badgeBgColor,
+          badgeFontSize: sData.badgeFontSize,
+          badgeFontWeight: sData.badgeFontWeight,
+          badgeLetterSpacing: sData.badgeLetterSpacing,
+          badgeTextTransform: sData.badgeTextTransform,
+
+          btnFontFamily: sData.btnFontFamily,
+          btnFontSize: sData.btnFontSize,
+          btnFontWeight: sData.btnFontWeight,
+          btnLetterSpacing: sData.btnLetterSpacing,
+          btnTextTransform: sData.btnTextTransform,
+
+          primaryBtnColor: sData.primaryBtnColor,
+          primaryBtnTextColor: sData.primaryBtnTextColor,
+          secondaryBtnColor: sData.secondaryBtnColor,
+          secondaryBtnTextColor: sData.secondaryBtnTextColor,
+          tertiaryBtnColor: sData.tertiaryBtnColor,
+          tertiaryBtnTextColor: sData.tertiaryBtnTextColor,
+        };
+
         let sectionElement: React.ReactNode = null;
 
         switch (section.type) {
@@ -274,7 +312,12 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customCtaUrl={sData.ctaUrl || sData.primaryBtnLink || sData.buttonUrl || sData.link}
                 customBannerImage={sData.bannerImage || sData.image || sData.backgroundImage}
                 customCollections={sData.collectionsList || sData.collections || sData.items}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
                 tenantSlug={resolvedTenant}
+                {...typographyProps}
               />
             );
             break;
@@ -290,6 +333,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 key={section.id}
                 customTitle={title}
                 customSubtitle={subtitle}
+                customBadge={badge}
                 customItems={sData.items || sData.promises}
                 columnsDesktop={sData.columns || sData.columnsDesktop || 4}
                 contentAlign={sData.contentAlign || sData.textAlignment || 'center'}
@@ -299,6 +343,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 paddingBottom={sData.paddingBottom || styles?.paddingBottom}
                 bgColor={sData.bgColor || styles?.backgroundColor}
                 textColor={sData.textColor || styles?.color}
+                {...typographyProps}
               />
             );
             break;
@@ -487,6 +532,7 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 bgColor={sData.bgColor || styles?.backgroundColor}
                 textColor={sData.textColor || styles?.color}
                 tenantSlug={resolvedTenant}
+                {...typographyProps}
               />
             );
             break;
@@ -504,9 +550,18 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customBadge={badge}
                 customImage={image}
                 imagePosition={sData.imagePosition === 'right' ? 'right' : 'left'}
-                customBtnText={sData.btnText || sData.ctaText || 'READ OUR STORY'}
-                customBtnLink={sData.btnLink || sData.ctaUrl || '/about'}
+                customBtnText={sData.btnText || sData.ctaText || sData.primaryBtnText || 'READ OUR STORY'}
+                customBtnLink={sData.btnLink || sData.ctaUrl || sData.primaryBtnLink || '/about'}
+                customSecondaryBtnText={sData.secondaryBtnText || sData.secondaryCtaText}
+                customSecondaryBtnLink={sData.secondaryBtnLink || sData.secondaryCtaUrl}
+                customTertiaryBtnText={sData.tertiaryBtnText || sData.tertiaryCtaText}
+                customTertiaryBtnLink={sData.tertiaryBtnLink || sData.tertiaryCtaUrl}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
                 tenantSlug={resolvedTenant}
+                {...typographyProps}
               />
             );
             break;
@@ -548,17 +603,12 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 contentAlign={sData.contentAlign || sData.textAlignment || 'center'}
                 containerWidth={sData.containerWidth || 'contained'}
                 bannerHeight={sData.bannerHeight || 'medium'}
-                primaryBtnColor={sData.primaryBtnColor}
-                primaryBtnTextColor={sData.primaryBtnTextColor}
-                secondaryBtnColor={sData.secondaryBtnColor}
-                secondaryBtnTextColor={sData.secondaryBtnTextColor}
-                tertiaryBtnColor={sData.tertiaryBtnColor}
-                tertiaryBtnTextColor={sData.tertiaryBtnTextColor}
                 bgColor={sData.bgColor || styles?.backgroundColor}
                 textColor={sData.textColor || styles?.color}
                 paddingTop={sData.paddingTop || styles?.paddingTop}
                 paddingBottom={sData.paddingBottom || styles?.paddingBottom}
                 tenantSlug={resolvedTenant}
+                {...typographyProps}
               />
             );
             break;
@@ -577,7 +627,12 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 targetDate={sData.targetDate || sData.endDate}
                 customBtnText={sData.btnText || sData.ctaText || 'SHOP SALE NOW'}
                 customBtnLink={sData.btnLink || sData.ctaUrl || '/sale'}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
                 tenantSlug={resolvedTenant}
+                {...typographyProps}
               />
             );
             break;
@@ -595,6 +650,11 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customButtonText={sData.btnText || 'Subscribe'}
                 customPlaceholder={sData.placeholder}
                 customSuccessMsg={sData.successMsg}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
+                {...typographyProps}
               />
             );
             break;
@@ -609,6 +669,11 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customReviews={sData.testimonialsList || sData.testimonials || sData.items}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
+                {...typographyProps}
               />
             );
             break;
@@ -626,7 +691,12 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customLogos={sData.logos || sData.items || sData.brands}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
                 tenantSlug={resolvedTenant}
+                {...typographyProps}
               />
             );
             break;
@@ -643,7 +713,12 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 customSubtitle={subtitle}
                 customBadge={badge}
                 customFaqs={sData.faqList || sData.items || sData.faqs}
+                paddingTop={sData.paddingTop || styles?.paddingTop}
+                paddingBottom={sData.paddingBottom || styles?.paddingBottom}
+                bgColor={sData.bgColor || styles?.backgroundColor}
+                textColor={sData.textColor || styles?.color}
                 tenantSlug={resolvedTenant}
+                {...typographyProps}
               />
             );
             break;

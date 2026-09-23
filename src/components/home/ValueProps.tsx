@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sparkles, Award, Tag, Truck, ShieldCheck, HeartHandshake, RefreshCw, Clock } from 'lucide-react';
+import { SectionTypographyProps, getSectionTypographyStyles } from '@/lib/section-typography';
 
 interface ValuePropItem {
   title: string;
@@ -7,10 +8,11 @@ interface ValuePropItem {
   icon?: string;
 }
 
-interface ValuePropsProps {
+interface ValuePropsProps extends SectionTypographyProps {
   customItems?: ValuePropItem[];
   customTitle?: string;
   customSubtitle?: string;
+  customBadge?: string;
   columnsDesktop?: number;
   contentAlign?: 'left' | 'center' | 'right';
   containerWidth?: 'contained' | 'full' | 'full_width';
@@ -59,6 +61,7 @@ export function ValueProps({
   customItems,
   customTitle,
   customSubtitle,
+  customBadge,
   columnsDesktop = 4,
   contentAlign = 'center',
   containerWidth = 'contained',
@@ -67,8 +70,14 @@ export function ValueProps({
   paddingBottom,
   bgColor,
   textColor,
+  ...typographyProps
 }: ValuePropsProps = {}) {
   const promises = customItems && customItems.length > 0 ? customItems : DEFAULT_PROMISES;
+
+  const { headingStyle, subtitleStyle, badgeStyle } = getSectionTypographyStyles({
+    ...typographyProps,
+    textColor,
+  });
 
   const isFullWidth = containerWidth === 'full' || containerWidth === 'full_width';
   const containerClass = isFullWidth ? 'w-full px-4 sm:px-8 md:px-12' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
@@ -94,6 +103,14 @@ export function ValueProps({
       ? 'text-right max-w-2xl ml-auto mb-8'
       : 'text-center max-w-2xl mx-auto mb-8';
 
+  const isDarkBg =
+    bgColor &&
+    (bgColor.startsWith('#0') ||
+      bgColor.startsWith('#1') ||
+      bgColor.startsWith('#2') ||
+      bgColor === 'black' ||
+      bgColor.includes('17, 17, 17'));
+
   return (
     <section
       className="bg-[#FAF6F2] border-b border-[#E8DED8] py-8 select-none transition-colors duration-200"
@@ -105,13 +122,38 @@ export function ValueProps({
       }}
     >
       <div className={containerClass}>
-        {customTitle && (
+        {(customBadge || customTitle || customSubtitle) && (
           <div className={headerAlignClass}>
-            <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#111111]" style={{ color: textColor || undefined }}>
-              {customTitle}
-            </h3>
+            {customBadge && (
+              <span
+                data-typography="badge"
+                className="inline-block text-[11px] uppercase font-bold tracking-widest px-3 py-1 rounded-full mb-2 bg-[#B77A68]/10 text-[#B77A68]"
+                style={badgeStyle}
+              >
+                {customBadge}
+              </span>
+            )}
+            {customTitle && (
+              <h3
+                data-typography="heading"
+                className="text-xl sm:text-2xl font-serif font-bold text-[#111111]"
+                style={{
+                  color: textColor || undefined,
+                  ...headingStyle,
+                }}
+              >
+                {customTitle}
+              </h3>
+            )}
             {customSubtitle && (
-              <p className="text-xs sm:text-sm text-[#777777] mt-1 font-sans" style={{ color: textColor ? `${textColor}cc` : undefined }}>
+              <p
+                data-typography="subtitle"
+                className="text-xs sm:text-sm text-[#777777] mt-1 font-sans"
+                style={{
+                  color: textColor ? `${textColor}cc` : undefined,
+                  ...subtitleStyle,
+                }}
+              >
                 {customSubtitle}
               </p>
             )}
@@ -123,33 +165,50 @@ export function ValueProps({
             const IconComponent = (item.icon && ICON_MAP[item.icon.toLowerCase()]) || Sparkles;
 
             const cardClasses =
-              cardStyle === 'tinted'
-                ? 'bg-[#111111] text-white border border-white/10 rounded-xl shadow-md p-4'
+              cardStyle === 'tinted' || isDarkBg
+                ? 'bg-white/5 text-white border border-white/10 rounded-xl shadow-md p-4 backdrop-blur-sm'
                 : cardStyle === 'minimal'
                 ? 'bg-transparent border-0 p-2'
-                : 'bg-[#FFFDFC] border border-[#E8DED8] p-3';
+                : 'bg-[#FFFDFC] border border-[#E8DED8] p-3 rounded-lg shadow-xs';
 
             return (
               <div
                 key={idx}
                 className={`flex items-start gap-3.5 transition-all ${cardClasses}`}
               >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                  cardStyle === 'tinted'
-                    ? 'bg-white/10 border border-white/20 text-[#E8B8B5]'
-                    : 'bg-[#F8F1EA] border border-[#E8DED8] text-[#B77A68]'
-                }`}>
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                    cardStyle === 'tinted' || isDarkBg
+                      ? 'bg-white/10 border border-white/20 text-[#E8B8B5]'
+                      : 'bg-[#F8F1EA] border border-[#E8DED8] text-[#B77A68]'
+                  }`}
+                >
                   <IconComponent className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className={`text-xs font-bold uppercase tracking-wider ${
-                    cardStyle === 'tinted' ? 'text-white' : 'text-[#111111]'
-                  }`} style={{ color: textColor || undefined }}>
+                  <h4
+                    className={`text-xs font-bold uppercase tracking-wider ${
+                      cardStyle === 'tinted' || isDarkBg ? 'text-white' : 'text-[#111111]'
+                    }`}
+                    style={{
+                      fontFamily: typographyProps.headingFontFamily ? `"${typographyProps.headingFontFamily}", serif` : undefined,
+                      color: typographyProps.headingColor || textColor || undefined,
+                    }}
+                  >
                     {item.title}
                   </h4>
-                  <p className={`text-xs mt-0.5 font-sans leading-relaxed ${
-                    cardStyle === 'tinted' ? 'text-slate-300' : 'text-[#777777]'
-                  }`} style={{ color: textColor ? `${textColor}cc` : undefined }}>
+                  <p
+                    data-typography="subtitle"
+                    className={`text-xs mt-0.5 font-sans leading-relaxed ${
+                      cardStyle === 'tinted' || isDarkBg ? 'text-slate-300' : 'text-[#777777]'
+                    }`}
+                    style={{
+                      fontFamily: typographyProps.subtitleFontFamily ? `"${typographyProps.subtitleFontFamily}", sans-serif` : undefined,
+                      color: typographyProps.subtitleColor || (textColor ? `${textColor}cc` : undefined),
+                      fontSize: typographyProps.subtitleFontSize || undefined,
+                      lineHeight: typographyProps.subtitleLineHeight || undefined,
+                    }}
+                  >
                     {item.description}
                   </p>
                 </div>
@@ -161,4 +220,5 @@ export function ValueProps({
     </section>
   );
 }
+
 

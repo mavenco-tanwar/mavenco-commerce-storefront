@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { ChevronDown, Sparkles, HelpCircle } from 'lucide-react';
 
+import { SectionTypographyProps, getSectionTypographyStyles } from '@/lib/section-typography';
+
 export interface StoreFaqItem {
   id?: string | number;
   question?: string;
@@ -12,11 +14,15 @@ export interface StoreFaqItem {
   category?: string;
 }
 
-interface StoreFaqSectionProps {
+interface StoreFaqSectionProps extends SectionTypographyProps {
   customTitle?: string;
   customSubtitle?: string;
   customBadge?: string;
   customFaqs?: StoreFaqItem[];
+  paddingTop?: string;
+  paddingBottom?: string;
+  bgColor?: string;
+  textColor?: string;
   tenantSlug?: string;
 }
 
@@ -53,9 +59,19 @@ export function StoreFaqSection({
   customSubtitle = 'Instant answers to concierge, shipping, and bespoke care inquiries.',
   customBadge = 'Customer Concierge',
   customFaqs,
+  paddingTop,
+  paddingBottom,
+  bgColor,
+  textColor,
   tenantSlug,
+  ...typographyProps
 }: StoreFaqSectionProps) {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
+
+  const { headingStyle, subtitleStyle, badgeStyle } = getSectionTypographyStyles({
+    ...typographyProps,
+    textColor,
+  });
 
   const rawList = customFaqs && customFaqs.length > 0 ? customFaqs : DEFAULT_STORE_FAQS;
   const faqs = rawList.map((item, idx) => ({
@@ -70,21 +86,47 @@ export function StoreFaqSection({
   };
 
   return (
-    <section className="py-16 md:py-24 bg-[var(--theme-color-surface,#FFFDFC)] border-t border-[var(--theme-color-border,#E8DED8)] select-none transition-colors duration-200">
+    <section
+      className="py-16 md:py-24 bg-[var(--theme-color-surface,#FFFDFC)] border-t border-[var(--theme-color-border,#E8DED8)] select-none transition-colors duration-200"
+      style={{
+        paddingTop: paddingTop || undefined,
+        paddingBottom: paddingBottom || undefined,
+        backgroundColor: bgColor || undefined,
+        color: textColor || undefined,
+      }}
+    >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
           {customBadge && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--theme-color-surface-secondary,#F8F1EA)] border border-[var(--theme-color-border,#E8DED8)] shadow-xs mb-3 text-[11px] uppercase font-bold tracking-widest text-[var(--theme-color-accent,#B77A68)]">
+            <div
+              data-typography="badge"
+              className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--theme-color-surface-secondary,#F8F1EA)] border border-[var(--theme-color-border,#E8DED8)] rounded-full shadow-xs mb-3 text-[11px] uppercase font-bold tracking-widest text-[var(--theme-color-accent,#B77A68)]"
+              style={badgeStyle}
+            >
               <Sparkles className="w-3 h-3" />
-              <span>{customBadge}</span>
+              <span style={{ color: badgeStyle.color || undefined }}>{customBadge}</span>
             </div>
           )}
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[var(--theme-color-heading,#111111)] mb-3">
+          <h2
+            data-typography="heading"
+            className="text-3xl sm:text-4xl font-serif font-bold text-[var(--theme-color-heading,#111111)] mb-3"
+            style={{
+              color: textColor || undefined,
+              ...headingStyle,
+            }}
+          >
             {customTitle}
           </h2>
           {customSubtitle && (
-            <p className="text-xs sm:text-sm text-[var(--theme-color-text-secondary,#57534E)] font-sans max-w-lg mx-auto leading-relaxed">
+            <p
+              data-typography="subtitle"
+              className="text-xs sm:text-sm text-[var(--theme-color-text-secondary,#57534E)] font-sans max-w-lg mx-auto leading-relaxed"
+              style={{
+                color: textColor ? `${textColor}cc` : undefined,
+                ...subtitleStyle,
+              }}
+            >
               {customSubtitle}
             </p>
           )}

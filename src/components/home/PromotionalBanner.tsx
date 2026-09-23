@@ -5,7 +5,9 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { formatTenantHref } from '@/lib/tenant-config';
 
-interface PromotionalBannerProps {
+import { SectionTypographyProps, getSectionTypographyStyles } from '@/lib/section-typography';
+
+interface PromotionalBannerProps extends SectionTypographyProps {
   customTitle?: string;
   customSubtitle?: string;
   customBadge?: string;
@@ -57,7 +59,20 @@ export function PromotionalBanner({
   paddingTop,
   paddingBottom,
   tenantSlug,
+  ...typographyProps
 }: PromotionalBannerProps = {}) {
+  const { headingStyle, subtitleStyle, badgeStyle, primaryBtnStyle, secondaryBtnStyle, tertiaryBtnStyle } =
+    getSectionTypographyStyles({
+      ...typographyProps,
+      textColor,
+      primaryBtnColor,
+      primaryBtnTextColor,
+      secondaryBtnColor,
+      secondaryBtnTextColor,
+      tertiaryBtnColor,
+      tertiaryBtnTextColor,
+    });
+
   const title = customTitle || 'NEW SEASON. NEW YOU.';
   const subtitle =
     customSubtitle ||
@@ -86,20 +101,6 @@ export function PromotionalBanner({
       ? 'justify-end'
       : 'justify-start';
 
-  const primaryBtnStyle: React.CSSProperties = {
-    backgroundColor: primaryBtnColor || undefined,
-    color: primaryBtnTextColor || undefined,
-  };
-
-  const secondaryBtnStyle: React.CSSProperties = {
-    backgroundColor: secondaryBtnColor || undefined,
-    color: secondaryBtnTextColor || undefined,
-  };
-
-  const tertiaryBtnStyle: React.CSSProperties = {
-    backgroundColor: tertiaryBtnColor || undefined,
-    color: tertiaryBtnTextColor || undefined,
-  };
 
   return (
     <section
@@ -128,19 +129,39 @@ export function PromotionalBanner({
       <div className={`relative ${containerClass} z-10 w-full`}>
         <div className={`flex flex-col space-y-6 ${alignClass}`}>
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FFFDFC]/10 backdrop-blur-md border border-[#E8DED8]/30">
-            <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" />
-            <span className="text-[11px] uppercase font-bold tracking-widest text-[#E8B8B5]">
-              {badge}
-            </span>
-          </div>
+          {badge && (
+            <div
+              data-typography="badge"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FFFDFC]/10 backdrop-blur-md border border-[#E8DED8]/30 rounded-full"
+              style={badgeStyle}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" />
+              <span className="text-[11px] uppercase font-bold tracking-widest text-[#E8B8B5]" style={{ color: badgeStyle.color || undefined }}>
+                {badge}
+              </span>
+            </div>
+          )}
 
           {/* Headline */}
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#FFFDFC] leading-tight" style={{ color: textColor || undefined }}>
+          <h2
+            data-typography="heading"
+            className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#FFFDFC] leading-tight"
+            style={{
+              color: textColor || undefined,
+              ...headingStyle,
+            }}
+          >
             {title}
           </h2>
 
-          <p className="text-sm sm:text-base text-[#E8DED8] font-sans font-normal leading-relaxed" style={{ color: textColor ? `${textColor}cc` : undefined }}>
+          <p
+            data-typography="subtitle"
+            className="text-sm sm:text-base text-[#E8DED8] font-sans font-normal leading-relaxed"
+            style={{
+              color: textColor ? `${textColor}cc` : undefined,
+              ...subtitleStyle,
+            }}
+          >
             {subtitle}
           </p>
 

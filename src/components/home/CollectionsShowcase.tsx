@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { ArrowRight, BookOpen, Layers } from 'lucide-react';
 import { formatTenantHref } from '@/lib/tenant-config';
 
+import { SectionTypographyProps, getSectionTypographyStyles } from '@/lib/section-typography';
+
 export interface CollectionItem {
   id: string;
   title?: string;
@@ -22,7 +24,7 @@ export interface CollectionItem {
   type?: string;
 }
 
-interface CollectionsShowcaseProps {
+interface CollectionsShowcaseProps extends SectionTypographyProps {
   customTitle?: string;
   customSubtitle?: string;
   customBadge?: string;
@@ -30,6 +32,10 @@ interface CollectionsShowcaseProps {
   customCtaUrl?: string;
   customBannerImage?: string;
   customCollections?: CollectionItem[];
+  paddingTop?: string;
+  paddingBottom?: string;
+  bgColor?: string;
+  textColor?: string;
   tenantSlug?: string;
 }
 
@@ -68,10 +74,20 @@ export function CollectionsShowcase({
   customCtaUrl,
   customBannerImage,
   customCollections,
+  paddingTop,
+  paddingBottom,
+  bgColor,
+  textColor,
   tenantSlug,
+  ...typographyProps
 }: CollectionsShowcaseProps) {
   const [collections, setCollections] = useState<CollectionItem[]>(customCollections || []);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  const { headingStyle, subtitleStyle, badgeStyle, primaryBtnStyle } = getSectionTypographyStyles({
+    ...typographyProps,
+    textColor,
+  });
 
   useEffect(() => {
     if (customCollections && customCollections.length > 0) {
@@ -160,20 +176,50 @@ export function CollectionsShowcase({
   const badge = customBadge || 'Curated Atelier Stories';
 
   return (
-    <section className="py-16 md:py-24 bg-[#FAF6F2] dark:bg-[#12100E] border-t border-[#E8DED8] dark:border-white/10 select-none transition-colors duration-300">
+    <section
+      className="py-16 md:py-24 bg-[#FAF6F2] dark:bg-[#12100E] border-t border-[#E8DED8] dark:border-white/10 select-none transition-colors duration-300"
+      style={{
+        paddingTop: paddingTop || undefined,
+        paddingBottom: paddingBottom || undefined,
+        backgroundColor: bgColor || undefined,
+        color: textColor || undefined,
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
-            {badge}
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#111111] dark:text-white mt-1.5 mb-3 tracking-tight">
+          {badge && (
+            <span
+              data-typography="badge"
+              className="text-xs uppercase font-bold tracking-widest text-[#B77A68] inline-block px-3 py-1 rounded-full mb-1"
+              style={badgeStyle}
+            >
+              {badge}
+            </span>
+          )}
+          <h2
+            data-typography="heading"
+            className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#111111] dark:text-white mt-1.5 mb-3 tracking-tight"
+            style={{
+              color: textColor || undefined,
+              ...headingStyle,
+            }}
+          >
             {title}
           </h2>
           <div className="w-12 h-0.5 bg-[#B77A68] mx-auto mb-3.5" />
-          <p className="text-xs sm:text-sm text-[#777777] dark:text-slate-400 font-sans leading-relaxed">
-            {subtitle}
-          </p>
+          {subtitle && (
+            <p
+              data-typography="subtitle"
+              className="text-xs sm:text-sm text-[#777777] dark:text-slate-400 font-sans leading-relaxed"
+              style={{
+                color: textColor ? `${textColor}cc` : undefined,
+                ...subtitleStyle,
+              }}
+            >
+              {subtitle}
+            </p>
+          )}
         </div>
 
         {/* 1 ITEM: Full-Width Editorial Split Feature */}

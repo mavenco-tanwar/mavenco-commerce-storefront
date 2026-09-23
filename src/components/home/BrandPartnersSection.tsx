@@ -3,12 +3,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
+import { SectionTypographyProps, getSectionTypographyStyles } from '@/lib/section-typography';
 
-interface BrandPartnersSectionProps {
+interface BrandPartnersSectionProps extends SectionTypographyProps {
   customTitle?: string;
   customSubtitle?: string;
   customBadge?: string;
   customLogos?: Array<string | { name: string; logoUrl?: string; href?: string }>;
+  paddingTop?: string;
+  paddingBottom?: string;
+  bgColor?: string;
+  textColor?: string;
   tenantSlug?: string;
 }
 
@@ -19,26 +24,62 @@ export function BrandPartnersSection({
   customSubtitle,
   customBadge,
   customLogos,
+  paddingTop,
+  paddingBottom,
+  bgColor,
+  textColor,
   tenantSlug,
+  ...typographyProps
 }: BrandPartnersSectionProps) {
   const logos = customLogos && customLogos.length > 0 ? customLogos : DEFAULT_LOGOS;
 
+  const { headingStyle, subtitleStyle, badgeStyle } = getSectionTypographyStyles({
+    ...typographyProps,
+    textColor,
+  });
+
   return (
-    <section className="py-12 md:py-16 bg-[var(--theme-color-surface-secondary,#F8F1EA)] border-y border-[var(--theme-color-border,#E8DED8)] select-none transition-colors duration-200">
+    <section
+      className="py-12 md:py-16 bg-[var(--theme-color-surface-secondary,#F8F1EA)] border-y border-[var(--theme-color-border,#E8DED8)] select-none transition-colors duration-200"
+      style={{
+        paddingTop: paddingTop || undefined,
+        paddingBottom: paddingBottom || undefined,
+        backgroundColor: bgColor || undefined,
+        color: textColor || undefined,
+      }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-8">
           {customBadge && (
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--theme-color-surface,#FFFDFC)] border border-[var(--theme-color-border,#E8DED8)] shadow-xs mb-3 text-[11px] uppercase font-bold tracking-widest text-[var(--theme-color-accent,#B77A68)]">
+            <div
+              data-typography="badge"
+              className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--theme-color-surface,#FFFDFC)] border border-[var(--theme-color-border,#E8DED8)] rounded-full shadow-xs mb-3 text-[11px] uppercase font-bold tracking-widest text-[var(--theme-color-accent,#B77A68)]"
+              style={badgeStyle}
+            >
               <Sparkles className="w-3 h-3" />
-              <span>{customBadge}</span>
+              <span style={{ color: badgeStyle.color || undefined }}>{customBadge}</span>
             </div>
           )}
-          <h3 className="text-xs sm:text-sm uppercase font-bold tracking-[0.25em] text-[var(--theme-color-text-secondary,#57534E)]">
+          <h3
+            data-typography="heading"
+            className="text-xs sm:text-sm uppercase font-bold tracking-[0.25em] text-[var(--theme-color-text-secondary,#57534E)]"
+            style={{
+              color: textColor || undefined,
+              ...headingStyle,
+            }}
+          >
             {customTitle}
           </h3>
           {customSubtitle && (
-            <p className="text-xs text-[var(--theme-color-text-muted,#777777)] mt-1.5 font-sans">
+            <p
+              data-typography="subtitle"
+              className="text-xs text-[var(--theme-color-text-muted,#777777)] mt-1.5 font-sans"
+              style={{
+                color: textColor ? `${textColor}cc` : undefined,
+                ...subtitleStyle,
+              }}
+            >
               {customSubtitle}
             </p>
           )}
@@ -89,3 +130,4 @@ export function BrandPartnersSection({
     </section>
   );
 }
+

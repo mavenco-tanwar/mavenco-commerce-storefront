@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import { Mail, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { SectionTypographyProps, getSectionTypographyStyles } from '@/lib/section-typography';
 
-interface NewsletterSectionProps {
+interface NewsletterSectionProps extends SectionTypographyProps {
   customTitle?: string;
   customSubtitle?: string;
   customBadge?: string;
@@ -12,6 +13,10 @@ interface NewsletterSectionProps {
   customButtonText?: string;
   customPlaceholder?: string;
   customSuccessMsg?: string;
+  paddingTop?: string;
+  paddingBottom?: string;
+  bgColor?: string;
+  textColor?: string;
 }
 
 export function NewsletterSection({
@@ -22,6 +27,11 @@ export function NewsletterSection({
   customButtonText = 'Subscribe',
   customPlaceholder = 'Enter your email address',
   customSuccessMsg = 'Welcome to the VIP Family!',
+  paddingTop,
+  paddingBottom,
+  bgColor,
+  textColor,
+  ...typographyProps
 }: NewsletterSectionProps = {}) {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -33,6 +43,11 @@ export function NewsletterSection({
   const badge = customBadge || 'VIP Insider Club';
   const coupon = customCouponPromo || 'WELCOME10';
 
+  const { headingStyle, subtitleStyle, badgeStyle, primaryBtnStyle } = getSectionTypographyStyles({
+    ...typographyProps,
+    textColor,
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.includes('@')) return;
@@ -41,26 +56,59 @@ export function NewsletterSection({
   };
 
   return (
-    <section className="py-20 md:py-28 bg-[#F8F1EA] border-t border-[#E8DED8] relative overflow-hidden select-none">
+    <section
+      className="py-20 md:py-28 bg-[#F8F1EA] border-t border-[#E8DED8] relative overflow-hidden select-none transition-colors duration-200"
+      style={{
+        paddingTop: paddingTop || undefined,
+        paddingBottom: paddingBottom || undefined,
+        backgroundColor: bgColor || undefined,
+        color: textColor || undefined,
+      }}
+    >
       {/* Subtle background decorative shapes */}
       <div className="absolute top-0 right-10 w-80 h-80 bg-[#E8B8B5]/25 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-10 w-80 h-80 bg-[#CF9584]/20 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        <div className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-[#FFFDFC] border border-[#E8DED8] shadow-xs mb-4">
-          <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" />
-          <span className="text-[11px] uppercase font-bold tracking-widest text-[#111111]">
-            {badge}
-          </span>
-        </div>
+        {badge && (
+          <div
+            data-typography="badge"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1 bg-[#FFFDFC] border border-[#E8DED8] rounded-full shadow-xs mb-4"
+            style={badgeStyle}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#B77A68]" />
+            <span
+              className="text-[11px] uppercase font-bold tracking-widest text-[#111111]"
+              style={{ color: badgeStyle.color || undefined }}
+            >
+              {badge}
+            </span>
+          </div>
+        )}
 
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[#111111] mb-3">
+        <h2
+          data-typography="heading"
+          className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[#111111] mb-3"
+          style={{
+            color: textColor || undefined,
+            ...headingStyle,
+          }}
+        >
           {title}
         </h2>
 
-        <p className="text-xs sm:text-sm md:text-base text-[#777777] max-w-lg mx-auto font-sans leading-relaxed mb-8">
-          {subtitle}
-        </p>
+        {subtitle && (
+          <p
+            data-typography="subtitle"
+            className="text-xs sm:text-sm md:text-base text-[#777777] max-w-lg mx-auto font-sans leading-relaxed mb-8"
+            style={{
+              color: textColor ? `${textColor}cc` : undefined,
+              ...subtitleStyle,
+            }}
+          >
+            {subtitle}
+          </p>
+        )}
 
         {isSubscribed ? (
           <div className="max-w-md mx-auto p-6 bg-[#FFFDFC] border border-[#B77A68] shadow-lg animate-in zoom-in-95 duration-200">
@@ -89,7 +137,8 @@ export function NewsletterSection({
               type="submit"
               variant="luxury-gold"
               size="lg"
-              className="sm:w-auto min-w-[140px]"
+              style={primaryBtnStyle}
+              className="sm:w-auto min-w-[140px] cursor-pointer"
             >
               <span>{customButtonText}</span>
               <ArrowRight className="w-4 h-4 ml-1" />
@@ -97,10 +146,11 @@ export function NewsletterSection({
           </form>
         )}
 
-        <p className="text-[11px] text-[#999999] mt-4">
+        <p className="text-[11px] text-[#999999] mt-4 font-sans">
           We respect your privacy. Unsubscribe at any time with one click.
         </p>
       </div>
     </section>
   );
 }
+

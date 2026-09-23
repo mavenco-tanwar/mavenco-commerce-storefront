@@ -21,7 +21,9 @@ interface CategoryItem {
   badge?: string;
 }
 
-interface CategoryShowcaseProps {
+import { SectionTypographyProps, getSectionTypographyStyles } from '@/lib/section-typography';
+
+interface CategoryShowcaseProps extends SectionTypographyProps {
   customTitle?: string;
   customSubtitle?: string;
   customBadge?: string;
@@ -95,7 +97,13 @@ export function CategoryShowcase({
   bgColor,
   textColor,
   tenantSlug,
+  ...typographyProps
 }: CategoryShowcaseProps = {}) {
+  const { headingStyle, subtitleStyle, badgeStyle, btnStyle } = getSectionTypographyStyles({
+    ...typographyProps,
+    textColor,
+  });
+
   const [categories, setCategories] = useState<CategoryItem[]>(() => {
     if (customCategories && Array.isArray(customCategories) && customCategories.length > 0) {
       const depts = customCategories.filter(
@@ -213,16 +221,38 @@ export function CategoryShowcase({
       <div className={containerClass}>
         {/* Section Header */}
         <div className={headerAlignClass}>
-          <span className="text-xs uppercase font-bold tracking-widest text-[#B77A68]">
-            {badge}
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1 mb-3" style={{ color: textColor || undefined }}>
+          {badge && (
+            <span
+              data-typography="badge"
+              className="text-xs uppercase font-bold tracking-widest text-[#B77A68] inline-block px-3 py-1 rounded-full mb-1"
+              style={badgeStyle}
+            >
+              {badge}
+            </span>
+          )}
+          <h2
+            data-typography="heading"
+            className="text-3xl sm:text-4xl font-serif font-bold text-[#111111] mt-1 mb-3"
+            style={{
+              color: textColor || undefined,
+              ...headingStyle,
+            }}
+          >
             {title}
           </h2>
           {contentAlign === 'center' && <div className="w-12 h-0.5 bg-[#B77A68] mx-auto mb-3" />}
-          <p className="text-xs sm:text-sm text-[#777777] font-sans" style={{ color: textColor ? `${textColor}cc` : undefined }}>
-            {subtitle}
-          </p>
+          {subtitle && (
+            <p
+              data-typography="subtitle"
+              className="text-xs sm:text-sm text-[#777777] font-sans"
+              style={{
+                color: textColor ? `${textColor}cc` : undefined,
+                ...subtitleStyle,
+              }}
+            >
+              {subtitle}
+            </p>
+          )}
         </div>
 
         {/* Categories Grid */}
@@ -265,7 +295,11 @@ export function CategoryShowcase({
                 {/* Content Overlay */}
                 <div className="relative z-10 text-white space-y-1.5 transform transition-transform duration-300 group-hover:-translate-y-1">
                   {cat.badge && (
-                    <span className="inline-block text-[10px] font-bold uppercase tracking-widest text-[#E8B8B5] bg-black/40 px-2 py-0.5 border border-[#B77A68]/40 mb-1">
+                    <span
+                      data-typography="badge"
+                      className="inline-block text-[10px] font-bold uppercase tracking-widest text-[#E8B8B5] bg-black/40 px-2 py-0.5 border border-[#B77A68]/40 mb-1"
+                      style={badgeStyle}
+                    >
                       {cat.badge}
                     </span>
                   )}
@@ -278,7 +312,11 @@ export function CategoryShowcase({
                     {tagline}
                   </p>
 
-                  <div className="pt-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#FFFDFC] group-hover:text-[#E8B8B5] transition-colors">
+                  <div
+                    data-typography="button"
+                    className="pt-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#FFFDFC] group-hover:text-[#E8B8B5] transition-colors"
+                    style={btnStyle}
+                  >
                     <span>{btnText}</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
