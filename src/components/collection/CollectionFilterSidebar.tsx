@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { RotateCcw, Check } from 'lucide-react';
-import { FilterDefinition } from '@/types/collection-page.types';
+import { FilterDefinition, CollectionPageStyles } from '@/types/collection-page.types';
 import { useCurrency } from '@/lib/currency-context';
 
 export interface FilterState {
@@ -23,6 +23,7 @@ export interface CollectionFilterSidebarProps {
   availableSizes?: string[];
   maxPriceLimit?: number;
   className?: string;
+  styles?: CollectionPageStyles;
 }
 
 export function CollectionFilterSidebar({
@@ -47,14 +48,24 @@ export function CollectionFilterSidebar({
   availableSizes = ['XS', 'S', 'M', 'L', 'XL'],
   maxPriceLimit = 1000,
   className = '',
+  styles,
 }: CollectionFilterSidebarProps) {
   const { formatPrice } = useCurrency();
 
   return (
-    <aside className={`space-y-6 p-5 rounded-2xl bg-white dark:bg-slate-900/40 border border-[#E8DED8] dark:border-slate-800 shadow-xs select-none ${className}`}>
+    <aside
+      className={`space-y-6 p-5 rounded-2xl border border-[#E8DED8] dark:border-slate-800 shadow-xs select-none transition-colors ${className}`}
+      style={{
+        backgroundColor: styles?.filterBackgroundColor || 'var(--filter-bg, #FAF6F2)',
+        color: styles?.textColor || 'var(--theme-color-text, #111111)',
+      }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[#E8DED8] dark:border-slate-800 pb-3">
-        <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+        <h3
+          className="text-xs font-black uppercase tracking-wider"
+          style={{ color: styles?.headingColor || styles?.textColor || 'var(--theme-color-heading, #111111)' }}
+        >
           Filters
         </h3>
         <button

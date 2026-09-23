@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { SlidersHorizontal, LayoutGrid, List } from 'lucide-react';
-import { SortOption } from '@/types/collection-page.types';
+import { SortOption, CollectionPageStyles } from '@/types/collection-page.types';
 
 export interface CollectionToolbarProps {
   totalCount: number;
@@ -14,6 +14,7 @@ export interface CollectionToolbarProps {
   onViewModeChange: (mode: 'grid' | 'list') => void;
   sortOptions?: SortOption[];
   showViewToggle?: boolean;
+  styles?: CollectionPageStyles;
 }
 
 export function CollectionToolbar({
@@ -32,11 +33,18 @@ export function CollectionToolbar({
     { key: 'rating', label: 'Highest Customer Rating', enabled: true, position: 5 },
   ],
   showViewToggle = true,
+  styles,
 }: CollectionToolbarProps) {
   const enabledSorts = (sortOptions || []).filter((s) => s && s.enabled !== false);
 
   return (
-    <div className="flex items-center justify-between gap-4 flex-wrap bg-[#FAF6F2] dark:bg-slate-900/60 p-3.5 rounded-2xl border border-[#E8DED8] dark:border-slate-800 select-none">
+    <div
+      className="flex items-center justify-between gap-4 flex-wrap p-3.5 rounded-2xl border border-[#E8DED8] dark:border-slate-800 select-none transition-colors"
+      style={{
+        backgroundColor: styles?.toolbarBackgroundColor || styles?.filterBackgroundColor || 'var(--toolbar-bg, #FAF6F2)',
+        color: styles?.textColor || 'var(--theme-color-text, #111111)',
+      }}
+    >
       {/* Left: Mobile Filter Trigger + Product Count */}
       <div className="flex items-center gap-3">
         <button

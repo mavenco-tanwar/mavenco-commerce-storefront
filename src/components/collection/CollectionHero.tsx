@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { CollectionPageConfig } from '@/types/collection-page.types';
+import { CollectionPageConfig, CollectionPageStyles } from '@/types/collection-page.types';
 import { formatTenantHref } from '@/lib/tenant-config';
 
 export interface CollectionHeroProps {
@@ -12,6 +12,7 @@ export interface CollectionHeroProps {
   descriptionOverride?: string;
   imageOverride?: string;
   tenantSlug?: string;
+  styles?: CollectionPageStyles;
 }
 
 export function CollectionHero({
@@ -20,6 +21,7 @@ export function CollectionHero({
   descriptionOverride,
   imageOverride,
   tenantSlug,
+  styles,
 }: CollectionHeroProps) {
   if (!config || config.enabled === false) return null;
 
@@ -95,14 +97,20 @@ export function CollectionHero({
         <h1
           data-hero-title="true"
           className="text-3xl sm:text-4xl md:text-5xl font-serif font-black tracking-tight drop-shadow-md"
-          style={{ color: 'var(--theme-hero-title, var(--theme-color-heading, #FFFFFF))' }}
+          style={{
+            color: styles?.headingColor || 'var(--theme-hero-title, var(--theme-color-heading, #FFFFFF))',
+            fontFamily: styles?.headingFont ? `${styles.headingFont}, serif` : undefined,
+          }}
         >
           {title}
         </h1>
         {description && (
           <p
             className="text-xs sm:text-sm md:text-base font-sans max-w-2xl leading-relaxed drop-shadow"
-            style={{ color: 'var(--theme-hero-subtitle, var(--theme-color-text-secondary, #CBD5E1))' }}
+            style={{
+              color: styles?.textColor || 'var(--theme-hero-subtitle, var(--theme-color-text-secondary, #CBD5E1))',
+              fontFamily: styles?.bodyFont ? `${styles.bodyFont}, sans-serif` : undefined,
+            }}
           >
             {description}
           </p>
@@ -111,7 +119,11 @@ export function CollectionHero({
           <div className="pt-3">
             <Link
               href={formatTenantHref(config.ctaLink || '#products', tenantSlug)}
-              className="inline-block px-5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg hover:scale-[1.02]"
+              className="inline-block px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg hover:scale-[1.02]"
+              style={{
+                backgroundColor: styles?.buttonBackgroundColor || '#FFFFFF',
+                color: styles?.buttonTextColor || '#020617',
+              }}
             >
               {config.ctaText}
             </Link>

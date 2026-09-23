@@ -15,6 +15,21 @@ export interface SortOption {
   position: number;
 }
 
+export interface CollectionPageStyles {
+  backgroundColor?: string;
+  textColor?: string;
+  headingColor?: string;
+  accentColor?: string;
+  cardBackgroundColor?: string;
+  filterBackgroundColor?: string;
+  toolbarBackgroundColor?: string;
+  buttonBackgroundColor?: string;
+  buttonTextColor?: string;
+  headingFont?: string;
+  bodyFont?: string;
+  borderRadius?: string;
+}
+
 export interface CollectionPageConfig {
   id?: string;
   tenantId?: string;
@@ -98,6 +113,8 @@ export interface CollectionPageConfig {
     canonicalUrl: string;
     ogImage: string;
   };
+
+  styles?: CollectionPageStyles;
 
   updatedAt?: string;
   publishedAt?: string;

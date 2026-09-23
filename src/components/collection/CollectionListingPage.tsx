@@ -249,8 +249,8 @@ function CollectionListingPageContent({
         const pCat = (p.category || '').toLowerCase().trim();
         const pDept = (p.department || '').toLowerCase().trim();
         const pSlug = ((p as any).categorySlug || '').toLowerCase().trim();
-        const pName = (p.categoryName || '').toLowerCase().trim();
-        const inIds = Array.isArray(p.categoryIds) && p.categoryIds.some((id: string) => {
+        const pName = ((p as any).categoryName || '').toLowerCase().trim();
+        const inIds = Array.isArray((p as any).categoryIds) && (p as any).categoryIds.some((id: string) => {
           const clean = id.toLowerCase().replace(/^cat_/, '').replace(/_[a-z0-9-]+$/, '');
           return clean === target || id.toLowerCase() === target;
         });
@@ -359,10 +359,20 @@ function CollectionListingPageContent({
       data-plp-builder="true"
       className="min-h-screen pb-20 space-y-8 transition-colors duration-200"
       style={{
-        backgroundColor: 'var(--theme-color-background, #FFFDFC)',
-        color: 'var(--theme-color-text, #111111)',
+        backgroundColor: config.styles?.backgroundColor || 'var(--theme-color-background, #FFFDFC)',
+        color: config.styles?.textColor || 'var(--theme-color-text, #111111)',
+        fontFamily: config.styles?.bodyFont ? `${config.styles.bodyFont}, sans-serif` : undefined,
         ['--plp-grid-columns' as any]: config.grid?.desktopColumns || 4,
         ['--plp-grid-gap' as any]: config.grid?.gap || '24px',
+        ['--theme-color-heading' as any]: config.styles?.headingColor || '#111111',
+        ['--theme-color-primary' as any]: config.styles?.buttonBackgroundColor || '#111111',
+        ['--theme-btn-primary-bg' as any]: config.styles?.buttonBackgroundColor || '#111111',
+        ['--theme-btn-primary-text' as any]: config.styles?.buttonTextColor || '#FFFFFF',
+        ['--theme-color-accent' as any]: config.styles?.accentColor || '#B77A68',
+        ['--card-bg' as any]: config.styles?.cardBackgroundColor || '#FFFFFF',
+        ['--filter-bg' as any]: config.styles?.filterBackgroundColor || '#FAF6F2',
+        ['--toolbar-bg' as any]: config.styles?.toolbarBackgroundColor || config.styles?.filterBackgroundColor || '#FAF6F2',
+        ['--card-radius' as any]: config.styles?.borderRadius || '16px',
       }}
     >
       {/* 1. Hero Section */}
@@ -372,6 +382,7 @@ function CollectionListingPageContent({
         descriptionOverride={collectionDescription}
         imageOverride={collectionBannerImage}
         tenantSlug={activeTenantSlug}
+        styles={config.styles}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -384,8 +395,8 @@ function CollectionListingPageContent({
           />
         )}
 
-        {/* 2.1 Optional Collection Header if enabled */}
-        {config.header?.enabled && (
+        {/* 2.1 Optional Collection Header if enabled AND hero is disabled (prevents duplicate title) */}
+        {config.header?.enabled && !config.hero?.enabled && (
           <div
             className={`space-y-1 text-${
               config.header.alignment === 'center'
@@ -395,11 +406,20 @@ function CollectionListingPageContent({
                 : 'left'
             }`}
           >
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[var(--theme-color-heading,#111111)]">
+            <h1
+              className="text-2xl sm:text-3xl font-serif font-bold"
+              style={{
+                color: config.styles?.headingColor || 'var(--theme-color-heading, #111111)',
+                fontFamily: config.styles?.headingFont ? `${config.styles.headingFont}, serif` : undefined,
+              }}
+            >
               {collectionTitle}
             </h1>
             {config.header.showDescription && collectionDescription && (
-              <p className="text-xs sm:text-sm text-[var(--theme-color-text-secondary,#57534E)] font-sans max-w-xl">
+              <p
+                className="text-xs sm:text-sm font-sans max-w-xl"
+                style={{ color: config.styles?.textColor || 'var(--theme-color-text-secondary, #57534E)' }}
+              >
                 {collectionDescription}
               </p>
             )}
@@ -422,6 +442,7 @@ function CollectionListingPageContent({
           onViewModeChange={handleViewModeChange}
           sortOptions={config.sorting?.items}
           showViewToggle={config.toolbar?.showViewToggle}
+          styles={config.styles}
         />
 
         {/* 4. Main Catalog Grid & Filter Sidebar Layout */}
@@ -442,6 +463,7 @@ function CollectionListingPageContent({
                 availableColors={colorsToUse}
                 availableSizes={sizesToUse}
                 maxPriceLimit={maxProductPrice}
+                styles={config.styles}
               />
             </div>
           )}
@@ -496,7 +518,11 @@ function CollectionListingPageContent({
 
                       <Link
                         href={formatTenantHref(config.promo.ctaLink || '/about', activeTenantSlug)}
-                        className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition-all shrink-0 shadow-md"
+                        style={{
+                          backgroundColor: config.styles?.buttonBackgroundColor || '#C5A880',
+                          color: config.styles?.buttonTextColor || '#111111',
+                        }}
+                        className="px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shrink-0 shadow-md hover:opacity-95"
                       >
                         {config.promo.ctaText}
                       </Link>
@@ -514,7 +540,11 @@ function CollectionListingPageContent({
                             (prev) => prev + (config.pagination.productsPerPage || 24)
                           )
                         }
-                        className="px-8 py-3 rounded-xl bg-[var(--theme-color-primary,#111111)] hover:bg-[var(--theme-color-accent,#B77A68)] text-white text-xs font-black uppercase tracking-wider transition-all shadow-md"
+                        style={{
+                          backgroundColor: config.styles?.buttonBackgroundColor || 'var(--theme-color-primary,#111111)',
+                          color: config.styles?.buttonTextColor || '#FFFFFF',
+                        }}
+                        className="px-8 py-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md hover:opacity-90"
                       >
                         Load More Creations ({filteredProducts.length - visibleCount} Remaining)
                       </button>
