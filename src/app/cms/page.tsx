@@ -366,8 +366,8 @@ export default function CmsOverviewPage() {
                     onClick={() => setSelectedCmsBlock(idx)}
                     type="button"
                     className={`w-full p-3.5 rounded-xl border text-left transition-all flex items-center justify-between group ${isSelected
-                        ? 'bg-amber-500/10 border-amber-500/50 shadow-md'
-                        : 'bg-[#131622] border-slate-800 hover:border-slate-700 text-slate-300'
+                      ? 'bg-amber-500/10 border-amber-500/50 shadow-md'
+                      : 'bg-[#131622] border-slate-800 hover:border-slate-700 text-slate-300'
                       }`}
                   >
                     <div className="flex items-center gap-3">
@@ -426,15 +426,14 @@ export default function CmsOverviewPage() {
                 </div>
 
                 {/* Interactive Device Viewport Switcher */}
-                {/* <div className="flex items-center gap-1 bg-[#0A0C10] p-1 rounded-xl border border-slate-800 text-slate-400">
+                <div className="flex items-center gap-1 bg-[#0A0C10] p-1 rounded-xl border border-slate-800 text-slate-400">
                   <button
                     type="button"
                     onClick={() => setPreviewDevice('desktop')}
-                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                      previewDevice === 'desktop'
+                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${previewDevice === 'desktop'
                         ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
                         : 'hover:text-white hover:bg-slate-800'
-                    }`}
+                      }`}
                     title="Desktop View (Full Screen)"
                   >
                     <Monitor className="w-3.5 h-3.5" />
@@ -443,11 +442,10 @@ export default function CmsOverviewPage() {
                   <button
                     type="button"
                     onClick={() => setPreviewDevice('tablet')}
-                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                      previewDevice === 'tablet'
+                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${previewDevice === 'tablet'
                         ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
                         : 'hover:text-white hover:bg-slate-800'
-                    }`}
+                      }`}
                     title="Tablet View (iPad 768px)"
                   >
                     <Tablet className="w-3.5 h-3.5" />
@@ -456,26 +454,25 @@ export default function CmsOverviewPage() {
                   <button
                     type="button"
                     onClick={() => setPreviewDevice('mobile')}
-                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                      previewDevice === 'mobile'
+                    className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${previewDevice === 'mobile'
                         ? 'bg-amber-500 text-slate-950 shadow-md font-bold'
                         : 'hover:text-white hover:bg-slate-800'
-                    }`}
+                      }`}
                     title="Mobile View (iPhone 375px)"
                   >
                     <Smartphone className="w-3.5 h-3.5" />
                     <span className="text-[10px] hidden sm:inline">Mobile</span>
                   </button>
-                </div> */}
+                </div>
               </div>
 
               {/* Rendered Live Component Card Preview (with Smooth Device Resize) */}
               <div
                 className={`relative overflow-hidden transition-all duration-500 ease-in-out bg-slate-950 shadow-2xl flex flex-col justify-end group ${previewDevice === 'desktop'
-                    ? 'w-full min-h-[320px] p-6 rounded-2xl border border-slate-700'
-                    : previewDevice === 'tablet'
-                      ? 'max-w-[480px] mx-auto min-h-[380px] p-5 rounded-3xl border-2 border-slate-600 shadow-amber-950/20 ring-1 ring-slate-700'
-                      : 'max-w-[320px] mx-auto min-h-[440px] p-4 rounded-[32px] border-4 border-slate-700 shadow-2xl ring-2 ring-slate-800'
+                  ? 'w-full min-h-[320px] p-6 rounded-2xl border border-slate-700'
+                  : previewDevice === 'tablet'
+                    ? 'max-w-[480px] mx-auto min-h-[380px] p-5 rounded-3xl border-2 border-slate-600 shadow-amber-950/20 ring-1 ring-slate-700'
+                    : 'max-w-[320px] mx-auto min-h-[440px] p-4 rounded-[32px] border-4 border-slate-700 shadow-2xl ring-2 ring-slate-800'
                   }`}
               >
                 {/* Mobile Dynamic Island / Notch */}
@@ -501,10 +498,10 @@ export default function CmsOverviewPage() {
 
                   <h3
                     className={`font-extrabold text-white leading-tight transition-all ${previewDevice === 'mobile'
-                        ? 'text-lg'
-                        : previewDevice === 'tablet'
-                          ? 'text-xl'
-                          : 'text-2xl'
+                      ? 'text-lg'
+                      : previewDevice === 'tablet'
+                        ? 'text-xl'
+                        : 'text-2xl'
                       }`}
                   >
                     {cmsBlocksData[selectedCmsBlock].previewHeading}
@@ -630,8 +627,8 @@ export default function CmsOverviewPage() {
                     type="button"
                     onClick={() => setActiveFont(f.val as any)}
                     className={`p-3 rounded-xl border text-left text-xs transition-all ${activeFont === f.val
-                        ? 'bg-rose-500/15 border-rose-500 text-white shadow-md font-bold'
-                        : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
+                      ? 'bg-rose-500/15 border-rose-500 text-white shadow-md font-bold'
+                      : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
                       }`}
                   >
                     <div className="text-white text-xs">{f.label}</div>
@@ -661,8 +658,8 @@ export default function CmsOverviewPage() {
                       type="button"
                       onClick={() => setActiveThemeName(key)}
                       className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${isSelected
-                          ? 'bg-amber-500/10 border-amber-500 text-white shadow-md'
-                          : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
+                        ? 'bg-amber-500/10 border-amber-500 text-white shadow-md'
+                        : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
                         }`}
                     >
                       <div>
@@ -697,8 +694,8 @@ export default function CmsOverviewPage() {
                     type="button"
                     onClick={() => setActiveRadius(r.val as any)}
                     className={`py-2 px-3 rounded-xl border text-center font-bold text-xs transition-all ${activeRadius === r.val
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                        : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:text-white'
+                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                      : 'bg-[#0A0C10] border-slate-800 text-slate-400 hover:text-white'
                       }`}
                   >
                     {r.label}
