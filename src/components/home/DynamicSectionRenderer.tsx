@@ -328,12 +328,16 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
           case 'valueprops':
           case 'features':
           case 'service_guarantees':
+            const valuePropsBadge = sData.tagline !== undefined
+              ? sData.tagline
+              : (sData.badgeText || (section.badge && isNaN(Number(section.badge)) ? section.badge : undefined));
+
             sectionElement = (
               <ValueProps
                 key={section.id}
                 customTitle={title}
                 customSubtitle={subtitle}
-                customBadge={badge}
+                customBadge={valuePropsBadge}
                 customItems={sData.items || sData.promises}
                 columnsDesktop={sData.columns || sData.columnsDesktop || 4}
                 contentAlign={sData.contentAlign || sData.textAlignment || 'center'}
@@ -343,6 +347,13 @@ export function DynamicSectionRenderer({ sections, initialSections, tenantSlug }
                 paddingBottom={sData.paddingBottom || styles?.paddingBottom}
                 bgColor={sData.bgColor || styles?.backgroundColor}
                 textColor={sData.textColor || styles?.color}
+                primaryBtnText={sData.primaryBtnText || sData.btnText || sData.primaryCtaText}
+                primaryBtnLink={sData.primaryBtnLink || sData.btnLink || sData.primaryCtaUrl}
+                secondaryBtnText={sData.secondaryBtnText || sData.secondaryCtaText || sData.btn2Text}
+                secondaryBtnLink={sData.secondaryBtnLink || sData.secondaryCtaUrl || sData.btn2Link}
+                tertiaryBtnText={sData.tertiaryBtnText || sData.tertiaryCtaText || sData.btn3Text}
+                tertiaryBtnLink={sData.tertiaryBtnLink || sData.tertiaryCtaUrl || sData.btn3Link}
+                tenantSlug={resolvedTenant}
                 {...typographyProps}
               />
             );
