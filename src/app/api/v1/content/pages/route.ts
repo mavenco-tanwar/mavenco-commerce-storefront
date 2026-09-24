@@ -15,7 +15,7 @@ function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Store-ID, X-API-Key, X-Tenant-Slug',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Store-ID, X-API-Key, X-Tenant-Slug, x-tenant-slug',
     'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
     'Pragma': 'no-cache',
   };
@@ -45,7 +45,7 @@ function normalizePageSlug(raw: string): string {
 /**
  * GET /api/v1/content/pages
  * - If ?slug=xyz is provided: returns single page
- * - If no slug: returns array of all website pages for Content Management
+ * - If no slug: returns array of all active website pages for Content Management
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     .replace(/^store_/, '')
     .toLowerCase()
     .trim();
-  const slug = (searchParams.get('slug') || '').toLowerCase().trim();
+  const slug = (searchParams.get('slug') || searchParams.get('id') || '').toLowerCase().trim();
   const pageType = (searchParams.get('type') || '').toLowerCase().trim();
 
   try {
@@ -73,6 +73,7 @@ export async function GET(request: NextRequest) {
         const targetSlug = slug || pageType;
         const normalized = normalizePageSlug(targetSlug);
 
+        // Check if page exists in DB
         const doc = await db.collection('cms_pages').findOne({
           $or: [
             { slug: targetSlug },
@@ -81,12 +82,27 @@ export async function GET(request: NextRequest) {
             { slug: `/${normalized}` },
             { id: targetSlug },
             { id: normalized },
+            { id: `page_${targetSlug}` },
+            { id: `page_${normalized}` },
             { type: targetSlug },
             { type: normalized },
           ],
         });
 
         if (doc) {
+          // If page has been deleted or archived by the merchant, return 404
+          if (doc.status === 'archived' || doc.deleted === true) {
+            return NextResponse.json(
+              {
+                success: false,
+                data: null,
+                status: 'deleted',
+                error: `Page '${targetSlug}' has been deleted`,
+              },
+              { status: 404, headers: corsHeaders() }
+            );
+          }
+
           const { _id, ...cleanDoc } = doc;
           return NextResponse.json(
             {
@@ -100,6 +116,30 @@ export async function GET(request: NextRequest) {
               source: 'mongodb',
             },
             { headers: corsHeaders() }
+          );
+        }
+
+        // Check if an archived tombstone exists (so preset fallback does not re-resurrect it)
+        const tombstone = await db.collection('cms_pages').findOne({
+          $or: [
+            { slug: targetSlug },
+            { slug: normalized },
+            { id: targetSlug },
+            { id: normalized },
+            { id: `page_${targetSlug}` },
+          ],
+          $and: [{ $or: [{ status: 'archived' }, { deleted: true }] }],
+        });
+
+        if (tombstone) {
+          return NextResponse.json(
+            {
+              success: false,
+              data: null,
+              status: 'deleted',
+              error: `Page '${targetSlug}' has been deleted`,
+            },
+            { status: 404, headers: corsHeaders() }
           );
         }
 
@@ -150,37 +190,40 @@ export async function GET(request: NextRequest) {
           );
         }
 
-        // Check if matching preset website page exists
-        const tenantDoc = await db.collection('tenants').findOne({ slug: tenantSlug });
-        const defaultPages = getDefaultWebsitePages(tenantSlug, tenantDoc);
-        const matchingDefault = defaultPages.find(
-          (p) =>
-            p.slug === targetSlug ||
-            p.slug === `/${targetSlug}` ||
-            p.slug === normalized ||
-            p.slug === `/${normalized}` ||
-            p.id === targetSlug ||
-            p.id === normalized ||
-            normalizePageSlug(p.slug) === normalized
-        );
-
-        if (matchingDefault) {
-          try {
-            await db.collection('cms_pages').updateOne(
-              { $or: [{ slug: matchingDefault.slug }, { slug: normalized }, { id: matchingDefault.id }] },
-              { $set: matchingDefault },
-              { upsert: true }
-            );
-          } catch {}
-          return NextResponse.json(
-            {
-              success: true,
-              data: matchingDefault,
-              status: 'success',
-              source: 'preset',
-            },
-            { headers: corsHeaders() }
+        // Check if matching preset website page exists (only if tenant collection has never been created)
+        const totalDocsInDb = await db.collection('cms_pages').countDocuments({});
+        if (totalDocsInDb === 0) {
+          const tenantDoc = await db.collection('tenants').findOne({ slug: tenantSlug });
+          const defaultPages = getDefaultWebsitePages(tenantSlug, tenantDoc);
+          const matchingDefault = defaultPages.find(
+            (p) =>
+              p.slug === targetSlug ||
+              p.slug === `/${targetSlug}` ||
+              p.slug === normalized ||
+              p.slug === `/${normalized}` ||
+              p.id === targetSlug ||
+              p.id === normalized ||
+              normalizePageSlug(p.slug) === normalized
           );
+
+          if (matchingDefault) {
+            try {
+              await db.collection('cms_pages').updateOne(
+                { $or: [{ slug: matchingDefault.slug }, { slug: normalized }, { id: matchingDefault.id }] },
+                { $set: matchingDefault },
+                { upsert: true }
+              );
+            } catch {}
+            return NextResponse.json(
+              {
+                success: true,
+                data: matchingDefault,
+                status: 'success',
+                source: 'preset',
+              },
+              { headers: corsHeaders() }
+            );
+          }
         }
 
         return NextResponse.json(
@@ -197,16 +240,23 @@ export async function GET(request: NextRequest) {
       // 2. Multi-page listing for Admin "Website Pages" Manager
       const systemTypes = ['homepage', 'header', 'footer', 'collection-page', 'product-page', 'contact-page', 'about-page'];
       const query: any = {
-        $or: [
-          { type: { $in: ['page', 'custom', 'website-page', 'policy', 'blog'] } },
-          { blocks: { $exists: true } },
-          { type: { $nin: systemTypes } },
+        $and: [
+          { status: { $ne: 'archived' } },
+          { deleted: { $ne: true } },
+          {
+            $or: [
+              { type: { $in: ['page', 'custom', 'website-page', 'policy', 'blog'] } },
+              { blocks: { $exists: true } },
+              { type: { $nin: systemTypes } },
+            ],
+          },
         ],
       };
 
       let docs = await db.collection('cms_pages').find(query).toArray();
+      const totalDocsCount = await db.collection('cms_pages').countDocuments({});
 
-      // If empty for this tenant, auto-seed with category-aligned website pages
+      // If tenant DB is brand new (0 total documents ever created in collection), auto-seed category-aligned website pages
       const tenantDoc = await db.collection('tenants').findOne({ slug: tenantSlug });
       const defaultPages = getDefaultWebsitePages(tenantSlug, tenantDoc);
 
@@ -224,7 +274,7 @@ export async function GET(request: NextRequest) {
           (isJewelryTenant && d.title?.toLowerCase().includes('apparel'))
       );
 
-      if (!docs || docs.length === 0 || (isJewelryTenant && hasGenericApparelPages)) {
+      if (totalDocsCount === 0 || (isJewelryTenant && hasGenericApparelPages)) {
         try {
           if (isJewelryTenant && hasGenericApparelPages) {
             await db.collection('cms_pages').deleteMany({
@@ -247,7 +297,8 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      const cleanPages = (docs.length > 0 ? docs : defaultPages).map((doc: any) => {
+      // Return active docs from DB
+      const cleanPages = docs.map((doc: any) => {
         const { _id, ...clean } = doc;
         return {
           id: clean.id || _id?.toString() || `page_${clean.slug}`,
@@ -259,6 +310,7 @@ export async function GET(request: NextRequest) {
           sectionsEnabled: clean.sectionsEnabled || { hero: true, body: true, customSections: true, valueProps: true },
           customSections: clean.customSections || [],
           design: clean.design || clean.styles || {},
+          styles: clean.styles || clean.design || {},
           seo: clean.seo || { title: clean.title },
           tenantSlug: tenantSlug,
           updatedAt: clean.updatedAt || new Date().toISOString(),
@@ -312,6 +364,7 @@ export async function POST(request: NextRequest) {
       searchParams.get('tenantSlug') ||
       searchParams.get('store') ||
       request.headers.get('x-tenant-slug') ||
+      request.headers.get('X-Tenant-Slug') ||
       fallback ||
       'demo'
     )
@@ -335,6 +388,7 @@ export async function POST(request: NextRequest) {
       title: body.title,
       slug: cleanSlug,
       status: body.status || 'published',
+      deleted: false,
       type: body.type || 'website-page',
       blocks: body.blocks || [],
       sectionsEnabled: body.sectionsEnabled || { hero: true, body: true, customSections: true, valueProps: true },
@@ -354,7 +408,7 @@ export async function POST(request: NextRequest) {
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
       await db.collection('cms_pages').updateOne(
-        { $or: [{ id: pageId }, { slug: cleanSlug }] },
+        { $or: [{ id: pageId }, { slug: cleanSlug }, { slug: `/${cleanSlug}` }] },
         { $set: newPageDoc },
         { upsert: true }
       );
@@ -369,7 +423,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: newPageDoc,
-        message: 'Page created and published live',
+        message: 'Page created and published live in tenant DB',
       },
       { status: 201, headers: corsHeaders() }
     );
@@ -400,6 +454,7 @@ export async function PUT(request: NextRequest) {
       searchParams.get('tenantSlug') ||
       searchParams.get('store') ||
       request.headers.get('x-tenant-slug') ||
+      request.headers.get('X-Tenant-Slug') ||
       fallback ||
       'demo'
     )
@@ -416,7 +471,8 @@ export async function PUT(request: NextRequest) {
       title: body.title || cleanSlug,
       slug: cleanSlug,
       status: body.status || 'published',
-      type: body.type || (cleanSlug === 'contact' ? 'contact-page' : cleanSlug === 'about' ? 'about-page' : 'page'),
+      deleted: false,
+      type: body.type || (cleanSlug === 'contact' ? 'contact-page' : cleanSlug === 'about' ? 'about-page' : 'website-page'),
       blocks: body.blocks || [],
       seo: body.seo || { title: body.title },
       tenantSlug: tenantSlug,
@@ -490,7 +546,7 @@ export async function PUT(request: NextRequest) {
       {
         success: true,
         data: updateDoc,
-        message: 'Page updated successfully',
+        message: 'Page updated successfully in tenant DB',
       },
       { headers: corsHeaders() }
     );
@@ -498,6 +554,133 @@ export async function PUT(request: NextRequest) {
     console.error('Failed to update page:', err);
     return NextResponse.json(
       { success: false, error: err.message || 'Failed to update page' },
+      { status: 500, headers: corsHeaders() }
+    );
+  }
+}
+
+/**
+ * DELETE /api/v1/content/pages
+ * Deletes a website page for a specific tenant and stores an archived tombstone
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
+
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch {}
+
+    const tenantSlug = (
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
+      body.tenantSlug ||
+      body.tenant ||
+      request.headers.get('x-tenant-slug') ||
+      request.headers.get('X-Tenant-Slug') ||
+      fallback ||
+      'demo'
+    )
+      .replace(/^store_/, '')
+      .toLowerCase()
+      .trim();
+
+    const targetId = (
+      searchParams.get('id') ||
+      searchParams.get('slug') ||
+      body.id ||
+      body.slug ||
+      ''
+    ).trim();
+
+    if (!targetId) {
+      return NextResponse.json(
+        { success: false, error: 'Page id or slug is required for deletion' },
+        { status: 400, headers: corsHeaders() }
+      );
+    }
+
+    const cleanSlug = targetId.replace(/^\//, '').toLowerCase().trim();
+    const normalized = normalizePageSlug(cleanSlug);
+    const now = new Date().toISOString();
+
+    const db = await getTenantDatabase(tenantSlug);
+    if (!db) {
+      return NextResponse.json(
+        { success: false, error: `Tenant database '${tenantSlug}' not found` },
+        { status: 404, headers: corsHeaders() }
+      );
+    }
+
+    const filterOr: any[] = [
+      { id: targetId },
+      { id: cleanSlug },
+      { id: normalized },
+      { id: `page_${cleanSlug}` },
+      { slug: cleanSlug },
+      { slug: `/${cleanSlug}` },
+      { slug: normalized },
+      { slug: `/${normalized}` },
+    ];
+
+    const existing = await db.collection('cms_pages').findOne({ $or: filterOr });
+    const finalSlug = existing?.slug || cleanSlug;
+    const finalId = existing?.id || targetId;
+
+    // Delete active document
+    await db.collection('cms_pages').deleteMany({ $or: filterOr });
+
+    // Save tombstone so preset generator never resurrects this deleted page
+    await db.collection('cms_pages').updateOne(
+      { slug: finalSlug },
+      {
+        $set: {
+          id: finalId,
+          slug: finalSlug,
+          title: existing?.title || finalSlug,
+          status: 'archived',
+          deleted: true,
+          type: 'archived',
+          deletedAt: now,
+          tenantSlug,
+          updatedAt: now,
+        },
+      },
+      { upsert: true }
+    );
+
+    // Also remove from platformDb if present
+    if (platformDb) {
+      try {
+        await platformDb.collection('cms_pages').deleteMany({
+          tenantSlug,
+          $or: filterOr,
+        });
+      } catch {}
+    }
+
+    try {
+      revalidatePath(`/${finalSlug}`);
+      revalidatePath(`/stores/${tenantSlug}/${finalSlug}`);
+    } catch {}
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: `Page '${targetId}' deleted successfully from database for tenant '${tenantSlug}'`,
+        deletedId: targetId,
+        tenantSlug,
+      },
+      { headers: corsHeaders() }
+    );
+  } catch (err: any) {
+    console.error('Failed to delete page:', err);
+    return NextResponse.json(
+      { success: false, error: err.message || 'Failed to delete page' },
       { status: 500, headers: corsHeaders() }
     );
   }

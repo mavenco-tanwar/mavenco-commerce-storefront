@@ -307,10 +307,11 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
     }
   }
 
-  // 5. Category-aligned Preset Fallback
+  // 5. Category-aligned Preset Fallback (only if NOT archived/deleted in tenant DB)
   if (!page) {
     try {
-      const { getDefaultWebsitePages } = await import('@/lib/cms-page-presets');
+      const tenantDb = tenantSlug ? await getTenantDatabase(tenantSlug) : null;
+      let isArchived = false;
       const clean = slug.replace(/^\//, '').toLowerCase().trim();
       const normalized = ['shipping', 'shipping-delivery', 'shipping-delivery-timelines'].includes(clean)
         ? 'shipping-policy'
@@ -322,18 +323,40 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
         ? 'about-us'
         : clean;
 
-      const presets = getDefaultWebsitePages(tenantSlug);
-      const match = presets.find(
-        (p) =>
-          p.slug === clean ||
-          p.slug === `/${clean}` ||
-          p.slug === normalized ||
-          p.slug === `/${normalized}` ||
-          p.id === clean ||
-          p.id === normalized
-      );
-      if (match) {
-        page = match;
+      if (tenantDb) {
+        const tombstone = await tenantDb.collection('cms_pages').findOne({
+          $or: [
+            { slug: clean },
+            { slug: `/${clean}` },
+            { slug: normalized },
+            { slug: `/${normalized}` },
+            { id: clean },
+            { id: normalized },
+            { id: `page_${clean}` },
+            { id: `page_${normalized}` },
+          ],
+          $and: [{ $or: [{ status: 'archived' }, { deleted: true }] }],
+        });
+        if (tombstone) {
+          isArchived = true;
+        }
+      }
+
+      if (!isArchived) {
+        const { getDefaultWebsitePages } = await import('@/lib/cms-page-presets');
+        const presets = getDefaultWebsitePages(tenantSlug);
+        const match = presets.find(
+          (p) =>
+            p.slug === clean ||
+            p.slug === `/${clean}` ||
+            p.slug === normalized ||
+            p.slug === `/${normalized}` ||
+            p.id === clean ||
+            p.id === normalized
+        );
+        if (match) {
+          page = match;
+        }
       }
     } catch {}
   }

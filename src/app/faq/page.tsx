@@ -83,10 +83,13 @@ export default async function FaqPage({ searchParams }: PageProps) {
 
   // Tenant-specific Category FAQ
   let page: WebsitePageConfig | null = null;
+  let isArchived = false;
+
   try {
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
-      const pageDoc = await db.collection('cms_pages').findOne({
+      // Check if deleted/archived
+      const tombstone = await db.collection('cms_pages').findOne({
         $or: [
           { slug: 'faq' },
           { slug: '/faq' },
@@ -95,15 +98,37 @@ export default async function FaqPage({ searchParams }: PageProps) {
           { id: 'faq' },
           { id: `page_faq_${tenantSlug}` },
         ],
+        $and: [{ $or: [{ status: 'archived' }, { deleted: true }] }],
       });
 
-      if (pageDoc) {
-        const { _id, ...clean } = pageDoc;
-        page = { id: clean.id || _id.toString(), ...clean } as WebsitePageConfig;
+      if (tombstone) {
+        isArchived = true;
+      } else {
+        const pageDoc = await db.collection('cms_pages').findOne({
+          $or: [
+            { slug: 'faq' },
+            { slug: '/faq' },
+            { slug: 'frequently-asked-questions' },
+            { slug: '/frequently-asked-questions' },
+            { id: 'faq' },
+            { id: `page_faq_${tenantSlug}` },
+          ],
+          status: { $ne: 'archived' },
+          deleted: { $ne: true },
+        });
+
+        if (pageDoc) {
+          const { _id, ...clean } = pageDoc;
+          page = { id: clean.id || _id.toString(), ...clean } as WebsitePageConfig;
+        }
       }
     }
   } catch (err) {
     console.warn(`[FAQ Page] Direct DB lookup error for tenant ${tenantSlug}:`, err);
+  }
+
+  if (isArchived) {
+    return <PlatformFaqClient />;
   }
 
   if (!page) {
