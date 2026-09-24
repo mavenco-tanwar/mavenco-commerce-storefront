@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+import { ModalProvider } from '@/lib/modal-context';
 import { ToastProvider } from '@/context/ToastContext';
 import { StoreProvider } from '@/context/StoreContext';
 import { AuthProvider } from '@/context/AuthContext';
@@ -57,25 +58,27 @@ export default function RootLayout({
     <html lang="en" className={`${playfair.variable} ${jakarta.variable}`}>
       <body className="min-h-screen flex flex-col bg-[var(--theme-color-background,#FFFDFC)] text-[var(--theme-color-text,#111111)] antialiased transition-colors duration-200">
         <ToastProvider>
-          <StoreProvider>
-            <AuthProvider>
-              <WishlistProvider>
-                <CartProvider>
-                  <CurrencyProvider>
-                    <ThemeProvider>
-                      <ProductCardConfigProvider>
-                        <Suspense fallback={<Loading />}>
-                          <TopLoadingProgressBar />
-                          <DynamicLayoutWrapper>{children}</DynamicLayoutWrapper>
-                        </Suspense>
-                        <FloatingWhatsAppWidget />
-                      </ProductCardConfigProvider>
-                    </ThemeProvider>
-                  </CurrencyProvider>
-                </CartProvider>
-              </WishlistProvider>
-            </AuthProvider>
-          </StoreProvider>
+          <ModalProvider>
+            <StoreProvider>
+              <AuthProvider>
+                <WishlistProvider>
+                  <CartProvider>
+                    <CurrencyProvider>
+                      <ThemeProvider>
+                        <ProductCardConfigProvider>
+                          <Suspense fallback={<Loading />}>
+                            <TopLoadingProgressBar />
+                            <DynamicLayoutWrapper>{children}</DynamicLayoutWrapper>
+                          </Suspense>
+                          <FloatingWhatsAppWidget />
+                        </ProductCardConfigProvider>
+                      </ThemeProvider>
+                    </CurrencyProvider>
+                  </CartProvider>
+                </WishlistProvider>
+              </AuthProvider>
+            </StoreProvider>
+          </ModalProvider>
         </ToastProvider>
       </body>
     </html>
