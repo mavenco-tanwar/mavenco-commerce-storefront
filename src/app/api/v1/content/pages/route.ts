@@ -25,6 +25,23 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders() });
 }
 
+function normalizePageSlug(raw: string): string {
+  const clean = (raw || '').toLowerCase().replace(/^\//, '').trim();
+  if (['shipping', 'shipping-policy', 'shipping-delivery', 'shipping-delivery-timelines'].includes(clean)) {
+    return 'shipping-policy';
+  }
+  if (['returns', 'return-policy', 'returns-warranty', 'warranty'].includes(clean)) {
+    return 'return-policy';
+  }
+  if (['faq', 'faqs', 'frequently-asked-questions'].includes(clean)) {
+    return 'faq';
+  }
+  if (['about', 'about-us', 'our-story'].includes(clean)) {
+    return 'about-us';
+  }
+  return clean;
+}
+
 /**
  * GET /api/v1/content/pages
  * - If ?slug=xyz is provided: returns single page
@@ -54,13 +71,18 @@ export async function GET(request: NextRequest) {
       // 1. Single page lookup by slug or specific type
       if (slug || (pageType && pageType !== 'custom' && pageType !== 'page' && pageType !== 'website-page')) {
         const targetSlug = slug || pageType;
+        const normalized = normalizePageSlug(targetSlug);
 
         const doc = await db.collection('cms_pages').findOne({
           $or: [
             { slug: targetSlug },
             { slug: `/${targetSlug}` },
+            { slug: normalized },
+            { slug: `/${normalized}` },
             { id: targetSlug },
+            { id: normalized },
             { type: targetSlug },
+            { type: normalized },
           ],
         });
 
@@ -135,14 +157,17 @@ export async function GET(request: NextRequest) {
           (p) =>
             p.slug === targetSlug ||
             p.slug === `/${targetSlug}` ||
+            p.slug === normalized ||
+            p.slug === `/${normalized}` ||
             p.id === targetSlug ||
-            p.slug.replace(/^\//, '') === targetSlug.replace(/^\//, '')
+            p.id === normalized ||
+            normalizePageSlug(p.slug) === normalized
         );
 
         if (matchingDefault) {
           try {
             await db.collection('cms_pages').updateOne(
-              { slug: matchingDefault.slug },
+              { $or: [{ slug: matchingDefault.slug }, { slug: normalized }, { id: matchingDefault.id }] },
               { $set: matchingDefault },
               { upsert: true }
             );

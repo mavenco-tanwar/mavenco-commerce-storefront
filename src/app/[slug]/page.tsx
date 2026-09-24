@@ -98,9 +98,28 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
     for (const db of dbsToTry) {
       if (!db) continue;
       const cleanSlug = slug.replace(/^\//, '').toLowerCase().trim();
+      const normalized = ['shipping', 'shipping-delivery', 'shipping-delivery-timelines'].includes(cleanSlug)
+        ? 'shipping-policy'
+        : ['returns', 'returns-warranty', 'warranty'].includes(cleanSlug)
+        ? 'return-policy'
+        : ['faqs', 'frequently-asked-questions'].includes(cleanSlug)
+        ? 'faq'
+        : ['about', 'our-story'].includes(cleanSlug)
+        ? 'about-us'
+        : cleanSlug;
+
       const pageDoc = await db.collection('cms_pages').findOne({
         $and: [
-          { $or: [{ slug: cleanSlug }, { slug: `/${cleanSlug}` }, { id: cleanSlug }] },
+          {
+            $or: [
+              { slug: cleanSlug },
+              { slug: `/${cleanSlug}` },
+              { slug: normalized },
+              { slug: `/${normalized}` },
+              { id: cleanSlug },
+              { id: normalized },
+            ],
+          },
           { status: 'published' },
         ],
       });
@@ -242,6 +261,16 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
     for (const db of dbsToTry) {
       if (!db) continue;
       const cleanSlug = slug.replace(/^\//, '').toLowerCase().trim();
+      const normalized = ['shipping', 'shipping-delivery', 'shipping-delivery-timelines'].includes(cleanSlug)
+        ? 'shipping-policy'
+        : ['returns', 'returns-warranty', 'warranty'].includes(cleanSlug)
+        ? 'return-policy'
+        : ['faqs', 'frequently-asked-questions'].includes(cleanSlug)
+        ? 'faq'
+        : ['about', 'our-story'].includes(cleanSlug)
+        ? 'about-us'
+        : cleanSlug;
+
       const pageDoc = await db.collection('cms_pages').findOne({
         $and: [
           {
@@ -249,7 +278,10 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
               { slug: cleanSlug },
               { slug: `/${cleanSlug}` },
               { slug: slug },
+              { slug: normalized },
+              { slug: `/${normalized}` },
               { id: cleanSlug },
+              { id: normalized },
             ],
           },
           { status: 'published' },
@@ -280,8 +312,26 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
     try {
       const { getDefaultWebsitePages } = await import('@/lib/cms-page-presets');
       const clean = slug.replace(/^\//, '').toLowerCase().trim();
+      const normalized = ['shipping', 'shipping-delivery', 'shipping-delivery-timelines'].includes(clean)
+        ? 'shipping-policy'
+        : ['returns', 'returns-warranty', 'warranty'].includes(clean)
+        ? 'return-policy'
+        : ['faqs', 'frequently-asked-questions'].includes(clean)
+        ? 'faq'
+        : ['about', 'our-story'].includes(clean)
+        ? 'about-us'
+        : clean;
+
       const presets = getDefaultWebsitePages(tenantSlug);
-      const match = presets.find((p) => p.slug === clean || p.slug === `/${clean}` || p.id === clean);
+      const match = presets.find(
+        (p) =>
+          p.slug === clean ||
+          p.slug === `/${clean}` ||
+          p.slug === normalized ||
+          p.slug === `/${normalized}` ||
+          p.id === clean ||
+          p.id === normalized
+      );
       if (match) {
         page = match;
       }
