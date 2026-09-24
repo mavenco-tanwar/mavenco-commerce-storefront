@@ -275,6 +275,19 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
     }
   }
 
+  // 5. Category-aligned Preset Fallback
+  if (!page) {
+    try {
+      const { getDefaultWebsitePages } = await import('@/lib/cms-page-presets');
+      const clean = slug.replace(/^\//, '').toLowerCase().trim();
+      const presets = getDefaultWebsitePages(tenantSlug);
+      const match = presets.find((p) => p.slug === clean || p.slug === `/${clean}` || p.id === clean);
+      if (match) {
+        page = match;
+      }
+    } catch {}
+  }
+
   if (page) {
     const { WebsitePageRenderer } = await import('@/components/cms/WebsitePageRenderer');
     return <WebsitePageRenderer initialPage={page} tenantSlug={tenantSlug} />;

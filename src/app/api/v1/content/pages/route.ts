@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
-import { getDefaultContactPageConfig, getDefaultAboutPageConfig } from '@/lib/cms-page-presets';
+import {
+  getDefaultContactPageConfig,
+  getDefaultAboutPageConfig,
+  getDefaultWebsitePages,
+} from '@/lib/cms-page-presets';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -124,6 +128,36 @@ export async function GET(request: NextRequest) {
           );
         }
 
+        // Check if matching preset website page exists
+        const tenantDoc = await db.collection('tenants').findOne({ slug: tenantSlug });
+        const defaultPages = getDefaultWebsitePages(tenantSlug, tenantDoc);
+        const matchingDefault = defaultPages.find(
+          (p) =>
+            p.slug === targetSlug ||
+            p.slug === `/${targetSlug}` ||
+            p.id === targetSlug ||
+            p.slug.replace(/^\//, '') === targetSlug.replace(/^\//, '')
+        );
+
+        if (matchingDefault) {
+          try {
+            await db.collection('cms_pages').updateOne(
+              { slug: matchingDefault.slug },
+              { $set: matchingDefault },
+              { upsert: true }
+            );
+          } catch {}
+          return NextResponse.json(
+            {
+              success: true,
+              data: matchingDefault,
+              status: 'success',
+              source: 'preset',
+            },
+            { headers: corsHeaders() }
+          );
+        }
+
         return NextResponse.json(
           {
             success: false,
@@ -136,7 +170,7 @@ export async function GET(request: NextRequest) {
       }
 
       // 2. Multi-page listing for Admin "Website Pages" Manager
-      const systemTypes = ['homepage', 'header', 'footer', 'collection-page', 'product-page'];
+      const systemTypes = ['homepage', 'header', 'footer', 'collection-page', 'product-page', 'contact-page', 'about-page'];
       const query: any = {
         $or: [
           { type: { $in: ['page', 'custom', 'website-page', 'policy', 'blog'] } },
@@ -145,15 +179,61 @@ export async function GET(request: NextRequest) {
         ],
       };
 
-      const docs = await db.collection('cms_pages').find(query).toArray();
-      const cleanPages = docs.map((doc) => {
+      let docs = await db.collection('cms_pages').find(query).toArray();
+
+      // If empty for this tenant, auto-seed with category-aligned website pages
+      const tenantDoc = await db.collection('tenants').findOne({ slug: tenantSlug });
+      const defaultPages = getDefaultWebsitePages(tenantSlug, tenantDoc);
+
+      const isJewelryTenant =
+        tenantSlug.includes('silvora') ||
+        tenantSlug.includes('jewel') ||
+        tenantSlug.includes('aurum') ||
+        tenantDoc?.category?.toLowerCase().includes('jewel') ||
+        tenantDoc?.categoryLabel?.toLowerCase().includes('jewel');
+
+      const hasGenericApparelPages = docs.some(
+        (d) =>
+          d.title?.toLowerCase().includes('jq trends') ||
+          d.seo?.title?.toLowerCase().includes('jq trends') ||
+          (isJewelryTenant && d.title?.toLowerCase().includes('apparel'))
+      );
+
+      if (!docs || docs.length === 0 || (isJewelryTenant && hasGenericApparelPages)) {
+        try {
+          if (isJewelryTenant && hasGenericApparelPages) {
+            await db.collection('cms_pages').deleteMany({
+              $or: [
+                { title: { $regex: 'JQ Trends', $options: 'i' } },
+                { 'seo.title': { $regex: 'JQ Trends', $options: 'i' } },
+              ],
+            });
+          }
+          for (const dp of defaultPages) {
+            await db.collection('cms_pages').updateOne(
+              { slug: dp.slug },
+              { $set: dp },
+              { upsert: true }
+            );
+          }
+          docs = await db.collection('cms_pages').find(query).toArray();
+        } catch (seedErr) {
+          console.warn('[Pages API] Seeding initial category website pages:', seedErr);
+        }
+      }
+
+      const cleanPages = (docs.length > 0 ? docs : defaultPages).map((doc: any) => {
         const { _id, ...clean } = doc;
         return {
-          id: clean.id || _id.toString(),
+          id: clean.id || _id?.toString() || `page_${clean.slug}`,
           title: clean.title || 'Untitled Page',
           slug: clean.slug ? clean.slug.replace(/^\//, '') : 'page',
           status: clean.status || 'published',
+          type: clean.type || 'website-page',
           blocks: clean.blocks || [],
+          sectionsEnabled: clean.sectionsEnabled || { hero: true, body: true, customSections: true, valueProps: true },
+          customSections: clean.customSections || [],
+          design: clean.design || clean.styles || {},
           seo: clean.seo || { title: clean.title },
           tenantSlug: tenantSlug,
           updatedAt: clean.updatedAt || new Date().toISOString(),
@@ -230,8 +310,12 @@ export async function POST(request: NextRequest) {
       title: body.title,
       slug: cleanSlug,
       status: body.status || 'published',
-      type: 'page',
+      type: body.type || 'website-page',
       blocks: body.blocks || [],
+      sectionsEnabled: body.sectionsEnabled || { hero: true, body: true, customSections: true, valueProps: true },
+      customSections: body.customSections || [],
+      design: body.design || body.styles || {},
+      styles: body.styles || body.design || {},
       seo: body.seo || {
         title: `${body.title} | Store`,
         description: `Explore ${body.title}.`,
@@ -315,6 +399,12 @@ export async function PUT(request: NextRequest) {
       updatedAt: now,
     };
 
+    if (body.sectionsEnabled !== undefined) {
+      updateDoc.sectionsEnabled = body.sectionsEnabled;
+    }
+    if (body.customSections !== undefined) {
+      updateDoc.customSections = body.customSections;
+    }
     if (body.config !== undefined) {
       updateDoc.config = body.config;
     }
