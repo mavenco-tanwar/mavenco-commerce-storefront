@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { ShoppingBag } from 'lucide-react';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { CategoryApiService } from '@/services/api/categories';
 import { CmsApiService } from '@/services/api/cms';
 import { ProductListingView } from '@/components/plp/ProductListingView';
@@ -28,9 +28,11 @@ export async function generateMetadata({
   const target = decodeURIComponent(rawTarget || '').trim();
   const cleanTarget = target.replace(/^\//, '').toLowerCase().trim();
 
-  // 1. Check Category from MongoDB
+  // 1. Check Category from MongoDB (Tenant DB first, platform fallback)
   try {
-    const db = await getDatabase();
+    const tenantDb = await getTenantDatabase(tenantSlug);
+    const platformDb = await getDatabase();
+    const db = tenantDb || platformDb;
     if (db) {
       const catDoc = await db.collection('categories').findOne({
         $and: [
@@ -149,10 +151,12 @@ export default async function StoreCategoryOrWebsitePage({
     console.warn('[StoreCategoryOrWebsitePage] Tenant check warning:', err);
   }
 
-  // 1. Direct MongoDB lookup for Category
+  // 1. Direct MongoDB lookup for Category (Tenant DB first, platform fallback)
   let category: any = null;
   try {
-    const db = await getDatabase();
+    const tenantDb = await getTenantDatabase(tenantSlug);
+    const platformDb = await getDatabase();
+    const db = tenantDb || platformDb;
     if (db) {
       const catMatches = [
         { slug: cleanTarget },

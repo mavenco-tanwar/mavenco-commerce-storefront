@@ -63,11 +63,12 @@ export class CategoryApiService {
   }
 
   /**
-   * Retrieves a single category by slug strictly from API.
+   * Retrieves a single category by slug strictly from API for a specific tenant.
    */
-  public static async getCategoryBySlug(slug: string): Promise<{ data: Category | null }> {
+  public static async getCategoryBySlug(slug: string, tenant?: string): Promise<{ data: Category | null }> {
     try {
-      const res = await apiClient.get<any>(`/api/v1/categories/slug/${encodeURIComponent(slug)}`);
+      const query = tenant ? `?tenant=${encodeURIComponent(tenant)}` : '';
+      const res = await apiClient.get<any>(`/api/v1/categories/slug/${encodeURIComponent(slug)}${query}`);
       if (res.data) {
         return { data: mapCmsCategoryToStorefrontCategory(res.data) };
       }

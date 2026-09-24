@@ -21,6 +21,7 @@ export interface CollectionListingPageProps {
   collectionBannerImage?: string;
   totalProductsCount?: number;
   templateOverride?: Partial<CollectionPageConfig>;
+  initialConfig?: CollectionPageConfig;
   breadcrumbs?: Array<{ label: string; href?: string }>;
   availableCategories?: Array<{ slug: string; name: string }>;
   tenantSlug?: string;
@@ -33,6 +34,7 @@ function CollectionListingPageContent({
   collectionBannerImage,
   totalProductsCount,
   templateOverride,
+  initialConfig,
   breadcrumbs = [{ label: 'Collections', href: '/collections' }],
   availableCategories,
   tenantSlug: propTenantSlug,
@@ -45,14 +47,14 @@ function CollectionListingPageContent({
 
   const isPreview = searchParams.get('preview') === 'draft';
 
-  // Load Base Configuration
+  // Load Base Configuration from initialConfig (DB) or category preset
   const [config, setConfig] = useState<CollectionPageConfig>(() => ({
-    ...getDefaultCollectionPageConfig(activeTenant.slug || 'demo'),
+    ...(initialConfig || getDefaultCollectionPageConfig(activeTenant.slug || propTenantSlug || 'demo')),
     ...(templateOverride || {}),
   }));
 
   const fetchingRef = useRef(false);
-  const fetchedSlugRef = useRef<string | null>(null);
+  const fetchedSlugRef = useRef<string | null>(initialConfig ? (activeTenant.slug || propTenantSlug || null) : null);
 
   // Fetch Live Published / Draft Configuration from API
   const loadTemplate = useCallback(async (force = false) => {

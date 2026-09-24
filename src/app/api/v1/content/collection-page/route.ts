@@ -53,17 +53,23 @@ export async function GET(request: NextRequest) {
   } catch {}
 
   try {
-    const db = await getTenantDatabase(tenantSlug);
-    if (db) {
-      const tenantMatchConditions = [
-        { tenantId: tenantSlug },
-        { tenantSlug: tenantSlug },
-        { storeId: `store_${tenantSlug}` },
-        { storeSlug: tenantSlug },
-      ];
+    const tenantDb = await getTenantDatabase(tenantSlug);
+    const platformDb = await getDatabase();
+    const databases = [tenantDb, platformDb].filter(Boolean) as any[];
+
+    const tenantMatchConditions = [
+      { tenantId: tenantSlug },
+      { tenantSlug: tenantSlug },
+      { storeId: `store_${tenantSlug}` },
+      { storeSlug: tenantSlug },
+    ];
+
+    let doc = null;
+
+    for (const db of databases) {
+      if (doc) break;
 
       // 1. If explicit templateId is provided (not generic default_fashion), check it first
-      let doc = null;
       if (templateId && templateId !== 'default_fashion') {
         doc = await db.collection('collection_page_configs').findOne({
           $and: [
@@ -99,45 +105,46 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      if (doc) {
-        if (isPreview && doc.draft) {
-          return NextResponse.json(
-            { success: true, data: { ...defaultCfg, ...doc.draft, tenantId: tenantSlug } },
-            { headers: corsHeaders() }
-          );
-        }
-        if (doc.published) {
-          return NextResponse.json(
-            { success: true, data: { ...defaultCfg, ...doc.published, tenantId: tenantSlug } },
-            { headers: corsHeaders() }
-          );
-        }
-        if (doc.draft) {
-          return NextResponse.json(
-            { success: true, data: { ...defaultCfg, ...doc.draft, tenantId: tenantSlug } },
-            { headers: corsHeaders() }
-          );
+      // 4. Fallback check in cms_pages
+      if (!doc) {
+        const cmsDoc = await db.collection('cms_pages').findOne(
+          {
+            $and: [
+              { $or: tenantMatchConditions },
+              { $or: [{ type: 'collection-page' }, { type: 'plp' }] },
+            ],
+          },
+          { sort: { updatedAt: -1 } }
+        );
+        if (cmsDoc?.config || cmsDoc?.published || cmsDoc?.hero) {
+          doc = cmsDoc.config || cmsDoc.published || cmsDoc;
         }
       }
+    }
 
-      // 4. Fallback check in cms_pages
-      const cmsDoc = await db.collection('cms_pages').findOne(
-        {
-          $and: [
-            { $or: tenantMatchConditions },
-            { $or: [{ type: 'collection-page' }, { type: 'plp' }] },
-          ],
-        },
-        { sort: { updatedAt: -1 } }
-      );
-
-      if (cmsDoc?.config || cmsDoc?.published || cmsDoc?.hero) {
-        const payload = cmsDoc.config || cmsDoc.published || cmsDoc;
+    if (doc) {
+      if (isPreview && doc.draft) {
         return NextResponse.json(
-          { success: true, data: { ...defaultCfg, ...payload, tenantId: tenantSlug } },
+          { success: true, data: { ...defaultCfg, ...doc.draft, tenantId: tenantSlug } },
           { headers: corsHeaders() }
         );
       }
+      if (doc.published) {
+        return NextResponse.json(
+          { success: true, data: { ...defaultCfg, ...doc.published, tenantId: tenantSlug } },
+          { headers: corsHeaders() }
+        );
+      }
+      if (doc.draft) {
+        return NextResponse.json(
+          { success: true, data: { ...defaultCfg, ...doc.draft, tenantId: tenantSlug } },
+          { headers: corsHeaders() }
+        );
+      }
+      return NextResponse.json(
+        { success: true, data: { ...defaultCfg, ...doc, tenantId: tenantSlug } },
+        { headers: corsHeaders() }
+      );
     }
   } catch (err) {
     console.warn('Collection page config fetch error, falling back to preset:', err);
@@ -160,9 +167,11 @@ async function handleSaveCollectionPage(request: NextRequest) {
 
   try {
     const body: CollectionPageConfig = await request.json();
-    const db = await getTenantDatabase(tenantSlug);
+    const tenantDb = await getTenantDatabase(tenantSlug);
+    const platformDb = await getDatabase();
+    const targetDbs = [tenantDb, platformDb].filter(Boolean) as any[];
 
-    if (!db) {
+    if (targetDbs.length === 0) {
       return NextResponse.json(
         { success: true, message: 'Local fallback acknowledged', data: body },
         { headers: corsHeaders() }
@@ -183,9 +192,12 @@ async function handleSaveCollectionPage(request: NextRequest) {
       },
     };
 
+    let publishedDoc: CollectionPageConfig | null = null;
+    let pubVersion = body.version || Date.now();
+
     if (isPublish) {
-      const pubVersion = body.version || Date.now();
-      const publishedDoc: CollectionPageConfig = {
+      pubVersion = body.version || Date.now();
+      publishedDoc = {
         ...body,
         tenantId: tenantSlug,
         templateId,
@@ -197,42 +209,6 @@ async function handleSaveCollectionPage(request: NextRequest) {
 
       updateQuery.$set.published = publishedDoc;
       updateQuery.$set.draft = publishedDoc;
-
-      // Save version snapshot
-      await db.collection('collection_page_versions').insertOne({
-        tenantId: tenantSlug,
-        tenantSlug: tenantSlug,
-        templateId,
-        version: pubVersion,
-        name: `Version ${pubVersion}`,
-        config: publishedDoc,
-        publishedAt: now,
-        createdAt: now,
-      });
-
-      // Synchronize into cms_pages for unified query accessibility
-      await db.collection('cms_pages').updateOne(
-        {
-          $or: [
-            { tenantSlug: tenantSlug, type: 'collection-page' },
-            { tenantId: tenantSlug, type: 'collection-page' },
-          ],
-        },
-        {
-          $set: {
-            tenantSlug: tenantSlug,
-            tenantId: tenantSlug,
-            type: 'collection-page',
-            status: 'published',
-            version: pubVersion,
-            config: publishedDoc,
-            hero: publishedDoc.hero,
-            grid: publishedDoc.grid,
-            updatedAt: now,
-          },
-        },
-        { upsert: true }
-      );
     } else {
       const draftDoc: CollectionPageConfig = {
         ...body,
@@ -244,31 +220,75 @@ async function handleSaveCollectionPage(request: NextRequest) {
       updateQuery.$set.draft = draftDoc;
     }
 
-    // 1. Upsert for specific templateId
-    await db.collection('collection_page_configs').updateOne(
-      {
-        $or: [
-          { tenantId: tenantSlug, templateId },
-          { tenantSlug: tenantSlug, templateId },
-        ],
-      },
-      updateQuery,
-      { upsert: true }
-    );
+    for (const db of targetDbs) {
+      if (isPublish && publishedDoc) {
+        // Save version snapshot
+        try {
+          await db.collection('collection_page_versions').insertOne({
+            tenantId: tenantSlug,
+            tenantSlug: tenantSlug,
+            templateId,
+            version: pubVersion,
+            name: `Version ${pubVersion}`,
+            config: publishedDoc,
+            publishedAt: now,
+            createdAt: now,
+          });
+        } catch {}
 
-    // 2. Also update primary default record so any query finds this newly published template
-    await db.collection('collection_page_configs').updateOne(
-      {
-        $or: [
-          { tenantId: tenantSlug, templateId: 'default_fashion' },
-          { tenantSlug: tenantSlug, templateId: 'default_fashion' },
-          { tenantId: tenantSlug },
-          { tenantSlug: tenantSlug },
-        ],
-      },
-      updateQuery,
-      { upsert: true }
-    );
+        // Synchronize into cms_pages for unified query accessibility
+        try {
+          await db.collection('cms_pages').updateOne(
+            {
+              $or: [
+                { tenantSlug: tenantSlug, type: 'collection-page' },
+                { tenantId: tenantSlug, type: 'collection-page' },
+              ],
+            },
+            {
+              $set: {
+                tenantSlug: tenantSlug,
+                tenantId: tenantSlug,
+                type: 'collection-page',
+                status: 'published',
+                version: pubVersion,
+                config: publishedDoc,
+                hero: publishedDoc.hero,
+                grid: publishedDoc.grid,
+                updatedAt: now,
+              },
+            },
+            { upsert: true }
+          );
+        } catch {}
+      }
+
+      // 1. Upsert for specific templateId
+      await db.collection('collection_page_configs').updateOne(
+        {
+          $or: [
+            { tenantId: tenantSlug, templateId },
+            { tenantSlug: tenantSlug, templateId },
+          ],
+        },
+        updateQuery,
+        { upsert: true }
+      );
+
+      // 2. Also update primary default record so any query finds this newly published template
+      await db.collection('collection_page_configs').updateOne(
+        {
+          $or: [
+            { tenantId: tenantSlug, templateId: 'default_fashion' },
+            { tenantSlug: tenantSlug, templateId: 'default_fashion' },
+            { tenantId: tenantSlug },
+            { tenantSlug: tenantSlug },
+          ],
+        },
+        updateQuery,
+        { upsert: true }
+      );
+    }
 
     try {
       revalidatePath('/collections');

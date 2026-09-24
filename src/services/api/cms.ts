@@ -206,16 +206,18 @@ export class CmsApiService {
    * Retrieves a CMS custom page by its slug strictly from the database API.
    * Zero static business text fallback: Returns null if not in database.
    */
-  public static async getPageBySlug(slug: string): Promise<CmsPage | null> {
+  public static async getPageBySlug(slug: string, tenant?: string): Promise<CmsPage | null> {
     try {
-      const res = await apiClient.get<CmsPage>(`/api/storefront/v1/pages/${encodeURIComponent(slug)}`);
+      const query = tenant ? `?tenant=${encodeURIComponent(tenant)}` : '';
+      const res = await apiClient.get<CmsPage>(`/api/storefront/v1/pages/${encodeURIComponent(slug)}${query}`);
       if (res.data) {
         return res.data;
       }
     } catch (err) {
       // Try content page endpoint
       try {
-        const res2 = await apiClient.get<CmsPage>(`/api/v1/content/pages/slug/${encodeURIComponent(slug)}`);
+        const query = tenant ? `?tenant=${encodeURIComponent(tenant)}` : '';
+        const res2 = await apiClient.get<CmsPage>(`/api/v1/content/pages/slug/${encodeURIComponent(slug)}${query}`);
         if (res2.data) {
           return res2.data;
         }

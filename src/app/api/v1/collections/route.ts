@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     if (tenantSlug) tenantAliases.add(tenantSlug);
     if (cleanTenant) tenantAliases.add(cleanTenant);
 
-    const db = await getTenantDatabase(cleanTenant || tenantSlug);
+    const db = await getTenantDatabase(cleanTenant || tenantSlug || 'demo');
     const platformDb = await getDatabase();
     if (db) {
       const collection = db.collection('collections');
