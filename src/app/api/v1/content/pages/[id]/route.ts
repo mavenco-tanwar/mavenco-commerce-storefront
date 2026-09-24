@@ -30,8 +30,17 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      fallback ||
+      'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
     const db = await getTenantDatabase(tenantSlug);
     if (!db) {
@@ -71,8 +80,19 @@ export async function PATCH(
   try {
     const { id } = await params;
     const updates = await req.json();
+    const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+      updates.tenantSlug ||
+      updates.tenant ||
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      fallback ||
+      'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
     const db = await getTenantDatabase(tenantSlug);
 
@@ -141,8 +161,17 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      fallback ||
+      'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
     const db = await getTenantDatabase(tenantSlug);
     if (!db) {

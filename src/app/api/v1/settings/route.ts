@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase, getPlatformDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { getTenantConfig } from '@/lib/tenant-config';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 
 function corsHeaders() {
   return {
@@ -19,11 +20,15 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const platformDb = await getPlatformDatabase();
+  const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
   const tenantSlug = (
     searchParams.get('tenant') ||
     searchParams.get('tenantSlug') ||
+    searchParams.get('store') ||
     request.headers.get('x-tenant-slug') ||
     request.headers.get('x-store-slug') ||
+    fallback ||
     'demo'
   )
     .replace(/^store_/, '')
@@ -87,11 +92,15 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const platformDb = await getPlatformDatabase();
+  const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
   const tenantSlug = (
     searchParams.get('tenant') ||
     searchParams.get('tenantSlug') ||
+    searchParams.get('store') ||
     request.headers.get('x-tenant-slug') ||
     request.headers.get('x-store-slug') ||
+    fallback ||
     'demo'
   )
     .replace(/^store_/, '')

@@ -33,10 +33,14 @@ function deepMerge<T extends Record<string, any>>(target: T, source?: any): T {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const platformDb = await getDatabase();
+  const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
   const tenantSlug = (
     searchParams.get('tenant') ||
     searchParams.get('tenantSlug') ||
+    searchParams.get('store') ||
     request.headers.get('x-tenant-slug') ||
+    fallback ||
     'demo'
   )
     .replace(/^store_/, '')
@@ -95,12 +99,16 @@ export async function PUT(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   try {
     const body: ProductCardConfig = await request.json();
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
     const tenantSlug = (
       (body as any).tenantId ||
       (body as any).tenantSlug ||
       searchParams.get('tenant') ||
       searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
       request.headers.get('x-tenant-slug') ||
+      fallback ||
       'demo'
     )
       .replace(/^store_/, '')

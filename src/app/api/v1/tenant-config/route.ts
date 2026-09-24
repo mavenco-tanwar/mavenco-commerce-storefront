@@ -69,7 +69,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'demo';
+  const platformDbFallback = await getPlatformDatabase();
+  const fallbackSlug = await resolveRequestTenantSlug(request, searchParams, platformDbFallback);
+  const tenantSlug =
+    searchParams.get('tenant') ||
+    searchParams.get('tenantSlug') ||
+    searchParams.get('store') ||
+    request.headers.get('x-tenant-slug') ||
+    request.headers.get('x-tenant') ||
+    fallbackSlug ||
+    'demo';
   const clean = tenantSlug.replace(/^store_/, '').toLowerCase().trim();
 
   try {
@@ -146,9 +155,21 @@ export async function PUT(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const tenantSlug = searchParams.get('tenant') || request.headers.get('x-tenant-slug') || 'demo';
-    const clean = tenantSlug.replace(/^store_/, '').toLowerCase().trim();
     const body = await request.json();
+    const platformDb = await getPlatformDatabase();
+    const fallbackSlug = await resolveRequestTenantSlug(request, searchParams, platformDb);
+    const tenantSlug =
+      body.slug ||
+      body.tenantSlug ||
+      body.storeSlug ||
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
+      request.headers.get('x-tenant-slug') ||
+      request.headers.get('x-tenant') ||
+      fallbackSlug ||
+      'demo';
+    const clean = tenantSlug.replace(/^store_/, '').toLowerCase().trim();
 
     const updated = updateTenantConfig(clean, body);
     const now = new Date().toISOString();
@@ -218,32 +239,35 @@ export async function POST(request: NextRequest) {
 
         // Upsert owner user if email is provided
         if (ownerEmail) {
-          const tempPass = `Mavenco@2026!${clean}`;
-          await db.collection('users').updateOne(
-            { email: ownerEmail },
-            {
-              $set: {
-                email: ownerEmail,
-                name: ownerName || updated.name || 'Store Owner',
-                tenantSlug: clean,
-                tenantId: `store_${clean}`,
-                storeSlug: clean,
-                role: 'owner',
-                roleId: 'role_owner',
-                roleName: 'Store Owner & Administrator',
-                status: 'active',
-                updatedAt: now,
+          const tenantDb = await getTenantDatabase(clean);
+          if (tenantDb) {
+            const tempPass = `Mavenco@2026!${clean}`;
+            await tenantDb.collection('users').updateOne(
+              { email: ownerEmail },
+              {
+                $set: {
+                  email: ownerEmail,
+                  name: ownerName || updated.name || 'Store Owner',
+                  tenantSlug: clean,
+                  tenantId: `store_${clean}`,
+                  storeSlug: clean,
+                  role: 'owner',
+                  roleId: 'role_owner',
+                  roleName: 'Store Owner & Administrator',
+                  status: 'active',
+                  updatedAt: now,
+                },
+                $setOnInsert: {
+                  id: `user_${ownerEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
+                  password: tempPass,
+                  temporaryPassword: tempPass,
+                  isTemporaryPassword: true,
+                  createdAt: now,
+                },
               },
-              $setOnInsert: {
-                id: `user_${ownerEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
-                password: tempPass,
-                temporaryPassword: tempPass,
-                isTemporaryPassword: true,
-                createdAt: now,
-              },
-            },
-            { upsert: true }
-          );
+              { upsert: true }
+            );
+          }
         }
       }
     } catch (err) {

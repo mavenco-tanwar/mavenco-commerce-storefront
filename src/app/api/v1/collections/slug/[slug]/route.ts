@@ -24,11 +24,24 @@ export async function GET(
     const resolvedParams = await params;
     const rawSlug = resolvedParams?.slug;
     const slug = decodeURIComponent(rawSlug || '').trim();
+    const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const resolvedFallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+      searchParams.get('tenant') ||
+      searchParams.get('store') ||
+      searchParams.get('tenantSlug') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      resolvedFallback ||
+      'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
-    const db = await getTenantDatabase(tenantSlug);
-    if (db) {
+
+    const tenantDb = await getTenantDatabase(tenantSlug);
+    const dbsToTry = [tenantDb, platformDb].filter(Boolean);
+
+    for (const db of dbsToTry) {
+      if (!db) continue;
       const col = await db.collection('collections').findOne({
         $or: [{ slug }, { id: slug }],
       });

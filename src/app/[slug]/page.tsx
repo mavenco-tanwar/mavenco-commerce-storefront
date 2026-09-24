@@ -18,7 +18,7 @@ import { CmsApiService } from '@/services/api/cms';
 import { CategoryApiService } from '@/services/api/categories';
 import { ProductListingView } from '@/components/plp/ProductListingView';
 import { Button } from '@/components/ui/Button';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase, getPlatformDatabase } from '@/lib/mongodb';
 import { headers, cookies } from 'next/headers';
 import { getDefaultCollectionPageConfig } from '@/lib/collection-page-presets';
 
@@ -55,8 +55,12 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
   // 1. Check Category from MongoDB
   try {
-    const db = await getDatabase();
-    if (db) {
+    const tenantDb = tenant ? await getTenantDatabase(tenant) : null;
+    const platformDb = await getPlatformDatabase();
+    const dbsToTry = [tenantDb, platformDb].filter(Boolean);
+
+    for (const db of dbsToTry) {
+      if (!db) continue;
       const catDoc = await db.collection('categories').findOne({
         $or: [
           { slug },
@@ -76,19 +80,23 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
   // 2. Check Category Service
   try {
-    const catRes = await CategoryApiService.getCategoryBySlug(slug);
+    const catRes = await CategoryApiService.getCategoryBySlug(slug, tenant);
     if (catRes?.data) {
       return {
         title: `${catRes.data.name} Collection | Luxury Boutique`,
         description: catRes.data.description || `Shop ${catRes.data.name} collections.`,
       };
     }
-  } catch { }
+  } catch {}
 
   // 3. Check CMS Page from Direct MongoDB
   try {
-    const db = await getDatabase();
-    if (db) {
+    const tenantDb = tenant ? await getTenantDatabase(tenant) : null;
+    const platformDb = await getPlatformDatabase();
+    const dbsToTry = [tenantDb, platformDb].filter(Boolean);
+
+    for (const db of dbsToTry) {
+      if (!db) continue;
       const cleanSlug = slug.replace(/^\//, '').toLowerCase().trim();
       const pageDoc = await db.collection('cms_pages').findOne({
         $and: [
@@ -128,8 +136,12 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
   // 1. Direct MongoDB lookup for category
   let category: any = null;
   try {
-    const db = await getDatabase();
-    if (db) {
+    const tenantDb = tenantSlug ? await getTenantDatabase(tenantSlug) : null;
+    const platformDb = await getPlatformDatabase();
+    const dbsToTry = [tenantDb, platformDb].filter(Boolean);
+
+    for (const db of dbsToTry) {
+      if (!db) continue;
       const catMatches = [
         { slug },
         { id: slug },
@@ -161,9 +173,10 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
           imageUrl: catDoc.imageUrl || '',
           department: catDoc.department || catDoc.slug,
           subcategories: (childCats && childCats.length > 0)
-            ? childCats.map((s) => ({ slug: s.slug || s.id, name: s.name, itemCount: s.productCount || 12 }))
+            ? childCats.map((s: any) => ({ slug: s.slug || s.id, name: s.name, itemCount: s.productCount || 12 }))
             : (catDoc.children || []),
         };
+        break;
       }
     }
   } catch (err) {
@@ -188,7 +201,7 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
 
   // Render Category Catalog View if category matches
   if (category) {
-    const subcategories = (category.subcategories || []).map((s) => ({
+    const subcategories = ((category as any).subcategories || []).map((s: any) => ({
       slug: s.slug,
       name: s.name,
       count: s.itemCount || 12,
@@ -208,10 +221,10 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
           pageTitle={category.name}
           pageSubtitle={
             category.description ||
-            getDefaultCollectionPageConfig(tenant).hero.description ||
+            getDefaultCollectionPageConfig(tenantSlug).hero.description ||
             `Explore our curated ${category.name} collection.`
           }
-          bannerImage={category.imageUrl || getDefaultCollectionPageConfig(tenant).hero.bgImage}
+          bannerImage={category.imageUrl || getDefaultCollectionPageConfig(tenantSlug).hero.bgImage}
           breadcrumbs={[{ label: category.name }]}
           availableCategories={subcategories}
         />
@@ -222,8 +235,12 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
   // 3. Direct MongoDB lookup for Editorial CMS Page (e.g. 'about-us', 'shipping-policy', etc.)
   let page: any = null;
   try {
-    const db = await getDatabase();
-    if (db) {
+    const tenantDb = tenantSlug ? await getTenantDatabase(tenantSlug) : null;
+    const platformDb = await getPlatformDatabase();
+    const dbsToTry = [tenantDb, platformDb].filter(Boolean);
+
+    for (const db of dbsToTry) {
+      if (!db) continue;
       const cleanSlug = slug.replace(/^\//, '').toLowerCase().trim();
       const pageDoc = await db.collection('cms_pages').findOne({
         $and: [
@@ -242,6 +259,7 @@ export default async function DynamicSlugPage({ params, searchParams }: PageProp
       if (pageDoc) {
         const { _id, ...clean } = pageDoc;
         page = { id: clean.id || _id.toString(), ...clean };
+        break;
       }
     }
   } catch (err) {

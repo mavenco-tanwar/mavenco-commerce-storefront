@@ -27,10 +27,14 @@ export async function OPTIONS() {
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const platformDb = await getDatabase();
+  const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
   const tenantSlug = (
     searchParams.get('tenant') ||
     searchParams.get('tenantSlug') ||
+    searchParams.get('store') ||
     request.headers.get('x-tenant-slug') ||
+    fallback ||
     'demo'
   )
     .replace(/^store_/, '')
@@ -145,12 +149,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { searchParams } = new URL(request.url);
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
     const tenantSlug = (
-      searchParams.get('tenant') ||
-      searchParams.get('tenantSlug') ||
       body.tenantSlug ||
       body.tenant ||
+      body.storeSlug ||
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
       request.headers.get('x-tenant-slug') ||
+      fallback ||
       'demo'
     )
       .replace(/^store_/, '')
@@ -224,12 +233,17 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { searchParams } = new URL(request.url);
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
     const tenantSlug = (
-      searchParams.get('tenant') ||
-      searchParams.get('tenantSlug') ||
       body.tenantSlug ||
       body.tenant ||
+      body.storeSlug ||
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
       request.headers.get('x-tenant-slug') ||
+      fallback ||
       'demo'
     )
       .replace(/^store_/, '')

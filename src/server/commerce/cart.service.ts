@@ -80,8 +80,22 @@ export class CartService {
     const cart = await this.getOrCreateCart(tenantId, sessionId, customerId);
 
     // Fetch live product from tenant database to verify real unit price and stock
-    const productRes = await ProductService.getProductById(productId);
-    const product = productRes.data;
+    let product: any = null;
+    const db = await getTenantDatabase(tenantId);
+    if (db) {
+      product = await db.collection('products').findOne({
+        $or: [
+          { id: productId },
+          { slug: productId },
+          { sku: productId },
+        ],
+      });
+    }
+
+    if (!product) {
+      const productRes = await ProductService.getProductById(productId, tenantId);
+      product = productRes.data;
+    }
 
     if (!product) {
       throw new Error(`Product ${productId} not found in tenant catalog.`);
@@ -145,7 +159,6 @@ export class CartService {
       updatedAt: now,
     };
 
-    const db = await getTenantDatabase(tenantId);
     if (db) {
       await db.collection('carts').updateOne(
         { id: cart.id },

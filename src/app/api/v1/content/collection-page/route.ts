@@ -26,13 +26,19 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const platformDb = await getDatabase();
+  const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
   const tenantSlug = (
     searchParams.get('tenant') ||
     searchParams.get('tenantSlug') ||
+    searchParams.get('store') ||
     request.headers.get('x-tenant-slug') ||
     request.headers.get('x-store-slug') ||
-    'lumina'
+    request.headers.get('x-tenant') ||
+    fallback ||
+    'demo'
   )
+    .replace(/^store_/, '')
     .toLowerCase()
     .trim();
   const templateId = searchParams.get('template');
@@ -154,21 +160,28 @@ export async function GET(request: NextRequest) {
 }
 
 async function handleSaveCollectionPage(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const tenantSlug = (
-    searchParams.get('tenant') ||
-    searchParams.get('tenantSlug') ||
-    request.headers.get('x-tenant-slug') ||
-    request.headers.get('x-store-slug') ||
-    'lumina'
-  )
-    .toLowerCase()
-    .trim();
-
   try {
+    const { searchParams } = new URL(request.url);
     const body: CollectionPageConfig = await request.json();
-    const tenantDb = await getTenantDatabase(tenantSlug);
     const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
+    const tenantSlug = (
+      (body as any)?.tenant ||
+      body?.tenantId ||
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
+      request.headers.get('x-tenant-slug') ||
+      request.headers.get('x-store-slug') ||
+      request.headers.get('x-tenant') ||
+      fallback ||
+      'demo'
+    )
+      .replace(/^store_/, '')
+      .toLowerCase()
+      .trim();
+
+    const tenantDb = await getTenantDatabase(tenantSlug);
     const targetDbs = [tenantDb, platformDb].filter(Boolean) as any[];
 
     if (targetDbs.length === 0) {

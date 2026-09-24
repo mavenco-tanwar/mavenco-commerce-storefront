@@ -25,11 +25,15 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const platformDb = await getDatabase();
+  const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
   const tenantSlug = (
     searchParams.get('tenant') ||
     searchParams.get('tenantSlug') ||
+    searchParams.get('store') ||
     request.headers.get('x-tenant-slug') ||
     request.headers.get('x-store-slug') ||
+    fallback ||
     'demo'
   )
     .replace(/^store_/, '')
@@ -103,18 +107,25 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const body = await request.json();
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
     const tenantSlug = (
+      body.tenant ||
+      body.tenantSlug ||
+      body.storeSlug ||
       searchParams.get('tenant') ||
       searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
       request.headers.get('x-tenant-slug') ||
       request.headers.get('x-store-slug') ||
+      fallback ||
       'demo'
     )
       .replace(/^store_/, '')
       .toLowerCase()
       .trim();
 
-    const body = await request.json();
     const newSections = body.sections || body.config?.sections || (Array.isArray(body) ? body : []);
 
     if (Array.isArray(newSections) && newSections.length > 0) {

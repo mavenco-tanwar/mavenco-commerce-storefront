@@ -46,14 +46,15 @@ export async function PATCH(
       req.headers.get('X-Tenant-Slug');
 
     const platformDb = await getDatabase();
-    let tenantSlug = rawTenant
+    let tenantSlug = (rawTenant
       ? rawTenant.replace(/^store_/, '').trim().toLowerCase()
-      : await resolveRequestTenantSlug(req, searchParams, platformDb);
-    const db = await getTenantDatabase(tenantSlug);
+      : await resolveRequestTenantSlug(req, searchParams, platformDb)) || 'demo';
 
-    if (!tenantSlug || tenantSlug === 'all' || tenantSlug === 'lumina') {
-      tenantSlug = 'jq-trends';
+    if (tenantSlug === 'all') {
+      tenantSlug = 'demo';
     }
+
+    const db = await getTenantDatabase(tenantSlug);
 
     if (db) {
       const { ObjectId } = await import('mongodb');
@@ -115,8 +116,15 @@ export async function DELETE(
       );
     }
 
+    const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const resolvedTenant = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+      searchParams.get('tenant') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      resolvedTenant ||
+      'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
     const db = await getTenantDatabase(tenantSlug);
     if (!db) {

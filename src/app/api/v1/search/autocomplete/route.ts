@@ -28,8 +28,44 @@ export async function GET(req: NextRequest) {
       }, { headers: corsHeaders() });
     }
 
-    const prodsRes = await ProductService.getAllProducts();
-    const allProducts = prodsRes.data || [];
+    const tenantSlug = (
+      searchParams.get('tenant') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      'demo'
+    ).replace(/^store_/, '').toLowerCase().trim();
+
+    const { getTenantDatabase } = await import('@/lib/mongodb');
+    const db = await getTenantDatabase(tenantSlug);
+
+    let allProducts: any[] = [];
+    let dbCategories: any[] = [];
+
+    if (db) {
+      const rawProds = await db.collection('products').find({
+        $or: [
+          { status: { $in: ['published', 'active'] } },
+          { status: { $exists: false } },
+        ],
+      }).toArray();
+      allProducts = rawProds.map((doc: any) => {
+        const { _id, ...clean } = doc;
+        return {
+          ...clean,
+          id: clean.id || _id.toString(),
+          name: clean.name || clean.title,
+        };
+      });
+
+      dbCategories = await db.collection('categories').find({
+        $or: [{ tenantSlug }, { storeSlug: tenantSlug }, { tenantId: tenantSlug }, { tenantId: `store_${tenantSlug}` }],
+      }).toArray();
+    }
+
+    if (allProducts.length === 0) {
+      const prodsRes = await ProductService.getAllProducts(tenantSlug);
+      allProducts = prodsRes.data || [];
+    }
 
     const suggestions: any[] = [];
 
@@ -39,25 +75,33 @@ export async function GET(req: NextRequest) {
       .slice(0, 4);
 
     for (const p of matchingProds) {
+      const pUrl = tenantSlug && tenantSlug !== 'demo'
+        ? `/stores/${tenantSlug}/${p.category || 'products'}/${p.slug || p.id}`
+        : `/products/${p.slug || p.id}`;
       suggestions.push({
         type: 'product',
         id: p.id,
         label: p.name,
         category: p.category,
         price: p.price,
-        image: Array.isArray(p.images) ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url) : '',
-        url: `/products/${p.slug || p.id}`,
+        image: Array.isArray(p.images) ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url) : (p.image || ''),
+        url: pUrl,
       });
     }
 
-    // Matching categories
-    const categories = ['Dresses', 'Blazers', 'Co-ords', 'Tops', 'Linen', 'Evening Wear'];
-    const matchingCats = categories.filter((c) => c.toLowerCase().includes(query)).slice(0, 2);
+    // Matching categories from DB
+    const matchingCats = dbCategories
+      .filter((c: any) => (c.name || '').toLowerCase().includes(query) || (c.slug || '').toLowerCase().includes(query))
+      .slice(0, 2);
+
     for (const c of matchingCats) {
+      const catUrl = tenantSlug && tenantSlug !== 'demo'
+        ? `/stores/${tenantSlug}/${c.slug || c.id}`
+        : `/collections/${c.slug || c.id}`;
       suggestions.push({
         type: 'category',
-        label: `Explore in ${c}`,
-        url: `/search?q=${encodeURIComponent(c)}`,
+        label: `Explore in ${c.name}`,
+        url: catUrl,
       });
     }
 

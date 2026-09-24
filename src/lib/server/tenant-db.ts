@@ -113,6 +113,11 @@ export async function resolveRequestTenantSlug(
     searchParams?.get('tenantSlug') ||
     searchParams?.get('tenantId');
 
+  if (fromQuery && fromQuery.trim()) {
+    const cleanedQuery = fromQuery.trim().replace(/^store_/, '').replace(/^store-/, '').toLowerCase();
+    if (cleanedQuery) return cleanedQuery;
+  }
+
   const fromHeader =
     req.headers.get('x-tenant-slug') ||
     req.headers.get('x-tenant') ||
@@ -130,11 +135,20 @@ export async function resolveRequestTenantSlug(
     }
   } catch {}
 
-  const raw = (fromQuery || fromHeader || fromCookie || '').trim();
+  const raw = (fromHeader || fromCookie || '').trim();
   if (raw) {
     const cleaned = raw.replace(/^store_/, '').replace(/^store-/, '').replace(/_/g, '-').toLowerCase();
-    if (cleaned && cleaned !== 'all' && cleaned !== 'demo' && cleaned !== 'lumina') {
+    if (cleaned && cleaned !== 'all') {
       return cleaned;
+    }
+  }
+
+  // Check referer URL if present (e.g., /stores/veg-garden)
+  const referer = req.headers.get('referer') || '';
+  if (referer) {
+    const storeMatch = referer.match(/\/stores\/([a-zA-Z0-9_-]+)/);
+    if (storeMatch && storeMatch[1]) {
+      return storeMatch[1].toLowerCase().trim();
     }
   }
 
@@ -142,7 +156,7 @@ export async function resolveRequestTenantSlug(
   const storeIdHeader = req.headers.get('x-store-id') || req.headers.get('x-store');
   if (storeIdHeader) {
     const cleaned = storeIdHeader.replace(/^store_/, '').replace(/^store-/, '').replace(/_/g, '-').toLowerCase();
-    if (cleaned && cleaned !== 'all' && cleaned !== 'demo' && cleaned !== 'lumina' && cleaned !== 'jq-trends' && cleaned !== 'store-jq-trends') {
+    if (cleaned && cleaned !== 'all' && cleaned !== 'jq-trends' && cleaned !== 'store-jq-trends') {
       return cleaned;
     }
   }

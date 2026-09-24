@@ -46,9 +46,29 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 2. Fetch all products for tenant
-    const prodsRes = await ProductService.getAllProducts();
-    let allProducts = prodsRes.data || [];
+    // 2. Fetch all products for tenant directly from isolated MongoDB
+    let allProducts: any[] = [];
+    if (db) {
+      const rawProds = await db.collection('products').find({
+        $or: [
+          { status: { $in: ['published', 'active'] } },
+          { status: { $exists: false } },
+        ],
+      }).toArray();
+      allProducts = rawProds.map((doc: any) => {
+        const { _id, ...clean } = doc;
+        return {
+          ...clean,
+          id: clean.id || _id.toString(),
+          name: clean.name || clean.title,
+          title: clean.title || clean.name,
+        };
+      });
+    }
+    if (allProducts.length === 0) {
+      const prodsRes = await ProductService.getAllProducts(tenantSlug);
+      allProducts = prodsRes.data || [];
+    }
 
     // 3. Synonym Expansion (e.g. "gown" -> "dress", "tee" -> "t-shirt")
     let searchTerms = [query.toLowerCase()];

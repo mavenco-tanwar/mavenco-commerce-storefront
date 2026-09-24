@@ -36,11 +36,78 @@ export async function GET(request: NextRequest) {
 
   try {
     const db = await getTenantDatabase(tenantSlug);
+    const platformDb = await getDatabase();
+
+    // 1. Fetch tenant identity document from tenant DB or platform DB
+    let tenantDoc: any = null;
+    if (db) {
+      try {
+        tenantDoc = await db.collection('tenants').findOne({
+          $or: [{ slug: tenantSlug }, { id: tenantSlug }, { id: `store_${tenantSlug}` }, { tenantId: tenantSlug }],
+        });
+      } catch {}
+    }
+    if (!tenantDoc && platformDb) {
+      try {
+        tenantDoc = await platformDb.collection('tenants').findOne({
+          $or: [{ slug: tenantSlug }, { id: tenantSlug }, { id: `store_${tenantSlug}` }, { tenantId: tenantSlug }],
+        });
+      } catch {}
+    }
+
+    const storeName = tenantDoc?.name || tenantSlug.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+    const storeLink = `/stores/${tenantSlug}`;
+
+    // Apply store name & link to base logo block
+    if (base.mainHeader?.blocks) {
+      for (const blk of base.mainHeader.blocks) {
+        if (blk.type === 'logo') {
+          blk.settings = {
+            ...blk.settings,
+            logoText: storeName.toUpperCase(),
+            link: storeLink,
+          };
+        }
+      }
+    }
+
+    // Apply announcement if configured on tenant
+    if (tenantDoc?.announcements?.mainText && base.announcementBar) {
+      base.announcementBar.enabled = true;
+      base.announcementBar.blocks = [
+        {
+          id: `ann_${tenantSlug}_1`,
+          type: 'announcement',
+          zone: 'announcement.center',
+          enabled: true,
+          order: 1,
+          settings: {
+            text: tenantDoc.announcements.mainText,
+            ctaText: tenantDoc.announcements.highlightText || 'SHOP NOW',
+            ctaUrl: tenantDoc.announcements.link ? `/stores/${tenantSlug}${tenantDoc.announcements.link.startsWith('/') ? '' : '/'}${tenantDoc.announcements.link}` : `/stores/${tenantSlug}/collections`,
+          },
+          responsive: { desktop: { visible: true }, tablet: { visible: true }, mobile: { visible: true } },
+        },
+      ];
+    }
+
+    // 2. Fetch categories from tenant DB to prepare fallback navigation if needed
+    let dbCategories: any[] = [];
+    if (db) {
+      try {
+        dbCategories = await db.collection('categories').find({
+          $or: [{ tenantSlug }, { storeSlug: tenantSlug }, { tenantId: tenantSlug }, { tenantId: `store_${tenantSlug}` }],
+        }).sort({ displayOrder: 1 }).toArray();
+      } catch {}
+    }
+
     if (db) {
       const doc = await db.collection('cms_pages').findOne({
         tenantSlug: tenantSlug,
         type: 'header',
       });
+
+      let rawNav: any[] | null = null;
 
       if (doc && (doc.config || doc.navigationMenu || doc.mainHeader || doc.announcementBar)) {
         const raw = doc.config || doc;
@@ -48,8 +115,9 @@ export async function GET(request: NextRequest) {
         const rawMain = raw.mainHeader || doc.mainHeader || {};
         const rawSticky = raw.sticky || doc.sticky || {};
         const rawMobile = raw.mobile || doc.mobile || {};
+
         // Dynamically hydrate navigationMenu from cms_menus collection
-        let rawNav = raw.navigationMenu || doc.navigationMenu;
+        rawNav = raw.navigationMenu || doc.navigationMenu;
         try {
           const menuDoc = await db.collection('cms_menus').findOne({
             tenantSlug: tenantSlug,
@@ -66,6 +134,28 @@ export async function GET(request: NextRequest) {
           }
         } catch {}
 
+        // If nav is empty, derive from tenantDoc.navLinks or dbCategories
+        if (!Array.isArray(rawNav) || rawNav.length === 0) {
+          if (tenantDoc?.navLinks && Array.isArray(tenantDoc.navLinks) && tenantDoc.navLinks.length > 0) {
+            rawNav = tenantDoc.navLinks.map((nl: any, idx: number) => ({
+              id: `nav_tenant_${idx}`,
+              label: nl.label,
+              url: nl.href?.startsWith('/stores/') ? nl.href : `/stores/${tenantSlug}${nl.href?.startsWith('/') ? '' : '/'}${nl.href || ''}`,
+              enabled: true,
+            }));
+          } else if (dbCategories.length > 0) {
+            rawNav = [
+              { id: 'nav_all_col', label: 'ALL COLLECTIONS', url: `/stores/${tenantSlug}/collections`, enabled: true },
+              ...dbCategories.map((c: any) => ({
+                id: `nav_cat_${c.slug || c.id}`,
+                label: (c.name || c.title || '').toUpperCase(),
+                url: `/stores/${tenantSlug}/${c.slug || c.id}`,
+                enabled: true,
+              })),
+            ];
+          }
+        }
+
         const mergedConfig: HeaderConfig = {
           ...base,
           ...raw,
@@ -79,7 +169,7 @@ export async function GET(request: NextRequest) {
               ...base.announcementBar.styles,
               ...(rawAnn.styles || {}),
             },
-            blocks: Array.isArray(rawAnn.blocks)
+            blocks: Array.isArray(rawAnn.blocks) && rawAnn.blocks.length > 0
               ? rawAnn.blocks
               : base.announcementBar.blocks,
           },
@@ -90,7 +180,7 @@ export async function GET(request: NextRequest) {
               ...base.mainHeader.styles,
               ...(rawMain.styles || {}),
             },
-            blocks: Array.isArray(rawMain.blocks)
+            blocks: Array.isArray(rawMain.blocks) && rawMain.blocks.length > 0
               ? rawMain.blocks
               : base.mainHeader.blocks,
           },
@@ -102,7 +192,7 @@ export async function GET(request: NextRequest) {
             ...base.mobile,
             ...rawMobile,
           },
-          navigationMenu: Array.isArray(rawNav)
+          navigationMenu: Array.isArray(rawNav) && rawNav.length > 0
             ? rawNav
             : base.navigationMenu,
         };
@@ -114,6 +204,66 @@ export async function GET(request: NextRequest) {
             version: doc.version || 1,
             publishedAt: doc.updatedAt || doc.publishedAt,
             source: 'mongodb_atlas',
+            timestamp: new Date().toISOString(),
+          },
+          { headers: corsHeaders() }
+        );
+      } else {
+        // No header document in cms_pages yet -> derive authoritative initial config for this tenant
+        if (tenantDoc?.navLinks && Array.isArray(tenantDoc.navLinks) && tenantDoc.navLinks.length > 0) {
+          rawNav = tenantDoc.navLinks.map((nl: any, idx: number) => ({
+            id: `nav_tenant_${idx}`,
+            label: nl.label,
+            url: nl.href?.startsWith('/stores/') ? nl.href : `/stores/${tenantSlug}${nl.href?.startsWith('/') ? '' : '/'}${nl.href || ''}`,
+            enabled: true,
+          }));
+        } else if (dbCategories.length > 0) {
+          rawNav = [
+            { id: 'nav_all_col', label: 'ALL COLLECTIONS', url: `/stores/${tenantSlug}/collections`, enabled: true },
+            ...dbCategories.map((c: any) => ({
+              id: `nav_cat_${c.slug || c.id}`,
+              label: (c.name || c.title || '').toUpperCase(),
+              url: `/stores/${tenantSlug}/${c.slug || c.id}`,
+              enabled: true,
+            })),
+          ];
+        }
+
+        const initialConfig: HeaderConfig = {
+          ...base,
+          tenantSlug,
+          navigationMenu: rawNav || [],
+        };
+
+        // Self-heal / persist to tenant DB
+        try {
+          const now = new Date().toISOString();
+          await db.collection('cms_pages').updateOne(
+            { tenantSlug, type: 'header' },
+            {
+              $set: {
+                tenantSlug,
+                type: 'header',
+                version: 1,
+                status: 'published',
+                config: initialConfig,
+                mainHeader: initialConfig.mainHeader,
+                announcementBar: initialConfig.announcementBar,
+                navigationMenu: initialConfig.navigationMenu,
+                updatedAt: now,
+                publishedAt: now,
+              },
+            },
+            { upsert: true }
+          );
+        } catch {}
+
+        return NextResponse.json(
+          {
+            data: initialConfig,
+            status: 'success',
+            version: 1,
+            source: 'mongodb_tenant_seeded',
             timestamp: new Date().toISOString(),
           },
           { headers: corsHeaders() }

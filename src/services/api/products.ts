@@ -55,16 +55,17 @@ export class ProductApiService {
       products = products.filter((p) => p.status !== 'draft' && p.status !== 'archived');
 
       // Client-side refinement for fine-grained options (sizes, colors, price range) if needed
-      if (params.department && params.department !== 'all') {
-        const deptTarget = cleanCategorySlug(params.department);
+      if (params.department && (params.department as string) !== 'all') {
+        const deptParam = params.department;
+        const deptTarget = cleanCategorySlug(deptParam);
         products = products.filter((p) => {
           const pDept = cleanCategorySlug(p.department);
           const pCat = cleanCategorySlug(p.category);
           return (
             pDept === deptTarget ||
             pCat === deptTarget ||
-            p.department === params.department ||
-            p.department?.toLowerCase() === params.department.toLowerCase()
+            p.department === deptParam ||
+            p.department?.toLowerCase() === deptParam.toLowerCase()
           );
         });
       }
@@ -75,8 +76,8 @@ export class ProductApiService {
           const pCat = cleanCategorySlug(p.category);
           const pDept = cleanCategorySlug(p.department);
           const pCatSlug = cleanCategorySlug((p as any).categorySlug);
-          const pCatName = (p.categoryName || '').toLowerCase().trim();
-          const pCatIds = Array.isArray(p.categoryIds) ? p.categoryIds.map((id) => cleanCategorySlug(id)) : [];
+          const pCatName = ((p as any).categoryName || '').toLowerCase().trim();
+          const pCatIds = Array.isArray((p as any).categoryIds) ? (p as any).categoryIds.map((id: any) => cleanCategorySlug(id)) : [];
           return (
             pCat === catTarget ||
             pDept === catTarget ||
@@ -165,9 +166,10 @@ export class ProductApiService {
   /**
    * Retrieves a single product by its unique ID strictly from API.
    */
-  public static async getProductById(id: string): Promise<{ data: Product | null }> {
+  public static async getProductById(id: string, tenant?: string): Promise<{ data: Product | null }> {
     try {
-      const res = await apiClient.get<any>(`/api/v1/products/${encodeURIComponent(id)}`);
+      const tenantParam = tenant ? `?tenant=${encodeURIComponent(tenant)}` : '';
+      const res = await apiClient.get<any>(`/api/v1/products/${encodeURIComponent(id)}${tenantParam}`);
       if (res.data) {
         const mapped = mapCmsProductToStorefrontProduct(res.data);
         if (mapped.status === 'draft' || mapped.status === 'archived') {
@@ -241,5 +243,13 @@ export class ProductApiService {
     }
 
     return { data: related.slice(0, limit) };
+  }
+
+  /**
+   * Retrieves all active products for a tenant.
+   */
+  public static async getAllProducts(tenant?: string): Promise<{ data: Product[] }> {
+    const res = await this.getProducts({ limit: 100, tenant });
+    return { data: res.data.products };
   }
 }

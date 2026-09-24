@@ -1,4 +1,4 @@
-export type Department = 'women' | 'kids' | 'unisex';
+export type Department = 'women' | 'kids' | 'men' | 'unisex' | string;
 
 export type CategorySlug = 
   | 'dresses' 
@@ -69,6 +69,9 @@ export interface Product {
   fit?: string;
   modelInfo?: string;
   status?: 'published' | 'draft' | 'archived' | string;
+  variants?: any[];
+  categoryIds?: string[];
+  brand?: string;
 }
 
 export type SortOption = 'recommended' | 'featured' | 'newest' | 'price-asc' | 'price-desc' | 'rating' | 'rating-desc' | 'popular';

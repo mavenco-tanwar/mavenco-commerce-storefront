@@ -4,7 +4,7 @@ import { Metadata } from 'next';
 import { ProductService } from '@/services/products';
 import { ProductPageRenderer } from '@/components/product/pdp/ProductPageRenderer';
 import { normalizeProduct, generateProductJsonLd } from '@/lib/product-adapter';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { getDefaultPdpConfig } from '@/lib/pdp-presets';
 import { resolveTenant, cleanCategorySlug } from '@/lib/tenant-config';
 import { ProductReviewsAndQA } from '@/components/pdp/ProductReviewsAndQA';
@@ -13,8 +13,12 @@ import { mapCmsProductToStorefrontProduct } from '@/services/api/adapters';
 export async function getPdpTemplateConfig(tenantSlug: string = 'lumina') {
   const cleanSlug = (tenantSlug || 'lumina').toLowerCase().trim();
   try {
-    const db = await getDatabase();
-    if (db) {
+    const tenantDb = await getTenantDatabase(cleanSlug);
+    const platformDb = await getDatabase();
+    const dbsToTry = [tenantDb, platformDb].filter(Boolean);
+
+    for (const db of dbsToTry) {
+      if (!db) continue;
       const tenantMatchConditions = [
         { tenantSlug: cleanSlug },
         { tenantId: cleanSlug },
@@ -78,8 +82,12 @@ export async function fetchRawProduct(productSlug: string, explicitTenant?: stri
   let rawProduct: any = null;
 
   try {
-    const db = await getDatabase();
-    if (db) {
+    const tenantDb = explicitTenant ? await getTenantDatabase(explicitTenant) : null;
+    const platformDb = await getDatabase();
+    const dbsToTry = [tenantDb, platformDb].filter(Boolean);
+
+    for (const db of dbsToTry) {
+      if (!db) continue;
       // 1. Authoritative direct MongoDB lookup
       const query: any = {
         $or: [{ slug: productSlug }, { id: productSlug }],
@@ -139,6 +147,7 @@ export async function fetchRawProduct(productSlug: string, explicitTenant?: stri
           rawProduct.categoryIds = [];
           rawProduct.categories = [];
         }
+        break;
       }
     }
   } catch (e) {
@@ -214,13 +223,23 @@ export async function RenderProductDetailPage({
     notFound();
   }
 
+  const activeTenantSlug =
+    explicitTenant ||
+    rawProduct.tenantSlug ||
+    rawProduct.storeSlug ||
+    (rawProduct.tenantId ? String(rawProduct.tenantId).replace(/^store_/, '') : undefined);
+
   // Ensure normalized product gets proper category slug
   const normalized = normalizeProduct(rawProduct);
   if (categorySlug && categorySlug !== 'all' && categorySlug !== 'collection') {
     // Only apply categorySlug from URL if it actually exists in the categories collection
     try {
-      const db = await getDatabase();
-      if (db) {
+      const tenantDb = activeTenantSlug ? await getTenantDatabase(activeTenantSlug) : null;
+      const platformDb = await getDatabase();
+      const dbsToTry = [tenantDb, platformDb].filter(Boolean);
+
+      for (const db of dbsToTry) {
+        if (!db) continue;
         const catExists = await db.collection('categories').findOne({
           $or: [
             { slug: categorySlug },
@@ -233,6 +252,7 @@ export async function RenderProductDetailPage({
         if (catExists) {
           normalized.category = cleanCategorySlug(catExists.slug || catExists.id);
           normalized.categoryName = catExists.name;
+          break;
         } else {
           normalized.category = undefined;
           normalized.categoryName = undefined;
@@ -244,19 +264,15 @@ export async function RenderProductDetailPage({
     normalized.categoryName = undefined;
   }
 
-  const activeTenantSlug =
-    explicitTenant ||
-    rawProduct.tenantSlug ||
-    rawProduct.storeSlug ||
-    (rawProduct.tenantId ? String(rawProduct.tenantId).replace(/^store_/, '') : undefined);
-
   const activeTenant = resolveTenant(activeTenantSlug);
   const pdpConfig = await getPdpTemplateConfig(activeTenant.slug || 'lumina');
 
   let relatedData: any[] = [];
   try {
-    const db = await getDatabase();
     const resolvedSlug = (activeTenant.slug || activeTenantSlug || '').toLowerCase().trim();
+    const tenantDb = resolvedSlug ? await getTenantDatabase(resolvedSlug) : null;
+    const platformDb = await getDatabase();
+    const db = tenantDb || platformDb;
 
     if (db && resolvedSlug && resolvedSlug !== 'all') {
       const tenantMatchConditions = [

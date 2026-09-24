@@ -19,22 +19,24 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const resolvedFallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const rawTenant =
       searchParams.get('tenant') ||
       searchParams.get('store') ||
       req.headers.get('x-tenant-slug') ||
       req.headers.get('x-tenant') ||
-      req.headers.get('X-Tenant-Slug');
+      req.headers.get('X-Tenant-Slug') ||
+      resolvedFallback;
 
     const tenantSlug = rawTenant ? rawTenant.trim().toLowerCase() : undefined;
-    const cleanTenant = tenantSlug ? tenantSlug.replace(/^(store_|_)/, '').trim().toLowerCase() : undefined;
+    const cleanTenant = tenantSlug ? tenantSlug.replace(/^(store_|_)/, '').trim().toLowerCase() : 'demo';
 
     let tenantAliases = new Set<string>();
     if (tenantSlug) tenantAliases.add(tenantSlug);
     if (cleanTenant) tenantAliases.add(cleanTenant);
 
     const db = await getTenantDatabase(cleanTenant || tenantSlug || 'demo');
-    const platformDb = await getDatabase();
     if (db) {
       const collection = db.collection('collections');
 
@@ -77,6 +79,7 @@ export async function GET(req: NextRequest) {
           const aliasArr = Array.from(tenantAliases);
           const tProds = await db.collection('products').find({
             $or: [
+              { tenantSlug: { $in: aliasArr } },
               { tenantId: { $in: aliasArr } },
               { storeSlug: { $in: aliasArr } },
               { storeId: { $in: aliasArr } },
@@ -174,6 +177,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const resolvedFallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const rawTenant =
       body.tenantSlug ||
       body.storeSlug ||
@@ -183,7 +188,8 @@ export async function POST(req: NextRequest) {
       req.headers.get('x-tenant-slug') ||
       req.headers.get('x-tenant') ||
       req.headers.get('X-Tenant-Slug') ||
-      'jq-trends';
+      resolvedFallback ||
+      'demo';
 
     const tenantSlug = rawTenant.replace(/^store_/, '').trim().toLowerCase();
 

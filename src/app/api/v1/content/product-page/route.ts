@@ -25,6 +25,8 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
       searchParams.get('tenant') ||
       searchParams.get('tenantSlug') ||
@@ -32,6 +34,7 @@ export async function GET(req: NextRequest) {
       req.headers.get('x-tenant-slug') ||
       req.headers.get('x-store-slug') ||
       req.headers.get('x-tenant') ||
+      fallback ||
       'demo'
     )
       .replace(/^store_/, '')
@@ -157,14 +160,18 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { searchParams } = new URL(req.url);
-    const tenantParam = searchParams.get('tenant') || searchParams.get('tenantSlug');
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
+    const tenantParam = searchParams.get('tenant') || searchParams.get('tenantSlug') || searchParams.get('store');
 
     const cleanTenant = (
       body.tenant ||
       body.tenantSlug ||
+      body.storeSlug ||
       tenantParam ||
       req.headers.get('x-tenant-slug') ||
       req.headers.get('x-tenant') ||
+      fallback ||
       'demo'
     )
       .replace(/^store_/, '')

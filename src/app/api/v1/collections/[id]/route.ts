@@ -28,9 +28,18 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Collection ID is required' }, { status: 400, headers: corsHeaders() });
     }
 
+    const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const resolvedFallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+      searchParams.get('tenant') ||
+      searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      resolvedFallback ||
+      'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
+
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const { ObjectId } = await import('mongodb');
@@ -66,10 +75,21 @@ export async function PATCH(
     }
 
     const body = await req.json();
+    const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const resolvedFallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') ||
-      body?.tenantSlug || body?.storeSlug || body?.tenantId || 'jq-trends'
+      body?.tenantSlug ||
+      body?.storeSlug ||
+      body?.tenantId ||
+      searchParams.get('tenant') ||
+      searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      resolvedFallback ||
+      'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
+
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const { ObjectId } = await import('mongodb');
@@ -105,9 +125,18 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: 'Collection ID is required' }, { status: 400, headers: corsHeaders() });
     }
 
+    const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const resolvedFallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
-      req.headers.get('x-tenant-slug') || req.headers.get('x-tenant') || 'jq-trends'
+      searchParams.get('tenant') ||
+      searchParams.get('store') ||
+      req.headers.get('x-tenant-slug') ||
+      req.headers.get('x-tenant') ||
+      resolvedFallback ||
+      'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
+
     const db = await getTenantDatabase(tenantSlug);
     if (db) {
       const { ObjectId } = await import('mongodb');

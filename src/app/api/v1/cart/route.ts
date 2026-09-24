@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CartService } from '@/server/commerce/cart.service';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
+import { getDatabase } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +11,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const tenant = searchParams.get('tenant') || 'lumina';
+    const platformDb = await getDatabase();
+    const tenant = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const sessionId = searchParams.get('sessionId') || 'guest_session';
     const customerId = searchParams.get('customerId') || undefined;
 
@@ -34,7 +37,8 @@ export async function GET(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const tenant = searchParams.get('tenant') || 'lumina';
+    const platformDb = await getDatabase();
+    const tenant = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const sessionId = searchParams.get('sessionId') || 'guest_session';
     const customerId = searchParams.get('customerId') || undefined;
 

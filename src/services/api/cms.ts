@@ -79,7 +79,7 @@ export class CmsApiService {
       const headers: Record<string, string> = {
         'x-tenant-slug': slug,
       };
-      const res = await apiClient.get<CmsHomepageResponse>(endpoint, { headers });
+      const res = await apiClient.get<CmsHomepageResponse>(endpoint, headers);
 
       if (res.data && res.data.sections && Array.isArray(res.data.sections) && res.data.sections.length > 0) {
         return (res.data.sections as any[])

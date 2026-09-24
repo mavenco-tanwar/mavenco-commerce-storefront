@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { headers, cookies } from 'next/headers';
-import { getDatabase } from '@/lib/mongodb';
+import { getDatabase, getTenantDatabase, getPlatformDatabase } from '@/lib/mongodb';
 import {
   generatePdpMetadata,
   RenderProductDetailPage,
@@ -53,8 +53,12 @@ export async function generateMetadata({
 
   // 2. Try nested subcategory metadata
   try {
-    const db = await getDatabase();
-    if (db) {
+    const tenantDb = tenant ? await getTenantDatabase(tenant) : null;
+    const platformDb = await getPlatformDatabase();
+    const dbsToTry = [tenantDb, platformDb].filter(Boolean);
+
+    for (const db of dbsToTry) {
+      if (!db) continue;
       const cleanSub = cleanCategorySlug(productSlug);
       const catDoc = await db.collection('categories').findOne({
         $and: [
@@ -97,9 +101,13 @@ export default async function CategoryProductDetailPage({
 
   // 2. If not a product, check if it is a subcategory under department `slug`
   try {
-    const db = await getDatabase();
-    if (db) {
-      const cleanSub = cleanCategorySlug(productSlug);
+    const tenantDb = tenant ? await getTenantDatabase(tenant) : null;
+    const platformDb = await getPlatformDatabase();
+    const dbsToTry = [tenantDb, platformDb].filter(Boolean);
+    const cleanSub = cleanCategorySlug(productSlug);
+
+    for (const db of dbsToTry) {
+      if (!db) continue;
       const catDoc = await db.collection('categories').findOne({
         $and: [
           ...(tenant && tenant !== 'all'

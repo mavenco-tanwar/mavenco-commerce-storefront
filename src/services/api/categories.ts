@@ -151,7 +151,6 @@ export class CategoryApiService {
   }
 
   public static clearCache(): void {
-    this.cachedCategories = null;
-    this.cachedCollections = null;
+    this.cachedCategoriesMap.clear();
   }
 }

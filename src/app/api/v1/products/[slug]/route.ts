@@ -27,15 +27,7 @@ export async function GET(
   const tenantSlug = await resolveRequestTenantSlug(request, searchParams, platformDb);
   const db = await getTenantDatabase(tenantSlug);
 
-  // Try PIM first
-  try {
-    const pimProduct = await PimService.getProductById(tenantSlug, decodedSlug);
-    if (pimProduct) {
-      return NextResponse.json({ data: pimProduct, source: 'pim_authoritative' }, { headers: corsHeaders() });
-    }
-  } catch {}
-
-  // Try MongoDB
+  // 1. Try authoritative isolated MongoDB first
   if (db) {
     const { ObjectId } = await import('mongodb');
     let objId = null;
@@ -71,6 +63,14 @@ export async function GET(
       return NextResponse.json({ data: { ...rest, id: rest.id || _id.toString() }, source: 'database' }, { headers: corsHeaders() });
     }
   }
+
+  // 2. Try PIM second
+  try {
+    const pimProduct = await PimService.getProductById(tenantSlug, decodedSlug);
+    if (pimProduct) {
+      return NextResponse.json({ data: pimProduct, source: 'pim_authoritative' }, { headers: corsHeaders() });
+    }
+  } catch {}
 
   // Fallback to static tenant catalog
   const tenantCatalog = getProductsForTenant(tenantSlug);

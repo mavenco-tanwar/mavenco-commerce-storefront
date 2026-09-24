@@ -33,12 +33,15 @@ const DEFAULT_SETTINGS = {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
       searchParams.get('tenant') ||
       searchParams.get('tenantSlug') ||
       searchParams.get('store') ||
       req.headers.get('x-tenant-slug') ||
       req.headers.get('x-tenant') ||
+      fallback ||
       'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
 
@@ -71,13 +74,18 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
     const tenantSlug = (
-      searchParams.get('tenant') ||
-      searchParams.get('tenantSlug') ||
       body?.tenantSlug ||
       body?.tenant ||
+      body?.storeSlug ||
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
       req.headers.get('x-tenant-slug') ||
       req.headers.get('x-tenant') ||
+      fallback ||
       'demo'
     ).replace(/^store_/, '').toLowerCase().trim();
 

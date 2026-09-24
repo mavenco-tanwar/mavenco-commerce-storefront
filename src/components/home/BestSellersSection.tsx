@@ -24,7 +24,7 @@ export function BestSellersSection({
   customBadge,
   customLimit = 4,
   customCtaText = 'View All Best Sellers',
-  customCtaUrl = '/women?sort=popular',
+  customCtaUrl = '/collections',
   tenantSlug,
 }: BestSellersSectionProps = {}) {
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
@@ -47,7 +47,14 @@ export function BestSellersSection({
     async function loadBestSellers() {
       try {
         const res = await ProductService.getBestSellers(customLimit, currentSlug || undefined);
-        setBestSellers(res.data);
+        if (res.data && res.data.length > 0) {
+          setBestSellers(res.data);
+        } else if (currentSlug) {
+          const fallbackRes = await ProductService.getProducts({ limit: customLimit, tenant: currentSlug });
+          setBestSellers(fallbackRes.data.products || []);
+        } else {
+          setBestSellers(res.data || []);
+        }
       } catch (err) {
         console.error('Failed to load best sellers', err);
       } finally {
@@ -57,7 +64,7 @@ export function BestSellersSection({
     loadBestSellers();
   }, [customLimit, currentSlug]);
 
-  if (!isLoading && bestSellers.length === 0 && currentSlug && currentSlug !== 'demo') {
+  if (!isLoading && bestSellers.length === 0) {
     return null;
   }
 

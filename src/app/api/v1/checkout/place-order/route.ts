@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CheckoutService } from '@/server/commerce/checkout.service';
+import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
+import { getDatabase } from '@/lib/mongodb';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,8 +11,11 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const { searchParams } = new URL(req.url);
+    const platformDb = await getDatabase();
+    const resolvedFallback = await resolveRequestTenantSlug(req, searchParams, platformDb);
+    const tenant = (body.tenant || body.tenantSlug || body.storeSlug || resolvedFallback || 'demo').toLowerCase().trim();
     const {
-      tenant = 'lumina',
       sessionId = 'guest_session',
       customerId,
       shippingAddress,

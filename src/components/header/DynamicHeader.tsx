@@ -259,7 +259,7 @@ export function DynamicHeader({ initialConfig, tenantSlug: propTenantSlug }: Dyn
       {isSearchOpen && <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />}
 
       {/* Global Cart Drawer */}
-      <CartDrawer isOpen={isCartOpen} onClose={closeCartDrawer} />
+      <CartDrawer />
     </>
   );
 }

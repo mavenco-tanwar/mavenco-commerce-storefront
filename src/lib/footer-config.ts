@@ -84,27 +84,50 @@ export interface FooterConfig {
   publishedAt?: string;
 }
 
-export function getDefaultFooterConfig(tenantSlug: string = 'storefront', storeName: string = 'STOREFRONT'): FooterConfig {
-  const dynamicName = storeName || tenantSlug.toUpperCase();
+import { getTenantConfig } from './tenant-config';
+
+export function getDefaultFooterConfig(tenantSlug: string = 'storefront', storeName?: string): FooterConfig {
+  const cleanSlug = (tenantSlug || 'storefront').toLowerCase().trim();
+  const tenantCfg = getTenantConfig(cleanSlug);
+  const dynamicName = storeName || tenantCfg?.name || cleanSlug.toUpperCase();
+  const tenantBasePrefix = cleanSlug && cleanSlug !== 'demo' && cleanSlug !== 'storefront' ? `/stores/${cleanSlug}` : '';
+
+  const shopItems = (tenantCfg?.footerShopLinks && tenantCfg.footerShopLinks.length > 0)
+    ? tenantCfg.footerShopLinks.map(l => ({ label: l.label, href: l.href }))
+    : [
+        { label: 'All Products', href: `${tenantBasePrefix}/collections` || '/collections' },
+        { label: 'Featured Collections', href: `${tenantBasePrefix}/collections` || '/collections' },
+        { label: 'Store Catalog', href: `${tenantBasePrefix}/collections` || '/collections' },
+      ];
+
+  const careItems = (tenantCfg?.footerCareLinks && tenantCfg.footerCareLinks.length > 0)
+    ? tenantCfg.footerCareLinks.map(l => ({ label: l.label, href: l.href }))
+    : [
+        { label: 'Contact Us', href: `${tenantBasePrefix}/contact` || '/contact' },
+        { label: 'Shipping & Delivery', href: `${tenantBasePrefix}/shipping` || '/shipping' },
+        { label: 'Returns & Exchanges', href: `${tenantBasePrefix}/returns` || '/returns' },
+        { label: 'FAQ', href: `${tenantBasePrefix}/faq` || '/faq' },
+        { label: 'Privacy & Terms', href: `${tenantBasePrefix}/privacy` || '/privacy' },
+      ];
 
   return {
-    id: `footer_${tenantSlug}`,
-    tenantSlug,
+    id: `footer_${cleanSlug}`,
+    tenantSlug: cleanSlug,
     type: 'footer',
     status: 'published',
     version: 1,
     theme: {
-      primaryColor: '#111111',
-      secondaryColor: '#2B2320',
-      accentColor: '#B77A68',
+      primaryColor: tenantCfg?.theme?.primaryColor || '#111111',
+      secondaryColor: tenantCfg?.theme?.secondaryColor || '#2B2320',
+      accentColor: tenantCfg?.theme?.accentColor || '#B77A68',
       backgroundColor: '#111111',
       surfaceColor: '#1A1615',
       textColor: '#FAF6F2',
       headingColor: '#FFFDFC',
       mutedTextColor: '#A0958E',
       borderColor: 'rgba(255, 255, 255, 0.1)',
-      fontFamily: 'Plus Jakarta Sans, sans-serif',
-      headingFontFamily: 'Playfair Display, serif',
+      fontFamily: tenantCfg?.theme?.bodyFont || 'Plus Jakarta Sans, sans-serif',
+      headingFontFamily: tenantCfg?.theme?.headingFont || 'Playfair Display, serif',
       fontSize: '13px',
       letterSpacing: '0.02em',
     },
@@ -139,7 +162,7 @@ export function getDefaultFooterConfig(tenantSlug: string = 'storefront', storeN
             content: {
               logoType: 'text',
               text: dynamicName,
-              linkUrl: '/',
+              linkUrl: tenantBasePrefix || '/',
               width: 180,
             },
             styles: {
@@ -159,13 +182,7 @@ export function getDefaultFooterConfig(tenantSlug: string = 'storefront', storeN
             content: {
               heading: 'SHOP',
               menuCode: 'footer-menu-shop',
-              items: [
-                { label: 'New Arrivals', href: '/new-arrivals' },
-                { label: 'Women', href: '/women' },
-                { label: 'Men', href: '/men' },
-                { label: 'Collections', href: '/collections' },
-                { label: 'Sale', href: '/sale' },
-              ],
+              items: shopItems,
             },
           },
           {
@@ -178,13 +195,7 @@ export function getDefaultFooterConfig(tenantSlug: string = 'storefront', storeN
             content: {
               heading: 'CUSTOMER CARE',
               menuCode: 'footer-menu-care',
-              items: [
-                { label: 'Contact Us', href: '/contact' },
-                { label: 'Shipping & Delivery', href: '/shipping' },
-                { label: 'Returns & Exchanges', href: '/returns' },
-                { label: 'FAQ', href: '/faq' },
-                { label: 'Privacy & Terms', href: '/privacy' },
-              ],
+              items: careItems,
             },
           },
           {

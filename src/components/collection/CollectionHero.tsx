@@ -106,7 +106,7 @@ export function CollectionHero({
         </h1>
         {description && (
           <p
-            className="text-xs sm:text-sm md:text-base font-sans max-w-2xl leading-relaxed drop-shadow"
+            className="inline-flex items-center text-xs sm:text-sm md:text-base font-sans max-w-2xl leading-relaxed drop-shadow"
             style={{
               color: styles?.textColor || 'var(--theme-hero-subtitle, var(--theme-color-text-secondary, #CBD5E1))',
               fontFamily: styles?.bodyFont ? `${styles.bodyFont}, sans-serif` : undefined,

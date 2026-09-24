@@ -41,12 +41,16 @@ function deepMerge<T extends Record<string, any>>(target: T, source?: any): T {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const platformDb = await getDatabase();
+  const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
   const tenantSlug = (
     searchParams.get('tenant') ||
     searchParams.get('tenantSlug') ||
+    searchParams.get('store') ||
     request.headers.get('x-tenant-slug') ||
     request.headers.get('x-store-slug') ||
-    'lumina'
+    fallback ||
+    'demo'
   )
     .toLowerCase()
     .trim();
@@ -92,19 +96,26 @@ export async function GET(request: NextRequest) {
 }
 
 async function handleSaveTheme(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const tenantSlug = (
-    searchParams.get('tenant') ||
-    searchParams.get('tenantSlug') ||
-    request.headers.get('x-tenant-slug') ||
-    request.headers.get('x-store-slug') ||
-    'lumina'
-  )
-    .toLowerCase()
-    .trim();
-
   try {
+    const { searchParams } = new URL(request.url);
     const body: ThemeDocument = await request.json();
+    const platformDb = await getDatabase();
+    const fallback = await resolveRequestTenantSlug(request, searchParams, platformDb);
+    const tenantSlug = (
+      (body as any)?.tenantId ||
+      (body as any)?.tenantSlug ||
+      (body as any)?.storeSlug ||
+      searchParams.get('tenant') ||
+      searchParams.get('tenantSlug') ||
+      searchParams.get('store') ||
+      request.headers.get('x-tenant-slug') ||
+      request.headers.get('x-store-slug') ||
+      fallback ||
+      'demo'
+    )
+      .toLowerCase()
+      .trim();
+
     const db = await getTenantDatabase(tenantSlug);
 
     if (!db) {

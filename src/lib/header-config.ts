@@ -568,28 +568,61 @@ export const LUXURY_PRESET_TEMPLATES: Record<string, { name: string; description
   },
 };
 
+import { getTenantConfig } from './tenant-config';
+
 export function getDefaultHeaderConfig(tenantSlug: string = 'lumina'): HeaderConfig {
+  const cleanSlug = (tenantSlug || 'lumina').toLowerCase().trim();
+  const t = getTenantConfig(cleanSlug);
+  const logoText = t?.name || cleanSlug.toUpperCase();
+  const linkPrefix = cleanSlug && cleanSlug !== 'demo' && cleanSlug !== 'storefront' ? `/stores/${cleanSlug}` : '';
+
+  const initialNavMenu = (t?.navLinks && t.navLinks.length > 0)
+    ? t.navLinks.map((l, i) => ({
+        id: `nav_${cleanSlug}_${i}`,
+        label: l.label,
+        url: l.href,
+        order: i + 1,
+        enabled: true,
+      }))
+    : [];
+
+  const initialAnnounceBlocks = t?.announcements?.mainText
+    ? [
+        {
+          id: `ann_blk_${cleanSlug}_1`,
+          type: 'announcement' as const,
+          zone: 'announcement.center' as const,
+          enabled: true,
+          order: 1,
+          settings: {
+            text: `${t.announcements.leftCallout ? t.announcements.leftCallout + ' • ' : ''}${t.announcements.mainText} ${t.announcements.highlightText || ''}`.trim(),
+            link: t.announcements.link || '',
+          },
+        },
+      ]
+    : [];
+
   return {
-    id: `header_${tenantSlug}`,
-    tenantSlug,
+    id: `header_${cleanSlug}`,
+    tenantSlug: cleanSlug,
     preset: 'luxury',
     theme: 'luxury-light',
     announcementBar: {
-      enabled: true,
+      enabled: initialAnnounceBlocks.length > 0,
       height: 38,
       rotationEnabled: false,
       rotationInterval: 5,
       pauseOnHover: true,
       styles: {
-        backgroundColor: '#1E1B4B',
+        backgroundColor: t?.theme?.primaryColor || '#1E1B4B',
         textColor: '#FFFFFF',
-        accentColor: '#F59E0B',
+        accentColor: t?.theme?.accentColor || '#F59E0B',
         borderColor: 'rgba(255,255,255,0.1)',
         fontSize: '11px',
-        fontFamily: 'Plus Jakarta Sans, sans-serif',
+        fontFamily: t?.theme?.bodyFont || 'Plus Jakarta Sans, sans-serif',
         letterSpacing: '0.05em',
       },
-      blocks: [],
+      blocks: initialAnnounceBlocks,
     },
     mainHeader: {
       enabled: true,
@@ -599,12 +632,12 @@ export function getDefaultHeaderConfig(tenantSlug: string = 'lumina'): HeaderCon
       styles: {
         backgroundColor: '#FFFDFC',
         textColor: '#111111',
-        hoverColor: '#F59E0B',
-        accentColor: '#F59E0B',
+        hoverColor: t?.theme?.accentColor || '#F59E0B',
+        accentColor: t?.theme?.accentColor || '#F59E0B',
         borderColor: '#E8DED8',
         borderBottomWidth: '1px',
         shadow: 'none',
-        fontFamily: 'Plus Jakarta Sans, sans-serif',
+        fontFamily: t?.theme?.bodyFont || 'Plus Jakarta Sans, sans-serif',
       },
       blocks: [
         {
@@ -614,8 +647,8 @@ export function getDefaultHeaderConfig(tenantSlug: string = 'lumina'): HeaderCon
           enabled: true,
           order: 1,
           settings: {
-            logoText: tenantSlug ? tenantSlug.toUpperCase() : 'STORE',
-            link: `/stores/${tenantSlug}`,
+            logoText: logoText,
+            link: linkPrefix || '/',
           },
           responsive: { desktop: { visible: true }, tablet: { visible: true }, mobile: { visible: true } },
         },
@@ -710,7 +743,7 @@ export function getDefaultHeaderConfig(tenantSlug: string = 'lumina'): HeaderCon
       },
       blocks: [],
     },
-    navigationMenu: [],
+    navigationMenu: initialNavMenu,
     version: 1,
     status: 'published',
     updatedAt: new Date().toISOString(),

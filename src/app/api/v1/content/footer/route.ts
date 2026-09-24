@@ -37,6 +37,88 @@ export async function GET(request: NextRequest) {
 
   try {
     const db = await getTenantDatabase(tenantSlug);
+    const platformDb = await getDatabase();
+
+    // 1. Fetch tenant identity document from tenant DB or platform DB
+    let tenantDoc: any = null;
+    if (db) {
+      try {
+        tenantDoc = await db.collection('tenants').findOne({
+          $or: [{ slug: tenantSlug }, { id: tenantSlug }, { id: `store_${tenantSlug}` }, { tenantId: tenantSlug }],
+        });
+      } catch {}
+    }
+    if (!tenantDoc && platformDb) {
+      try {
+        tenantDoc = await platformDb.collection('tenants').findOne({
+          $or: [{ slug: tenantSlug }, { id: tenantSlug }, { id: `store_${tenantSlug}` }, { tenantId: tenantSlug }],
+        });
+      } catch {}
+    }
+
+    const storeName = tenantDoc?.name || tenantSlug.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+    const storeLink = `/stores/${tenantSlug}`;
+
+    // 2. Fetch categories from tenant DB for fallback menu items
+    let dbCategories: any[] = [];
+    if (db) {
+      try {
+        dbCategories = await db.collection('categories').find({
+          $or: [{ tenantSlug }, { storeSlug: tenantSlug }, { tenantId: tenantSlug }, { tenantId: `store_${tenantSlug}` }],
+        }).sort({ displayOrder: 1 }).toArray();
+      } catch {}
+    }
+
+    const base = getDefaultFooterConfig(tenantSlug, storeName);
+
+    // Apply store name, link, and theme to base
+    if (tenantDoc?.theme) {
+      if (tenantDoc.theme.primaryColor) base.theme.primaryColor = tenantDoc.theme.primaryColor;
+      if (tenantDoc.theme.backgroundColor) base.theme.backgroundColor = tenantDoc.theme.backgroundColor;
+      if (tenantDoc.theme.textColor) base.theme.textColor = tenantDoc.theme.textColor;
+      if (tenantDoc.theme.accentColor) base.theme.accentColor = tenantDoc.theme.accentColor;
+      if (tenantDoc.theme.headingFont) base.theme.headingFontFamily = `${tenantDoc.theme.headingFont}, serif`;
+      if (tenantDoc.theme.bodyFont) base.theme.fontFamily = `${tenantDoc.theme.bodyFont}, sans-serif`;
+    }
+
+    // Hydrate base blocks with tenant links and logo
+    if (Array.isArray(base.sections)) {
+      for (const sec of base.sections) {
+        if (sec && Array.isArray(sec.blocks)) {
+          for (const blk of sec.blocks) {
+            if (blk.type === 'logo') {
+              blk.content.text = storeName;
+              blk.content.linkUrl = storeLink;
+            }
+            if (blk.type === 'menu' && blk.content?.menuCode === 'footer-menu-shop') {
+              if (tenantDoc?.footerShopLinks && Array.isArray(tenantDoc.footerShopLinks) && tenantDoc.footerShopLinks.length > 0) {
+                blk.content.items = tenantDoc.footerShopLinks.map((sl: any) => ({
+                  label: sl.label,
+                  href: sl.href?.startsWith('/stores/') ? sl.href : `/stores/${tenantSlug}${sl.href?.startsWith('/') ? '' : '/'}${sl.href || ''}`,
+                }));
+              } else if (dbCategories.length > 0) {
+                blk.content.items = [
+                  { label: 'All Collections', href: `/stores/${tenantSlug}/collections` },
+                  ...dbCategories.map((c: any) => ({
+                    label: c.name || c.title,
+                    href: `/stores/${tenantSlug}/${c.slug || c.id}`,
+                  })),
+                ];
+              }
+            }
+            if (blk.type === 'menu' && blk.content?.menuCode === 'footer-menu-care') {
+              if (tenantDoc?.footerCareLinks && Array.isArray(tenantDoc.footerCareLinks) && tenantDoc.footerCareLinks.length > 0) {
+                blk.content.items = tenantDoc.footerCareLinks.map((cl: any) => ({
+                  label: cl.label,
+                  href: cl.href?.startsWith('/stores/') ? cl.href : `/stores/${tenantSlug}${cl.href?.startsWith('/') ? '' : '/'}${cl.href || ''}`,
+                }));
+              }
+            }
+          }
+        }
+      }
+    }
+
     if (db) {
       const doc = await db.collection('cms_pages').findOne({
         tenantSlug: tenantSlug,
@@ -107,6 +189,39 @@ export async function GET(request: NextRequest) {
           },
           { headers: corsHeaders() }
         );
+      } else {
+        // No footer document in cms_pages yet -> self-heal with authoritative tenant config
+        try {
+          const now = new Date().toISOString();
+          await db.collection('cms_pages').updateOne(
+            { tenantSlug, type: 'footer' },
+            {
+              $set: {
+                tenantSlug,
+                type: 'footer',
+                version: 1,
+                status: 'published',
+                config: base,
+                theme: base.theme,
+                sections: base.sections,
+                updatedAt: now,
+                publishedAt: now,
+              },
+            },
+            { upsert: true }
+          );
+        } catch {}
+
+        return NextResponse.json(
+          {
+            data: base,
+            status: 'success',
+            version: 1,
+            source: 'mongodb_tenant_seeded',
+            timestamp: new Date().toISOString(),
+          },
+          { headers: corsHeaders() }
+        );
       }
     }
   } catch (err) {
@@ -116,7 +231,7 @@ export async function GET(request: NextRequest) {
   // Graceful fallback to default seed
   return NextResponse.json(
     {
-      data: base,
+      data: getDefaultFooterConfig(tenantSlug),
       status: 'fallback_default',
       version: 1,
       source: 'local_preset',
