@@ -24,46 +24,11 @@ interface RouteParams {
   params: Promise<{ code: string }>;
 }
 
-const DEFAULT_MENUS: Record<string, any> = {
-  'header-menu': {
-    id: 'menu_header',
-    title: 'Storefront Header Main Navigation',
-    slug: 'header-menu',
-    items: [
-      { id: 'nav_1', label: 'Women', type: 'category', url: '/women', isVisible: true },
-      { id: 'nav_2', label: 'Kids', type: 'category', url: '/kids', isVisible: true },
-      { id: 'nav_3', label: 'New Arrivals', type: 'collection', url: '/new-arrivals', isVisible: true },
-      { id: 'nav_4', label: 'Collections', type: 'collection', url: '/collections/festive-elegance', isVisible: true },
-      { id: 'nav_5', label: 'Sale', type: 'collection', url: '/sale', isVisible: true },
-    ],
-  },
-  'footer-menu-shop': {
-    id: 'menu_footer_shop',
-    title: 'Footer Shop Links',
-    slug: 'footer-menu-shop',
-    items: [
-      { id: 'nav_f1', label: "Women's Dresses", type: 'category', url: '/women', isVisible: true },
-      { id: 'nav_f2', label: 'Chanderi Kurtis', type: 'category', url: '/women', isVisible: true },
-      { id: 'nav_f3', label: 'Girls Party Wear', type: 'category', url: '/kids', isVisible: true },
-      { id: 'nav_f4', label: 'Boys Kurtas', type: 'category', url: '/kids', isVisible: true },
-    ],
-  },
-  'footer-menu-care': {
-    id: 'menu_footer_care',
-    title: 'Footer Customer Care',
-    slug: 'footer-menu-care',
-    items: [
-      { id: 'nav_f5', label: 'Track Order', type: 'page', url: '/account', isVisible: true },
-      { id: 'nav_f6', label: 'Shipping Policy', type: 'page', url: '/shipping-policy', isVisible: true },
-      { id: 'nav_f7', label: 'Returns & Exchange', type: 'page', url: '/return-policy', isVisible: true },
-      { id: 'nav_f8', label: 'FAQ & Contact', type: 'page', url: '/contact', isVisible: true },
-    ],
-  },
-};
+import { inferTenantPreset, resolveBlueprintPreset } from '@/lib/server/tenant-blueprint';
 
 /**
  * GET /api/v1/content/menus/code/[code]
- * Returns single menu by slug/code/id
+ * Returns single menu by slug/code/id aligned with the tenant's category
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const { code: rawCode } = await params;
@@ -81,6 +46,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   try {
     const db = await getTenantDatabase(tenantSlug);
+    const platformDb = await getDatabase();
     if (db) {
       const doc = await db.collection('cms_menus').findOne({
         $or: [{ slug: code }, { id: code }],
@@ -90,12 +56,118 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         const { _id, ...clean } = doc;
         return NextResponse.json({ success: true, data: { ...clean, tenantSlug } }, { headers: corsHeaders() });
       }
+
+      // If menu document not stored yet, derive dynamically based on tenant category blueprint
+      let tenantDoc: any = null;
+      try {
+        tenantDoc = await db.collection('tenants').findOne({
+          $or: [{ slug: tenantSlug }, { id: tenantSlug }, { id: `store_${tenantSlug}` }, { tenantId: tenantSlug }],
+        });
+      } catch {}
+
+      if (!tenantDoc && platformDb) {
+        try {
+          tenantDoc = await platformDb.collection('tenants').findOne({
+            $or: [{ slug: tenantSlug }, { id: tenantSlug }, { id: `store_${tenantSlug}` }, { tenantId: tenantSlug }],
+          });
+        } catch {}
+      }
+
+      const preset = inferTenantPreset(tenantDoc, tenantSlug);
+      const blueprint = resolveBlueprintPreset(preset);
+      const storePrefix = tenantSlug && tenantSlug !== 'demo' && tenantSlug !== 'storefront' ? `/stores/${tenantSlug}` : '';
+
+      let items: any[] = [];
+      let menuTitle = code.replace(/[-_]+/g, ' ').toUpperCase();
+
+      if (code === 'header-menu' || code === 'menu_header') {
+        menuTitle = `${tenantDoc?.name || tenantSlug.toUpperCase()} Header Navigation`;
+        if (Array.isArray(tenantDoc?.navLinks) && tenantDoc.navLinks.length > 0) {
+          items = tenantDoc.navLinks.map((l: any, i: number) => ({
+            id: `nav_${i + 1}`,
+            label: l.label,
+            type: 'link',
+            url: l.href.startsWith('/stores/') || l.href.startsWith('http') ? l.href : `${storePrefix}${l.href.startsWith('/') ? l.href : `/${l.href}`}`,
+            badge: l.badge,
+            isVisible: true,
+          }));
+        } else if (Array.isArray(blueprint?.navLinks) && blueprint.navLinks.length > 0) {
+          items = blueprint.navLinks.map((l: any, i: number) => ({
+            id: `nav_${i + 1}`,
+            label: l.label,
+            type: 'link',
+            url: l.href.startsWith('/stores/') || l.href.startsWith('http') ? l.href : `${storePrefix}${l.href.startsWith('/') ? l.href : `/${l.href}`}`,
+            badge: l.badge,
+            isVisible: true,
+          }));
+        }
+      } else if (code === 'footer-menu-shop' || code === 'menu_footer_shop') {
+        menuTitle = `${tenantDoc?.name || tenantSlug.toUpperCase()} Footer Shop Links`;
+        if (Array.isArray(tenantDoc?.footerShopLinks) && tenantDoc.footerShopLinks.length > 0) {
+          items = tenantDoc.footerShopLinks.map((l: any, i: number) => ({
+            id: `nav_f${i + 1}`,
+            label: l.label,
+            type: 'link',
+            url: l.href.startsWith('/stores/') || l.href.startsWith('http') ? l.href : `${storePrefix}${l.href.startsWith('/') ? l.href : `/${l.href}`}`,
+            isVisible: true,
+          }));
+        } else if (Array.isArray(blueprint?.footerShopLinks) && blueprint.footerShopLinks.length > 0) {
+          items = blueprint.footerShopLinks.map((l: any, i: number) => ({
+            id: `nav_f${i + 1}`,
+            label: l.label,
+            type: 'link',
+            url: l.href.startsWith('/stores/') || l.href.startsWith('http') ? l.href : `${storePrefix}${l.href.startsWith('/') ? l.href : `/${l.href}`}`,
+            isVisible: true,
+          }));
+        }
+      } else if (code === 'footer-menu-care' || code === 'menu_footer_care') {
+        menuTitle = `${tenantDoc?.name || tenantSlug.toUpperCase()} Customer Care`;
+        if (Array.isArray(tenantDoc?.footerCareLinks) && tenantDoc.footerCareLinks.length > 0) {
+          items = tenantDoc.footerCareLinks.map((l: any, i: number) => ({
+            id: `nav_care_${i + 1}`,
+            label: l.label,
+            type: 'link',
+            url: l.href.startsWith('/stores/') || l.href.startsWith('http') ? l.href : `${storePrefix}${l.href.startsWith('/') ? l.href : `/${l.href}`}`,
+            isVisible: true,
+          }));
+        } else if (Array.isArray(blueprint?.footerCareLinks) && blueprint.footerCareLinks.length > 0) {
+          items = blueprint.footerCareLinks.map((l: any, i: number) => ({
+            id: `nav_care_${i + 1}`,
+            label: l.label,
+            type: 'link',
+            url: l.href.startsWith('/stores/') || l.href.startsWith('http') ? l.href : `${storePrefix}${l.href.startsWith('/') ? l.href : `/${l.href}`}`,
+            isVisible: true,
+          }));
+        }
+      }
+
+      if (items.length > 0) {
+        const generatedDoc = {
+          id: `menu_${code}_${tenantSlug}`,
+          title: menuTitle,
+          slug: code,
+          items,
+          tenantSlug,
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Auto-seed for persistence
+        try {
+          await db.collection('cms_menus').updateOne(
+            { slug: code },
+            { $set: generatedDoc },
+            { upsert: true }
+          );
+        } catch {}
+
+        return NextResponse.json({ success: true, data: generatedDoc }, { headers: corsHeaders() });
+      }
     }
   } catch (err) {
     console.warn(`[GET /api/v1/content/menus/code/${code}] Error:`, err);
   }
 
-  const fallback = DEFAULT_MENUS[code] || {
+  const fallback = {
     id: `menu_${code}`,
     title: code.replace(/[-_]+/g, ' ').toUpperCase(),
     slug: code,
@@ -148,11 +220,10 @@ async function handleUpdate(request: NextRequest, params: Promise<{ code: string
     }
 
     // 1. Upsert into cms_menus
-    const defaultMeta = DEFAULT_MENUS[code] || {};
-    const menuTitle = body.title || defaultMeta.title || code.replace(/[-_]+/g, ' ').toUpperCase();
+    const menuTitle = body.title || code.replace(/[-_]+/g, ' ').toUpperCase();
 
     const updateDoc = {
-      id: body.id || defaultMeta.id || `menu_${code}`,
+      id: body.id || `menu_${code}`,
       title: menuTitle,
       slug: code,
       items: items,

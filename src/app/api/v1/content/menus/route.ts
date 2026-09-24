@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase, getTenantDatabase } from '@/lib/mongodb';
 import { resolveRequestTenantSlug } from '@/lib/server/tenant-db';
 import { getTenantConfig } from '@/lib/tenant-config';
+import { inferTenantPreset, resolveBlueprintPreset } from '@/lib/server/tenant-blueprint';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -81,6 +82,10 @@ export async function GET(request: NextRequest) {
       const tenantStaticCfg = getTenantConfig(tenantSlug);
       const storePrefix = tenantSlug && tenantSlug !== 'demo' && tenantSlug !== 'storefront' ? `/stores/${tenantSlug}` : '';
 
+      // Infer preset & category blueprint for this tenant store (e.g. jewelry, tech, grocery, etc.)
+      const preset = inferTenantPreset(tenantDoc, tenantSlug);
+      const blueprint = resolveBlueprintPreset(preset);
+
       // Fetch live categories to synthesize menu items if navLinks are empty
       let categories: any[] = [];
       try {
@@ -95,6 +100,15 @@ export async function GET(request: NextRequest) {
       let headerItems: any[] = [];
       if (Array.isArray(tenantDoc?.navLinks) && tenantDoc.navLinks.length > 0) {
         headerItems = tenantDoc.navLinks.map((link: any, idx: number) => ({
+          id: `nav_${idx + 1}`,
+          label: link.label,
+          type: 'link',
+          url: link.href.startsWith('/stores/') || link.href.startsWith('http') ? link.href : `${storePrefix}${link.href.startsWith('/') ? link.href : `/${link.href}`}`,
+          badge: link.badge,
+          isVisible: true,
+        }));
+      } else if (Array.isArray(blueprint?.navLinks) && blueprint.navLinks.length > 0) {
+        headerItems = blueprint.navLinks.map((link: any, idx: number) => ({
           id: `nav_${idx + 1}`,
           label: link.label,
           type: 'link',
@@ -136,6 +150,14 @@ export async function GET(request: NextRequest) {
           url: link.href.startsWith('/stores/') || link.href.startsWith('http') ? link.href : `${storePrefix}${link.href.startsWith('/') ? link.href : `/${link.href}`}`,
           isVisible: true,
         }));
+      } else if (Array.isArray(blueprint?.footerShopLinks) && blueprint.footerShopLinks.length > 0) {
+        footerShopItems = blueprint.footerShopLinks.map((link: any, idx: number) => ({
+          id: `nav_f${idx + 1}`,
+          label: link.label,
+          type: 'link',
+          url: link.href.startsWith('/stores/') || link.href.startsWith('http') ? link.href : `${storePrefix}${link.href.startsWith('/') ? link.href : `/${link.href}`}`,
+          isVisible: true,
+        }));
       } else if (tenantStaticCfg?.footerShopLinks && tenantStaticCfg.footerShopLinks.length > 0) {
         footerShopItems = tenantStaticCfg.footerShopLinks.map((link: any, idx: number) => ({
           id: `nav_f${idx + 1}`,
@@ -163,6 +185,14 @@ export async function GET(request: NextRequest) {
       let footerCareItems: any[] = [];
       if (Array.isArray(tenantDoc?.footerCareLinks) && tenantDoc.footerCareLinks.length > 0) {
         footerCareItems = tenantDoc.footerCareLinks.map((link: any, idx: number) => ({
+          id: `nav_care_${idx + 1}`,
+          label: link.label,
+          type: 'link',
+          url: link.href.startsWith('/stores/') || link.href.startsWith('http') ? link.href : `${storePrefix}${link.href.startsWith('/') ? link.href : `/${link.href}`}`,
+          isVisible: true,
+        }));
+      } else if (Array.isArray(blueprint?.footerCareLinks) && blueprint.footerCareLinks.length > 0) {
+        footerCareItems = blueprint.footerCareLinks.map((link: any, idx: number) => ({
           id: `nav_care_${idx + 1}`,
           label: link.label,
           type: 'link',
